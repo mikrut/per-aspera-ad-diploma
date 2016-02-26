@@ -1,5 +1,6 @@
 package ru.mail.park.chat;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MessagesActivity extends AppCompatActivity {
+    protected FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,14 +21,27 @@ public class MessagesActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_menu_black_24dp);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Query queryer = new Query();
+                queryer.execute((String[]) null);
             }
         });
+    }
+
+    class Query extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            return NetcipherTester.testNetcipher(MessagesActivity.this);
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Snackbar.make(fab, s, Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
     }
 
     @Override
