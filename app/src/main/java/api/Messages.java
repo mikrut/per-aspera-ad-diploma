@@ -9,4 +9,16 @@ public class Messages {
     public Messages(ServerConnection sConn) {
         this.sConn = sConn;
     }
+
+    public void sendMessage() {
+
+    }
+
+    public void deleteMessage() {
+
+    }
+
+    public void getHistory() {
+
+    }
 }

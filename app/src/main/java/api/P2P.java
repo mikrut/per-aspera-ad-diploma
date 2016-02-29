@@ -9,4 +9,16 @@ public class P2P {
     public P2P(ServerConnection sConn) {
         this.sConn = sConn;
     }
+
+    public void getUserAddress() {
+
+    }
+
+    public void updateAddress() {
+
+    }
+
+    public void ypdatePublicKey() {
+
+    }
 }

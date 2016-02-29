@@ -5,7 +5,20 @@ package api;
  */
 public class Users {
     private ServerConnection sConn;
+
     public Users(ServerConnection sConn) {
         this.sConn = sConn;
+    }
+
+    public void getUsers() {
+
+    }
+
+    public void getFullUsers() {
+
+    }
+
+    public void updateData() {
+
     }
 }

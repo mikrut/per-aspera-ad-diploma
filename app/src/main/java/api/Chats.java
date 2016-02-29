@@ -9,4 +9,24 @@ public class Chats {
     public Chats(ServerConnection sConn) {
         this.sConn = sConn;
     }
+
+    public void createChat() {
+
+    }
+
+    public void getChats() {
+
+    }
+
+    public void addUser() {
+
+    }
+
+    public void deleteUser() {
+
+    }
+
+    public void grantPrivilege() {
+
+    }
 }
