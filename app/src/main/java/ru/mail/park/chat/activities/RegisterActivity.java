@@ -1,9 +1,11 @@
-package ru.mail.park.chat;
+package ru.mail.park.chat.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import ru.mail.park.chat.R;
 
 public class RegisterActivity extends AppCompatActivity {
 

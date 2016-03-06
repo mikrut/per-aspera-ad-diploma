@@ -1,4 +1,4 @@
-package ru.mail.park.chat;
+package ru.mail.park.chat.activities;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +9,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import ru.mail.park.chat.NetcipherTester;
+import ru.mail.park.chat.R;
 
 public class MessagesActivity extends AppCompatActivity {
     protected FloatingActionButton fab;
