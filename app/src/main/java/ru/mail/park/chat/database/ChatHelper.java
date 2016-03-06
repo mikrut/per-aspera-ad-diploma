@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.widget.CursorAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +16,9 @@ import ru.mail.park.chat.models.Chat;
  * Created by Михаил on 06.03.2016.
  */
 public class ChatHelper {
-    private MessengerDBHelper dbHelper;
-    private Context context;
+    private final MessengerDBHelper dbHelper;
 
     public ChatHelper(Context context) {
-        this.context = context;
         dbHelper = new MessengerDBHelper(context);
     }
 
@@ -36,8 +33,7 @@ public class ChatHelper {
     public long saveChat(@NonNull Chat chat) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = chat.getContentValues();
-        long result = db.insert(ChatsContract.ChatsEntry.TABLE_NAME, null, values);
-        return result;
+        return db.insert(ChatsContract.ChatsEntry.TABLE_NAME, null, values);
     }
 
     // FIXME: ORDER BY last_message_time DESC
@@ -51,7 +47,7 @@ public class ChatHelper {
                 null, // Return all chats (no WHERE)
                 null, // No WHERE - no args
                 null, // No GROUP BY
-                null, // No groupby filter
+                null, // No GROUP BY filter
                 null  // No ORDER BY
         );
     }
@@ -67,19 +63,19 @@ public class ChatHelper {
                 null, null, null,
                 "1");
 
+        Chat chat = null;
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            Chat chat = new Chat(cursor);
-            return chat;
-        } else {
-            return null;
+            chat = new Chat(cursor);
         }
+        cursor.close();
+        return chat;
     }
 
     @NonNull
     public List<Chat> getChatsList() {
         Cursor chatsCursor = getChatsCursor();
-        ArrayList<Chat> chatsList = new ArrayList<Chat>(chatsCursor.getCount());
+        ArrayList<Chat> chatsList = new ArrayList<>(chatsCursor.getCount());
 
         for(chatsCursor.moveToFirst(); chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
             chatsList.add(new Chat(chatsCursor));

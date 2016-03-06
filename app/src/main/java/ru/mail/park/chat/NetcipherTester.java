@@ -5,12 +5,10 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -19,7 +17,6 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import info.guardianproject.netcipher.NetCipher;
@@ -48,8 +45,8 @@ public class NetcipherTester {
                 httpsURLConnection = (HttpsURLConnection) url.openConnection();
             }
 
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            String algorithm = TrustManagerFactory.getDefaultAlgorithm();
+            // KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            // String algorithm = TrustManagerFactory.getDefaultAlgorithm();
             // TrustManagerFactory tmf = TrustManagerFactory.getInstance(algorithm);
             // tmf.init(keyStore);
             TrustManager tm = new X509TrustManager() {
@@ -70,13 +67,7 @@ public class NetcipherTester {
 
             httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
             result = getMessageBody(httpsURLConnection);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
 

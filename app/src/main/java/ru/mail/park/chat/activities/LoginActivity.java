@@ -30,7 +30,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, 
     private View mLoginFormView;
     private Button btnSignUp;
 
-    private IAuthable authable = new DummyAuthable();
+    private final IAuthable authable = new DummyAuthable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
