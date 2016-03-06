@@ -39,12 +39,13 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements IAuthCallbacks {
+public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, OnClickListener  {
 
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private Button btnSignUp;
 
     private IAuthable authable = new DummyAuthable();
 
@@ -54,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks {
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-
+        btnSignUp = (Button) findViewById(R.id.sign_up_button);
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -79,11 +80,13 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        btnSignUp.setOnClickListener(this);
     }
 
     public void onStartAuth() {
         mProgressView.setVisibility(View.VISIBLE);
-    };
+    }
 
     public void onFinishAuth(boolean isSuccess, String message) {
         mProgressView.setVisibility(View.GONE);
@@ -94,6 +97,18 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks {
         } else {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
-    };
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.sign_up_button:
+                Intent intent = new Intent(this, RegisterActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
+    }
 }
 
