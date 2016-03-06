@@ -10,7 +10,7 @@ public abstract class ChatsContract {
 
     static final String CREATE_TABLE =
             "CREATE TABLE " + ChatsEntry.TABLE_NAME + " (" +
-            ChatsEntry.COLUMN_NAME_CID + " INTEGER PRIMARY KEY NOT NULL" + COMMA_SEP +
+            ChatsEntry.COLUMN_NAME_CID + " TEXT PRIMARY KEY NOT NULL" + COMMA_SEP +
             ChatsEntry.COLUMN_NAME_NAME + " TEXT NOT NULL" + COMMA_SEP +
             ChatsEntry.COLUMN_NAME_DESCRIPTION + " TEXT" +
             ")";

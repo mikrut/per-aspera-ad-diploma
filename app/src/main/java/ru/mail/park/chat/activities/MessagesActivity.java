@@ -1,5 +1,7 @@
 package ru.mail.park.chat.activities;
 
+import android.app.LoaderManager;
+import android.content.Loader;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -10,8 +12,12 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.List;
+
 import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.loaders.ChatLoader;
+import ru.mail.park.chat.models.Chat;
 
 public class MessagesActivity extends AppCompatActivity {
     protected FloatingActionButton fab;
@@ -68,4 +74,25 @@ public class MessagesActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
+            new LoaderManager.LoaderCallbacks<List<Chat>>() {
+                @Override
+                public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
+                    return new ChatLoader(MessagesActivity.this);
+                }
+
+                @Override
+                public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
+                    // TODO: adapter etc.
+                }
+
+                @Override
+                public void onLoaderReset(Loader<List<Chat>> loader) {
+                    // TODO: something...
+                }
+            };
+
 }
+
