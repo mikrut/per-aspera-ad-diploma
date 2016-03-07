@@ -74,7 +74,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, 
     public void onFinishAuth(boolean isSuccess, String message) {
         mProgressView.setVisibility(View.GONE);
         if (isSuccess) {
-            Intent intent = new Intent(this, MessagesActivity.class);
+            Intent intent = new Intent(this, ChatsActivity.class);
             startActivity(intent);
             finish();
         } else {

@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activities.MessagesActivity"
-    tools:showIn="@layout/activity_messages">
+    tools:context=".activities.ChatsActivity"
+    tools:showIn="@layout/activity_chats">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/messagesList"
+        android:id="@+id/chatsList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/element_messages" />
+        tools:listitem="@layout/element_chats" />
 </RelativeLayout>

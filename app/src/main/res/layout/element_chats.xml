@@ -10,7 +10,7 @@
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:id="@+id/imageView"
+        android:id="@+id/chatPicture"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -20,19 +20,19 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
-        android:id="@+id/textView"
+        android:id="@+id/chatName"
         android:layout_alignParentTop="true"
         android:textStyle="bold"
-        android:layout_toLeftOf="@+id/textView2"
-        android:layout_toRightOf="@+id/imageView"
-        android:layout_toEndOf="@+id/imageView" />
+        android:layout_toLeftOf="@+id/lastMessageTime"
+        android:layout_toRightOf="@+id/chatPicture"
+        android:layout_toEndOf="@+id/chatPicture" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
-        android:id="@+id/textView2"
+        android:id="@+id/lastMessageTime"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
@@ -42,12 +42,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
-        android:id="@+id/textView3"
-        android:layout_below="@+id/textView"
-        android:layout_toRightOf="@+id/imageView"
-        android:layout_alignRight="@+id/textView2"
-        android:layout_alignEnd="@+id/textView2"
-        android:layout_alignBottom="@+id/imageView"
+        android:id="@+id/lastMessageText"
+        android:layout_below="@+id/chatName"
+        android:layout_toRightOf="@+id/chatPicture"
+        android:layout_alignRight="@+id/lastMessageTime"
+        android:layout_alignEnd="@+id/lastMessageTime"
+        android:layout_alignBottom="@+id/chatPicture"
         android:gravity="center_vertical" />
 
 </RelativeLayout>

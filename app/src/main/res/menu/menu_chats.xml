@@ -1,10 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".activities.MessagesActivity">
+    tools:context=".activities.ChatsActivity">
     <item
         android:id="@+id/action_search"
         android:orderInCategory="100"
         android:title="@string/action_search"
-        app:showAsAction="never" />
+        android:icon="@android:drawable/ic_menu_search"
+        app:showAsAction="collapseActionView|ifRoom"
+        app:actionViewClass="android.widget.SearchView" />
 </menu>
