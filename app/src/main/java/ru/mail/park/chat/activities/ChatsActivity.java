@@ -63,6 +63,8 @@ public class ChatsActivity extends AppCompatActivity {
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
 
+        // TODO: fetch user data from DB
+        // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
         String[] titles = {"Edit", "Help"};
