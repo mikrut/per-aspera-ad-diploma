@@ -8,6 +8,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -34,10 +36,20 @@ public class ChatsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chats);
+        setContentView(R.layout.layout_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_menu_white_24dp);
+
+        DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(
+                this,
+                mDrawerLayout,
+                toolbar,
+                R.string.open,
+                R.string.close
+        );
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -50,6 +62,20 @@ public class ChatsActivity extends AppCompatActivity {
 
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
+
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
+        mRecyclerView.setHasFixedSize(true);
+        String[] titles = {"Edit", "Help"};
+        int[] pictures = {android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_help};
+        RecyclerView.Adapter mAdapter = new MenuAdapter(
+                "username",
+                "user@example.com",
+                android.R.drawable.ic_dialog_map,
+                titles,
+                pictures);
+        mRecyclerView.setAdapter(mAdapter);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     class Query extends AsyncTask<String, Void, String> {
@@ -89,7 +115,7 @@ public class ChatsActivity extends AppCompatActivity {
             // searchView.setIconified(false);
             searchView.requestFocusFromTouch();
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+            inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
             return true;
         }
 
