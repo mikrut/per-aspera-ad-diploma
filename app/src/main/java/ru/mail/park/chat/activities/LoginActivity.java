@@ -22,13 +22,12 @@ import ru.mail.park.chat.R;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, OnClickListener  {
+public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  {
 
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private Button btnSignUp;
 
     private final IAuthable authable = new DummyAuthable();
 
@@ -38,7 +37,6 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, 
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        btnSignUp = (Button) findViewById(R.id.sign_up_button);
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -63,8 +61,6 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, 
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-        btnSignUp.setOnClickListener(this);
     }
 
     public void onStartAuth() {
@@ -78,19 +74,9 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks, 
             startActivity(intent);
             finish();
         } else {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.sign_up_button:
-                Intent intent = new Intent(this, RegisterActivity.class);
-                startActivity(intent);
-                break;
-            default:
-                break;
+//            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
         }
     }
 }
