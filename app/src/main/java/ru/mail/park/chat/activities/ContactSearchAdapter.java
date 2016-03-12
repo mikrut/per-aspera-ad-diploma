@@ -24,6 +24,13 @@ public class ContactSearchAdapter extends AContactAdapter {
     }
 
     @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View contactView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.element_contacts_search, parent, false);
+        return new ContactHolder(contactView);
+    }
+
+    @Override
     protected Contact getContactForPosition(int position) {
         return contactList.get(position);
     }
