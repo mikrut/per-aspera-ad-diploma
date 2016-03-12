@@ -153,7 +153,7 @@ public class Contacts {
 
 
     private static List<Contact> contactsFrom(JSONArray contacts) throws JSONException, ParseException {
-        List<Contact> contactList = new ArrayList<Contact>(contacts.length());
+        List<Contact> contactList = new ArrayList<>(contacts.length());
         for (int i = 0; i < contacts.length(); i++) {
             Contact contact = new Contact(contacts.getJSONObject(i));
             contactList.add(contact);

@@ -5,6 +5,9 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import ru.mail.park.chat.database.ChatsContract;
 
 /**
@@ -19,6 +22,14 @@ public class Chat {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
         name = cursor.getString(ChatsContract.PROJECTION_NAME_INDEX);
         description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
+    }
+
+    public Chat(JSONObject chat) throws JSONException {
+        setCid(chat.getString("cid"));
+        if (chat.has("name"))
+            setName(chat.getString("name"));
+        if (chat.has("description"))
+            setDescription(chat.getString("description"));
     }
 
     @NonNull
