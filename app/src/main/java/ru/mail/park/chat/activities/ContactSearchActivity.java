@@ -5,16 +5,23 @@ import android.content.Context;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.models.Contact;
 
 public class ContactSearchActivity extends AppCompatActivity {
     private SearchView searchView;
+    private RecyclerView contactsView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +30,15 @@ public class ContactSearchActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        contactsView = (RecyclerView) findViewById(R.id.contactsView);
+        contactsView.setLayoutManager(new LinearLayoutManager(this));
+        List<Contact> contactList = new LinkedList<>();
+        contactList.add(new Contact());
+        contactList.add(new Contact());
+        contactList.add(new Contact());
+
+        contactsView.setAdapter(new ContactSearchAdapter(contactList));
     }
 
     @Override

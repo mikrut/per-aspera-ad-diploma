@@ -1,8 +1,11 @@
 package ru.mail.park.chat.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,14 +26,13 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by Михаил on 08.03.2016.
  */
-public class ContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ContactAdapter extends AContactAdapter {
     private Map<Character, List<Contact>> contactGroups;
     private int itemCount;
 
-    private static final int LETTER = 0;
-    private static final int CONTACT = 1;
+    protected static final int LETTER = 0;
 
-    public ContactAdapter(List<Contact> contactList) {
+    public ContactAdapter(@NonNull List<Contact> contactList) {
         contactGroups = new TreeMap<>();
         Collections.sort(contactList);
         itemCount = contactList.size();
@@ -57,20 +59,40 @@ public class ContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
             case LETTER:
-                View letterView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.element_letter, parent, false);
-                return new LetterHolder(letterView);
+                return createLetterHolder(parent);
             case CONTACT:
-                View contactView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.element_contact, parent, false);
-                return new ContactHolder(contactView);
+                return createContactHolder(parent);
             default:
                 return  null;
         }
     }
 
+    protected RecyclerView.ViewHolder createLetterHolder(ViewGroup parent) {
+        View letterView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.element_letter, parent, false);
+        return new LetterHolder(letterView);
+    }
+
+    protected RecyclerView.ViewHolder createContactHolder(ViewGroup parent) {
+        View contactView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.element_contact, parent, false);
+        return new ContactHolder(contactView);
+    }
+
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        switch (holder.getItemViewType()) {
+            case LETTER:
+                LetterHolder letterHolder = (LetterHolder) holder;
+                letterHolder.setLetter(getLetterForPosition(position));
+                break;
+            case CONTACT:
+                super.onBindViewHolder(holder, position);
+                break;
+        }
+    }
+
+    private Pair<Character, Integer> getKeyForPosition(int position) {
         int currentPosition = 0;
 
         Set<Character> keys = contactGroups.keySet();
@@ -83,20 +105,19 @@ public class ContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 break;
             }
         }
+        return new Pair<>(key, currentPosition);
+    }
 
-        switch (holder.getItemViewType()) {
-            case LETTER:
-                LetterHolder letterHolder = (LetterHolder) holder;
-                letterHolder.setLetter(key);
-                break;
-            case CONTACT:
-                ContactHolder contactHolder = (ContactHolder) holder;
-                List<Contact> contactGroup = contactGroups.get(key);
-                Contact contact = contactGroup.get(position - currentPosition - 1);
-                contactHolder.setContactName(contact.getLogin());
-                contactHolder.setContactLastSeen(contact.getLastSeen().getTime().toGMTString());
-                break;
-        }
+    protected char getLetterForPosition(int position) {
+        return getKeyForPosition(position).first;
+    }
+
+    @Override
+    protected Contact getContactForPosition(int position) {
+        Pair<Character, Integer> result = getKeyForPosition(position);
+
+        List<Contact> contactGroup = contactGroups.get(result.first);
+        return contactGroup.get(position - result.second - 1);
     }
 
     @Override
@@ -118,31 +139,6 @@ public class ContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             }
         }
         return LETTER;
-    }
-
-    public static class ContactHolder extends RecyclerView.ViewHolder {
-        private ImageView contactImage;
-        private TextView contactName;
-        private TextView contactLastSeen;
-
-        public ContactHolder(View itemView) {
-            super(itemView);
-            contactImage = (ImageView) itemView.findViewById(R.id.contactImage);
-            contactName = (TextView) itemView.findViewById(R.id.contactName);
-            contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
-        }
-
-        public void setContactImage(Bitmap bitmap) {
-            contactImage.setImageBitmap(bitmap);
-        }
-
-        public void setContactName(String name) {
-            contactName.setText(name);
-        }
-
-        public void setContactLastSeen(String lastSeen) {
-            contactLastSeen.setText(lastSeen);
-        }
     }
 
     public static class LetterHolder extends RecyclerView.ViewHolder {
