@@ -10,12 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.models.Contact;
@@ -31,7 +31,7 @@ public class ContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final int CONTACT = 1;
 
     public ContactAdapter(List<Contact> contactList) {
-        contactGroups = new HashMap<>(contactList.size());
+        contactGroups = new TreeMap<>();
         Collections.sort(contactList);
         itemCount = contactList.size();
 

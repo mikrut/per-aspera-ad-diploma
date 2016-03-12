@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="178dp"
-    android:background="@android:drawable/screen_background_dark"
+    android:background="@drawable/sidemenu_topbg"
     android:orientation="vertical"
     android:weightSum="1">
 
@@ -12,7 +12,9 @@
         android:orientation="vertical"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:paddingTop="7dp"
+        android:background="#22000000">
 
         <TextView
             android:id="@+id/userName"
@@ -40,7 +42,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:src="@drawable/ic_menu_white_24dp"
+        android:src="@android:color/white"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="38dp"
         android:id="@+id/userPicture"
