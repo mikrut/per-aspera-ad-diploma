@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.NetcipherTester;
@@ -63,6 +64,14 @@ public class ChatsActivity extends AppCompatActivity {
 
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
+
+
+        List<Chat> dummyChatList = new LinkedList<>();
+        dummyChatList.add(new Chat());
+        dummyChatList.add(new Chat());
+        dummyChatList.add(new Chat());
+        ChatsAdapter dummyListAdapter = new ChatsAdapter(dummyChatList);
+        chatsList.setAdapter(dummyListAdapter);
 
         // TODO: fetch user data from DB
         // TODO: real menu options

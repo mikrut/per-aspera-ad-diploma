@@ -1,19 +1,21 @@
 package ru.mail.park.chat.models;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.SimpleTimeZone;
+
+import ru.mail.park.chat.database.ContactsContract;
 
 /**
  * Created by Михаил on 08.03.2016.
@@ -21,10 +23,12 @@ import java.util.SimpleTimeZone;
 
 // TODO: implement firstname, lastname + stringification
 public class Contact implements Comparable<Contact> {
-    private @NonNull String login;
     private @NonNull String id;
     private @Nullable String phone;
     private @Nullable Calendar lastSeen;
+    private @NonNull String cid;
+    private @NonNull String login;
+    private @Nullable String email;
 
     @Deprecated
     public Contact() {
@@ -44,6 +48,21 @@ public class Contact implements Comparable<Contact> {
         GregorianCalendar lastSeen = new GregorianCalendar();
         lastSeen.setTime(dateLastSeen);
         setLastSeen(lastSeen);
+    }
+
+    public Contact(Cursor cursor) {
+        cid = cursor.getString(ContactsContract.PROJECTION_CID_INDEX);
+        login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
+        email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
+    }
+
+    @NonNull
+    public String getCid() {
+        return cid;
+    }
+
+    public void setCid(@NonNull String cid) {
+        this.cid = cid;
     }
 
     @NonNull
@@ -85,5 +104,23 @@ public class Contact implements Comparable<Contact> {
     @Override
     public int compareTo(Contact another) {
         return this.login.compareTo(another.getLogin());
+    }
+    
+    @Nullable
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(@Nullable String email) {
+        this.email = email;
+    }
+
+    @NonNull
+    public ContentValues getContentValues() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_CID, cid);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN, login);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_EMAIL, email);
+        return contentValues;
     }
 }

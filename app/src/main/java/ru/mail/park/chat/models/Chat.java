@@ -18,6 +18,13 @@ public class Chat {
     @NonNull String name;
     @Nullable String description;
 
+    @Deprecated
+    public Chat() {
+        setCid("1234abcd");
+        setName("Hello world");
+        setDescription("Interesting chat");
+    }
+
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
         name = cursor.getString(ChatsContract.PROJECTION_NAME_INDEX);
