@@ -13,4 +13,7 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
+    <string name="title_activity_user_profile">UserProfileActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>
