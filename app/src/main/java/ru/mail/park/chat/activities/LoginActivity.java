@@ -28,6 +28,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private TextView tvRegisterLink;
 
     private final IAuthable authable = new DummyAuthable();
 
@@ -61,6 +62,14 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        tvRegisterLink = (TextView) findViewById(R.id.register_link);
+        tvRegisterLink.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LoginActivity.this.startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+            }
+        });
     }
 
     public void onStartAuth() {
