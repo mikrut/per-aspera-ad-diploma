@@ -1,7 +1,10 @@
 package ru.mail.park.chat.activities;
 
 import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +22,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private String name;
     private String email;
     private int userPicture;
+    private View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
     private static final int ITEM = 1;
@@ -66,14 +70,21 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public void setIcon(@DrawableRes int icon) {
             rowIcon.setImageResource(icon);
         }
+
+        public void setOnClickListener(@Nullable View.OnClickListener listener) {
+            if (listener != null)
+                itemView.setOnClickListener(listener);
+        }
     }
 
-    public MenuAdapter(String name, String email, @DrawableRes int userPicture, String titles[], @DrawableRes int... icons) {
+    public MenuAdapter(String name, String email, @DrawableRes int userPicture, String titles[],
+                       @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
         this.userPicture = userPicture;
+        this.listeners = listeners;
     }
 
     @Override
@@ -108,6 +119,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     itemRowHolder.setTitle(titles[position]);
                 if (icons.length > position)
                     itemRowHolder.setIcon(icons[position]);
+                itemRowHolder.setOnClickListener(listeners[position]);
         }
     }
 

@@ -10,7 +10,7 @@
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_up">Sign up</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_register">Sign up</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="title_activity_user_profile">UserProfileActivity</string>

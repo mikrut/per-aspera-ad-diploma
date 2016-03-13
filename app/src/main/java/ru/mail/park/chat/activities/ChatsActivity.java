@@ -3,6 +3,7 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.Loader;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.NetcipherTester;
@@ -63,17 +65,33 @@ public class ChatsActivity extends AppCompatActivity {
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
 
+
+        List<Chat> dummyChatList = new LinkedList<>();
+        dummyChatList.add(new Chat());
+        dummyChatList.add(new Chat());
+        dummyChatList.add(new Chat());
+        ChatsAdapter dummyListAdapter = new ChatsAdapter(dummyChatList);
+        chatsList.setAdapter(dummyListAdapter);
+
         // TODO: fetch user data from DB
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
-        String[] titles = {"Edit", "Help"};
+        String[] titles = {"Contacts", "Help"};
+        View.OnClickListener[] listeners = {new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatsActivity.this, ContactsActivity.class);
+                startActivity(intent);
+            }
+        }, null};
         int[] pictures = {android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_help};
         RecyclerView.Adapter mAdapter = new MenuAdapter(
                 "username",
                 "user@example.com",
                 android.R.drawable.ic_dialog_map,
                 titles,
+                listeners,
                 pictures);
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
