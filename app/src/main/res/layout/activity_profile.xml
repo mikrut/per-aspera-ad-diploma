@@ -25,14 +25,14 @@
                 android:id="@+id/user_camera_shot"
                 android:layout_width="48dp"
                 android:layout_gravity="bottom"
-                android:paddingLeft="6dp"
+                android:layout_marginLeft="6dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_camera_enhance_black_48dp"/>
 
             <ImageView
                 android:id="@+id/user_upload_picture"
                 android:layout_gravity="bottom"
-                android:paddingLeft="6dp"
+                android:layout_marginLeft="6dp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_folder_black_48dp"/>
