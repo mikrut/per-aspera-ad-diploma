@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -51,13 +52,20 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         private ImageView contactImage;
         private TextView contactName;
         private TextView contactLastSeen;
-        private
 
         public ContactHolder(View itemView) {
             super(itemView);
             contactImage = (ImageView) itemView.findViewById(R.id.contactImage);
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
+                    v.getContext().startActivity(intent);
+                }
+            });
         }
 
         public void setContactImage(Bitmap bitmap) {
