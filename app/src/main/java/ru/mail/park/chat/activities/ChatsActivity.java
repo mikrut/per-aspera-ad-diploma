@@ -77,8 +77,14 @@ public class ChatsActivity extends AppCompatActivity {
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
-        String[] titles = {"Show other user profile","Contacts", "Help"};
+        String[] titles = {"Edit profile","Show other user profile","Contacts", "Help"};
         View.OnClickListener[] listeners = {new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatsActivity.this, ProfileActivity.class);
+                startActivity(intent);
+            }
+        },new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ChatsActivity.this, UserProfileActivity.class);

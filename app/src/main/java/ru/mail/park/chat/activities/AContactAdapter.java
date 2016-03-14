@@ -51,6 +51,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         private ImageView contactImage;
         private TextView contactName;
         private TextView contactLastSeen;
+        private
 
         public ContactHolder(View itemView) {
             super(itemView);
