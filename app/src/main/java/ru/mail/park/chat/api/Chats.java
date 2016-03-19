@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
@@ -20,7 +22,6 @@ import ru.mail.park.chat.models.Chat;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 
-// TODO: make actual requests
 public class Chats extends ApiSection {
     private static final String URL_ADDITION = "chats/";
 
@@ -66,7 +67,21 @@ public class Chats extends ApiSection {
         return chatsList;
     }
 
-    enum DialogPrivilege {USER, ADMIN};
+    enum DialogPrivilege {
+        USER, ADMIN;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case USER:
+                    return "USER";
+                case ADMIN:
+                    return "ADMIN";
+                default:
+                    return super.toString();
+            }
+        }
+    };
 
     @NonNull
     public Chat addUser(@NonNull String cid, @NonNull String uid) throws IOException {
@@ -79,13 +94,16 @@ public class Chats extends ApiSection {
         final String requestURL = "user";
         final String requestMethod = "POST";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(3 + (privilege != null ? 1 : 0));
+        parameters.add(new Pair<>("cid", cid));
+        parameters.add(new Pair<>("uid", uid));
         if (privilege != null) {
-            // TODO: add privilege to request
+            parameters.add(new Pair<>("grant", privilege.toString()));
         }
 
         Chat chat;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -108,9 +126,13 @@ public class Chats extends ApiSection {
         final String requestURL = "user";
         final String requestMethod = "DELETE";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(3);
+        parameters.add(new Pair<>("cid", cid));
+        parameters.add(new Pair<>("uid", uid));
+
         Chat chat;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Pair;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
@@ -38,9 +40,14 @@ public class Auth extends ApiSection {
         final String requestURL = "signUp";
         final String requestMethod = "PUT";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(4);
+        parameters.add(new Pair<>("login", login));
+        parameters.add(new Pair<>("password", password));
+        parameters.add(new Pair<>("email", email));
+
         Contact user;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -61,9 +68,13 @@ public class Auth extends ApiSection {
         final String requestURL = "signIn";
         final String requestMethod = "POST";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(3);
+        parameters.add(new Pair<>("login", login));
+        parameters.add(new Pair<>("password", password));
+
         Contact user;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

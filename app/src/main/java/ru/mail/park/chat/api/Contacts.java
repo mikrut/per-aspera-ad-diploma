@@ -19,8 +19,6 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
-
-// TODO: add actual server requests
 public class Contacts extends ApiSection {
     private static final String URL_ADDITION = "contacts/";
 
@@ -65,10 +63,13 @@ public class Contacts extends ApiSection {
         final String requestURL = "info";
         final String requestMethod = "POST";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("uid", uid));
+
         int contactsLength;
         Contact contact = null;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -90,9 +91,12 @@ public class Contacts extends ApiSection {
         final String requestURL = "info";
         final String requestMethod = "DELETE";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("uid", uid));
+
         int contactsLength;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -132,9 +136,15 @@ public class Contacts extends ApiSection {
         final String requestURL = "info";
         final String requestMethod = "GET";
 
+
+        List<Pair<String, String>> parameters = new ArrayList<>(4);
+        parameters.add(new Pair<>("login", partOfLogin));
+        parameters.add(new Pair<>("min_index", String.valueOf(minIndex)));
+        parameters.add(new Pair<>("response_length", String.valueOf(responseLength)));
+
         SearchResult searchResult;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

@@ -22,6 +22,7 @@ import ru.mail.park.chat.database.ContactsContract;
  */
 
 // TODO: implement firstname, lastname + stringification
+// TODO: implement drawables
 public class Contact implements Comparable<Contact> {
     private @NonNull String id;
     private @Nullable String phone;
