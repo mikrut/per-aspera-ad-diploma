@@ -24,23 +24,22 @@ import ru.mail.park.chat.database.ContactsContract;
 // TODO: implement firstname, lastname + stringification
 // TODO: implement drawables
 public class Contact implements Comparable<Contact> {
-    private @NonNull String id;
+    private @NonNull String uid;
     private @Nullable String phone;
     private @Nullable Calendar lastSeen;
-    private @NonNull String cid;
     private @NonNull String login;
     private @Nullable String email;
 
     @Deprecated
     public Contact() {
         login = "v.pupkin";
-        id = "abcd1234";
+        uid = "abcd1234";
         phone = "8-800-555-35-35";
         lastSeen = Calendar.getInstance();
     }
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
-        setId(contact.getString("id"));
+        setUid(contact.getString("uid"));
         setLogin(contact.getString("login"));
         setPhone(contact.getString("phone"));
 
@@ -52,18 +51,18 @@ public class Contact implements Comparable<Contact> {
     }
 
     public Contact(Cursor cursor) {
-        cid = cursor.getString(ContactsContract.PROJECTION_CID_INDEX);
+        uid = cursor.getString(ContactsContract.PROJECTION_UID_INDEX);
         login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
         email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
     }
 
     @NonNull
-    public String getCid() {
-        return cid;
+    public String getUid() {
+        return uid;
     }
 
-    public void setCid(@NonNull String cid) {
-        this.cid = cid;
+    public void setUid(@NonNull String uid) {
+        this.uid = uid;
     }
 
     @NonNull
@@ -73,15 +72,6 @@ public class Contact implements Comparable<Contact> {
 
     public void setLogin(@NonNull String login) {
         this.login = login;
-    }
-
-    @NonNull
-    public String getId() {
-        return id;
-    }
-
-    public void setId(@NonNull String id) {
-        this.id = id;
     }
 
     @Nullable
@@ -103,7 +93,7 @@ public class Contact implements Comparable<Contact> {
     }
 
     @Override
-    public int compareTo(Contact another) {
+    public int compareTo(@NonNull Contact another) {
         return this.login.compareTo(another.getLogin());
     }
     
@@ -119,7 +109,7 @@ public class Contact implements Comparable<Contact> {
     @NonNull
     public ContentValues getContentValues() {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_CID, cid);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_UID, uid);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN, login);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_EMAIL, email);
         return contentValues;

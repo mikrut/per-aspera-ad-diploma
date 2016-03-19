@@ -23,7 +23,7 @@ public class ContactHelper {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = contact.getContentValues();
         String whereClause = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
-        String[] whereArgs = {contact.getCid()};
+        String[] whereArgs = {contact.getUid()};
         db.update(ChatsContract.ChatsEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
@@ -51,7 +51,7 @@ public class ContactHelper {
     @Nullable
     public Contact getContact(@NonNull String cid) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_CID + " = ?";
+        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
         String[] selectionArgs = { cid };
         Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
                 ContactsContract.CONTACT_PROJECTION,
@@ -81,7 +81,7 @@ public class ContactHelper {
 
     public int deleteContact(@NonNull String cid) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_CID + " = ?";
+        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
         String[] selectionArgs = { cid };
         return db.delete(ContactsContract.ContactsEntry.TABLE_NAME, selection, selectionArgs);
     }
