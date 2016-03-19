@@ -1,44 +1,98 @@
 package ru.mail.park.chat.api;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
+
+import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
+
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
-public class Auth {
-    private ServerConnection sConn;
+public class Auth extends ApiSection {
+    private static final String URL_ADDITION = "chats/";
+
+    @Override
+    protected String getUrlAddition() {
+        return super.getUrlAddition() + URL_ADDITION;
+    }
 
     private String login;
     private String password;
     private String email;
 
-    private boolean isLoggedIn = false;
-
-    public Auth(ServerConnection sConn) {
-        this.sConn = sConn;
+    public Auth(Context context) {
+        super(context);
     }
 
-    public void signUp(String login, String password, String email) {
-        this.login = login;
-        this.password = password;
-        this.email = email;
+    @NonNull
+    public Contact signUp(String login, String password, String email) throws IOException {
+        final String requestURL = "signUp";
+        final String requestMethod = "PUT";
+
+        Contact user;
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            final int status = result.getInt("status");
+            if(status == 200) {
+                JSONObject data = result.getJSONObject("data");
+                user = new Contact(data);
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException | ParseException e) {
+            throw new IOException("Server error");
+        }
+
+        return user;
     }
 
-    public void signIn(String login, String password) {
-        this.login = login;
-        this.password = password;
+    @NonNull
+    public Contact signIn(String login, String password) throws IOException {
+        final String requestURL = "signIn";
+        final String requestMethod = "POST";
 
-        // log in via ServerConnection
-        // check if logged in
+        Contact user;
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            final int status = result.getInt("status");
+            if(status == 200) {
+                JSONObject data = result.getJSONObject("data");
+                user = new Contact(data);
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException | ParseException e) {
+            throw new IOException("Server error");
+        }
 
-        isLoggedIn = true;
+        return user;
     }
 
-    public void logOut() {
-        // logout via ServerConnection
-        // check if logged out
+    public void logOut() throws IOException {
+        final String requestURL = "logOut";
+        final String requestMethod = "POST";
 
-        this.login = "";
-        this.password = "";
-        isLoggedIn = false;
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            final int status = result.getInt("status");
+            if(status != 200) {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error");
+        }
     }
 
 /*    public void showActiveSessions() {
@@ -50,6 +104,6 @@ public class Auth {
     }*/
 
     public boolean isLogged() {
-        return isLoggedIn;
+        return getAuthToken() != null;
     }
 }

@@ -1,5 +1,6 @@
 package ru.mail.park.chat.api;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,14 +21,16 @@ import ru.mail.park.chat.models.Chat;
  */
 
 // TODO: make actual requests
-public class Chats {
+public class Chats extends ApiSection {
     private static final String URL_ADDITION = "chats/";
-    private final String AUTH_TOKEN;
-    private ServerConnection sConn;
 
-    public Chats(ServerConnection sConn, @NonNull SharedPreferences preferences) {
-        this.sConn = sConn;
-        AUTH_TOKEN = preferences.getString("auth_token", null);
+    @Override
+    protected String getUrlAddition() {
+        return super.getUrlAddition() + URL_ADDITION;
+    }
+
+    public Chats(@NonNull Context context) {
+        super(context);
     }
 
     // TODO: think about chat creation, write code
@@ -43,10 +46,9 @@ public class Chats {
         final String requestURL = "dialogs";
         final String requestMethod = "GET";
 
-        JSONObject result = null;
-
         List<Chat> chatsList;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -81,10 +83,9 @@ public class Chats {
             // TODO: add privilege to request
         }
 
-        JSONObject result = null;
-
         Chat chat;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -107,10 +108,9 @@ public class Chats {
         final String requestURL = "user";
         final String requestMethod = "DELETE";
 
-        JSONObject result = null;
-
         Chat chat;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

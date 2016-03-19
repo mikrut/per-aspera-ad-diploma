@@ -1,5 +1,6 @@
 package ru.mail.park.chat.api;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Pair;
@@ -20,14 +21,16 @@ import ru.mail.park.chat.models.Contact;
  */
 
 // TODO: add actual server requests
-public class Contacts {
+public class Contacts extends ApiSection {
     private static final String URL_ADDITION = "contacts/";
-    private final String AUTH_TOKEN;
-    private ServerConnection sConn;
 
-    public Contacts(@NonNull ServerConnection sConn, @NonNull SharedPreferences preferences) {
-        this.sConn = sConn;
-        AUTH_TOKEN = preferences.getString("auth_token", null);
+    @Override
+    protected String getUrlAddition() {
+        return super.getUrlAddition() + URL_ADDITION;
+    }
+
+    public Contacts(@NonNull Context context) {
+        super(context);
     }
 
     @NonNull
@@ -35,11 +38,10 @@ public class Contacts {
         final String requestURL = "info";
         final String requestMethod = "GET";
 
-        JSONObject result = null;
-
         int contactsLength;
         List<Contact> contactList;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -63,11 +65,10 @@ public class Contacts {
         final String requestURL = "info";
         final String requestMethod = "POST";
 
-        JSONObject result = null;
-
         int contactsLength;
         Contact contact = null;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -89,10 +90,9 @@ public class Contacts {
         final String requestURL = "info";
         final String requestMethod = "DELETE";
 
-        JSONObject result = null;
-
         int contactsLength;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -132,10 +132,9 @@ public class Contacts {
         final String requestURL = "info";
         final String requestMethod = "GET";
 
-        JSONObject result = null;
-
         SearchResult searchResult;
         try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

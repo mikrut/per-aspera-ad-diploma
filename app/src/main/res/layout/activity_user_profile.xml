@@ -83,7 +83,7 @@ tools:context="ru.mail.park.chat.activities.UserProfileActivity">
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/fab_margin"
     android:src="@drawable/ic_person_add_black_48dp"
-    app:layout_anchor="@id/splitter"
+    app:layout_anchor="@+id/splitter"
     app:layout_anchorGravity="left|center_vertical"
     android:layout_gravity="left|center_vertical"/>
 
