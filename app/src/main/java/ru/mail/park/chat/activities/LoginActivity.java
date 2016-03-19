@@ -14,10 +14,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.mail.park.chat.activities.tasks.LoginTask;
 import ru.mail.park.chat.authentication.DummyAuthable;
 import ru.mail.park.chat.authentication.IAuthCallbacks;
 import ru.mail.park.chat.authentication.IAuthable;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.models.Contact;
 
 /**
  * A login screen that offers login via email/password.
@@ -29,8 +31,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private View mProgressView;
     private View mLoginFormView;
     private TextView tvRegisterLink;
-
-    private final IAuthable authable = new DummyAuthable();
+    private Button mEmailSignInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,26 +40,10 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    authable.auth(mEmailView.getText().toString(),
-                            mPasswordView.getText().toString(), LoginActivity.this);
-                    return true;
-                }
-                return false;
-            }
-        });
+        mPasswordView.setOnEditorActionListener(onPasswordListener);
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                authable.auth(mEmailView.getText().toString(),
-                        mPasswordView.getText().toString(), LoginActivity.this);
-            }
-        });
+        mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setOnClickListener(onSignInListener);
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -72,21 +57,52 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         });
     }
 
+    TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                authenticate();
+                return true;
+            }
+            return false;
+        }
+    };
+
+    OnClickListener onSignInListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            authenticate();
+        }
+    };
+
+    private void authenticate() {
+        mPasswordView.setOnEditorActionListener(null);
+        mEmailSignInButton.setOnClickListener(null);
+
+        String login = mEmailView.getText().toString();
+        String password = mPasswordView.getText().toString();
+        new LoginTask(this, this).execute(login, password);
+    }
+
+
+    @Override
     public void onStartAuth() {
         mProgressView.setVisibility(View.VISIBLE);
     }
 
-    public void onFinishAuth(boolean isSuccess, String message) {
+    @Override
+    public void onLoginSuccess(Contact contact) {
         mProgressView.setVisibility(View.GONE);
-        if (isSuccess) {
-            Intent intent = new Intent(this, ChatsActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-//            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, RegisterActivity.class);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(this, ChatsActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onLoginFail(String message) {
+        mPasswordView.setOnEditorActionListener(onPasswordListener);
+        mEmailSignInButton.setOnClickListener(onSignInListener);
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
 
