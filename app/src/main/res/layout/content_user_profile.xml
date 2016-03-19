@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="48dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="10dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="ru.mail.park.chat.activities.UserProfileActivity"
+    tools:showIn="@layout/activity_user_profile">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="d.voloshin@corp.mail.ru"
+            android:id="@+id/user_email"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <View
+            android:paddingTop="10dp"
+            android:paddingBottom="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="#000000" />
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>
