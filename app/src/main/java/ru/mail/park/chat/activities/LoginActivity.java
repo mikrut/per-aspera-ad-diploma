@@ -15,11 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.mail.park.chat.activities.tasks.LoginTask;
-import ru.mail.park.chat.authentication.DummyAuthable;
 import ru.mail.park.chat.authentication.IAuthCallbacks;
-import ru.mail.park.chat.authentication.IAuthable;
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * A login screen that offers login via email/password.
@@ -91,7 +89,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     }
 
     @Override
-    public void onLoginSuccess(Contact contact) {
+    public void onLoginSuccess(OwnerProfile contact) {
+        contact.saveToPreferences(this);
         mProgressView.setVisibility(View.GONE);
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);

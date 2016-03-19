@@ -29,6 +29,7 @@ import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.OwnerProfile;
 
 public class ChatsActivity extends AppCompatActivity {
     protected FloatingActionButton fab;
@@ -65,15 +66,8 @@ public class ChatsActivity extends AppCompatActivity {
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
 
+        getLoaderManager().initLoader(0, null, messagesLoaderListener);
 
-        List<Chat> dummyChatList = new LinkedList<>();
-        dummyChatList.add(new Chat());
-        dummyChatList.add(new Chat());
-        dummyChatList.add(new Chat());
-        ChatsAdapter dummyListAdapter = new ChatsAdapter(dummyChatList);
-        chatsList.setAdapter(dummyListAdapter);
-
-        // TODO: fetch user data from DB
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
@@ -98,9 +92,10 @@ public class ChatsActivity extends AppCompatActivity {
             }
         }, null};
         int[] pictures = {android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_help};
+        OwnerProfile owner = new OwnerProfile(this);
         RecyclerView.Adapter mAdapter = new MenuAdapter(
-                "username",
-                "user@example.com",
+                owner.getLogin(),
+                owner.getEmail(),
                 android.R.drawable.ic_dialog_map,
                 titles,
                 listeners,

@@ -24,9 +24,9 @@ public class OwnerProfile extends Contact {
         super(cursor);
     }
 
-    public OwnerProfile(JSONObject contact, String authToken) throws JSONException, ParseException {
-        super(contact);
-        setAuthToken(authToken);
+    public OwnerProfile(JSONObject owner) throws JSONException, ParseException {
+        super(owner);
+        setAuthToken(owner.getString("accessToken"));
     }
 
 

@@ -9,11 +9,12 @@ import java.io.IOException;
 import ru.mail.park.chat.api.Auth;
 import ru.mail.park.chat.authentication.IAuthCallbacks;
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by Михаил on 19.03.2016.
  */
-public class LoginTask extends AsyncTask<String, Void, Pair<String, Contact>> {
+public class LoginTask extends AsyncTask<String, Void, Pair<String, OwnerProfile>> {
     private IAuthCallbacks listener;
     private Auth auth;
 
@@ -24,11 +25,11 @@ public class LoginTask extends AsyncTask<String, Void, Pair<String, Contact>> {
     }
 
     @Override
-    protected Pair<String, Contact> doInBackground(String... params) {
+    protected Pair<String, OwnerProfile> doInBackground(String... params) {
         String login = params[0];
         String password = params[1];
 
-        Contact user = null;
+        OwnerProfile user = null;
         String message = null;
 
         try {
@@ -41,7 +42,7 @@ public class LoginTask extends AsyncTask<String, Void, Pair<String, Contact>> {
     }
 
     @Override
-    protected void onPostExecute(Pair<String, Contact> result) {
+    protected void onPostExecute(Pair<String, OwnerProfile> result) {
         if (result.second != null) {
             listener.onLoginSuccess(result.second);
         } else {

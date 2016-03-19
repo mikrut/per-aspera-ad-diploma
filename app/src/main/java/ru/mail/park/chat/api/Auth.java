@@ -15,6 +15,7 @@ import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -36,7 +37,7 @@ public class Auth extends ApiSection {
     }
 
     @NonNull
-    public Contact signUp(String login, String password, String email) throws IOException {
+    public OwnerProfile signUp(String login, String password, String email) throws IOException {
         final String requestURL = "signUp";
         final String requestMethod = "PUT";
 
@@ -45,13 +46,13 @@ public class Auth extends ApiSection {
         parameters.add(new Pair<>("password", password));
         parameters.add(new Pair<>("email", email));
 
-        Contact user;
+        OwnerProfile user;
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
-                user = new Contact(data);
+                user = new OwnerProfile(data);
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -64,7 +65,7 @@ public class Auth extends ApiSection {
     }
 
     @NonNull
-    public Contact signIn(String login, String password) throws IOException {
+    public OwnerProfile signIn(String login, String password) throws IOException {
         final String requestURL = "signIn";
         final String requestMethod = "POST";
 
@@ -72,13 +73,13 @@ public class Auth extends ApiSection {
         parameters.add(new Pair<>("login", login));
         parameters.add(new Pair<>("password", password));
 
-        Contact user;
+        OwnerProfile user;
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
-                user = new Contact(data);
+                user = new OwnerProfile(data);
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
