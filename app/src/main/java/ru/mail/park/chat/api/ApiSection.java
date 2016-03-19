@@ -18,6 +18,7 @@ import java.util.Map;
  */
 public class ApiSection {
     private final static String AUTH_TOKEN_PARAMETER_NAME = " auth_token";
+    private final static String SERVER_URL = "https://servername.example.com";
 
     private final String AUTH_TOKEN;
     private Context context;
@@ -61,7 +62,7 @@ public class ApiSection {
     }
 
     protected String getUrlAddition() {
-        return "";
+        return SERVER_URL;
     }
 
     private String getQuery(List<Pair<String, String>> params)
