@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,6 +36,7 @@ public class ChatsActivity extends AppCompatActivity {
     protected FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
+    private SwipeRefreshLayout swipeContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +105,9 @@ public class ChatsActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeContainer.setOnRefreshListener(refreshListener);
     }
 
     class Query extends AsyncTask<String, Void, String> {
@@ -167,6 +172,13 @@ public class ChatsActivity extends AppCompatActivity {
                     // TODO: something...
                 }
             };
+
+    SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+
+        }
+    };
 
 }
 
