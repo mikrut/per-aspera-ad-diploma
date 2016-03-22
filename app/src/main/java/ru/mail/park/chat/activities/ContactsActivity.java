@@ -14,8 +14,8 @@ import android.widget.LinearLayout;
 import java.util.List;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.loaders.ContactDBLoader;
-import ru.mail.park.chat.loaders.ContactWebLoader;
+import ru.mail.park.chat.loaders.ContactListDBLoader;
+import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.models.Contact;
 
 public class ContactsActivity extends AppCompatActivity {
@@ -56,9 +56,9 @@ public class ContactsActivity extends AppCompatActivity {
 
                     switch (id) {
                         case DB_LOADER:
-                            return new ContactDBLoader(ContactsActivity.this, id);
+                            return new ContactListDBLoader(ContactsActivity.this, id);
                         case WEB_LOADER:
-                            return new ContactWebLoader(ContactsActivity.this, id);
+                            return new ContactListWebLoader(ContactsActivity.this, id);
                         default:
                             return null;
                     }

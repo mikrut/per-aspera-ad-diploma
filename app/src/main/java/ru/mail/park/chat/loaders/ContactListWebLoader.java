@@ -1,6 +1,5 @@
 package ru.mail.park.chat.loaders;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,14 +16,10 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by mikrut on 22.03.16.
  */
-public class ContactWebLoader extends AsyncTaskLoader<List<Contact>> {
-    private List<Contact> contacts;
-    private int id;
+public class ContactListWebLoader extends ContactListDBLoader {
 
-
-    public ContactWebLoader(@NonNull Context context, int id) {
-        super(context);
-        this.id = id;
+    public ContactListWebLoader(@NonNull Context context, int id) {
+        super(context, id);
     }
 
     @Override
@@ -42,31 +37,5 @@ public class ContactWebLoader extends AsyncTaskLoader<List<Contact>> {
             e.printStackTrace();
         }
         return contactList;
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    protected void onStartLoading() {
-        if (contacts != null) {
-            deliverResult(contacts);
-        } else {
-            forceLoad();
-        }
-    }
-
-    @Override
-    protected void onStopLoading() {
-        cancelLoad();
-    }
-
-    @Override
-    protected void onReset() {
-        super.onReset();
-        onStopLoading();
-        contacts = null;
     }
 }

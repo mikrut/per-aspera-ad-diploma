@@ -87,8 +87,7 @@ public class Contact implements Comparable<Contact> {
         this.phone = phone;
     }
 
-    @Nullable
-    public Calendar getLastSeen() {
+    public @Nullable Calendar getLastSeen() {
         return lastSeen;
     }
 
@@ -101,8 +100,8 @@ public class Contact implements Comparable<Contact> {
         return this.login.compareTo(another.getLogin());
     }
     
-    @Nullable
-    public String getEmail() {
+
+    public @Nullable String getEmail() {
         return email;
     }
 

@@ -9,11 +9,11 @@ import java.util.List;
 import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.models.Contact;
 
-public class ContactDBLoader extends AsyncTaskLoader<List<Contact>> {
+public class ContactListDBLoader extends AsyncTaskLoader<List<Contact>> {
     private List<Contact> contacts;
     private int id;
 
-    public ContactDBLoader(@NonNull Context context, int id) {
+    public ContactListDBLoader(@NonNull Context context, int id) {
         super(context);
         this.id = id;
     }
