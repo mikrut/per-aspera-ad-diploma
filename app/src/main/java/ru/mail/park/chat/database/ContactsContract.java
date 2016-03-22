@@ -26,7 +26,7 @@ public class ContactsContract {
     public static final int PROJECTION_EMAIL_INDEX = 2;
 
     public static abstract class ContactsEntry implements BaseColumns {
-        public static final String TABLE_NAME = "contacs";
+        public static final String TABLE_NAME = "contacts";
         public static final String COLUMN_NAME_UID = "uid";
         public static final String COLUMN_NAME_LOGIN = "login";
         public static final String COLUMN_NAME_EMAIL = "email";

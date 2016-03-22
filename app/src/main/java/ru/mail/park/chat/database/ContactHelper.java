@@ -21,16 +21,43 @@ public class ContactHelper {
 
     public void updateContact(@NonNull Contact contact) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        updateContact(contact, db);
+    }
+
+    public void updateContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
         String whereClause = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
         String[] whereArgs = {contact.getUid()};
         db.update(ChatsContract.ChatsEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
-    public long saveContact(@NonNull Contact chat) {
+    public long saveContact(@NonNull Contact contact) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = chat.getContentValues();
+        return saveContact(contact, db);
+    }
+
+    public long saveContact(@NonNull Contact contact, SQLiteDatabase db) {
+        ContentValues values = contact.getContentValues();
         return db.insert(ContactsContract.ContactsEntry.TABLE_NAME, null, values);
+    }
+
+    public long deleteAll(SQLiteDatabase db) {
+        return db.delete(ContactsContract.ContactsEntry.TABLE_NAME, null, null);
+    }
+
+    public void updateContactsList(@NonNull List<Contact> contactList) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        db.beginTransaction();
+        try {
+            deleteAll(db);
+            for (Contact contact : contactList) {
+                saveContact(contact, db);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @NonNull
@@ -49,10 +76,10 @@ public class ContactHelper {
     }
 
     @Nullable
-    public Contact getContact(@NonNull String cid) {
+    public Contact getContact(@NonNull String uid) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
-        String[] selectionArgs = { cid };
+        String[] selectionArgs = { uid };
         Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
                 ContactsContract.CONTACT_PROJECTION,
                 selection, selectionArgs,
@@ -73,7 +100,7 @@ public class ContactHelper {
         Cursor contactsCursor = getContactsCursor();
         ArrayList<Contact> chatsList = new ArrayList<>(contactsCursor.getCount());
 
-        for(contactsCursor.moveToFirst(); contactsCursor.isAfterLast(); contactsCursor.moveToNext()) {
+        for(contactsCursor.moveToFirst(); !contactsCursor.isAfterLast(); contactsCursor.moveToNext()) {
             chatsList.add(new Contact(contactsCursor));
         }
         return chatsList;

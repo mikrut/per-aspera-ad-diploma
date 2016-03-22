@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -117,7 +118,7 @@ public class ContactAdapter extends AContactAdapter {
         Pair<Character, Integer> result = getKeyForPosition(position);
 
         List<Contact> contactGroup = contactGroups.get(result.first);
-        return contactGroup.get(position - result.second - 1);
+        return contactGroup.get(result.second);
     }
 
     @Override

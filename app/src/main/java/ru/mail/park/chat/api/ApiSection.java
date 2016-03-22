@@ -37,7 +37,7 @@ public class ApiSection {
         parameters.add(new Pair<>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
 
         if (requestMethod.equals("GET")) {
-                requestURL += getQuery(parameters);
+                requestURL += "?" + getQuery(parameters);
         }
 
         ServerConnection serverConnection = new ServerConnection(context, getUrlAddition() + requestURL);

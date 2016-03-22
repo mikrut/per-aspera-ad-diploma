@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,7 +39,10 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
         contactHolder.setContactName(contact.getLogin());
-        contactHolder.setContactLastSeen(contact.getLastSeen().getTime().toGMTString());
+        Calendar lastSeen = contact.getLastSeen();
+        if (lastSeen != null) {
+            contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+        }
     }
 
     protected abstract Contact getContactForPosition(int position);

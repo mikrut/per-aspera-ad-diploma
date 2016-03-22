@@ -9,12 +9,13 @@ import java.util.List;
 import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.models.Contact;
 
-public class ContactLoader extends AsyncTaskLoader<List<Contact>> {
+public class ContactDBLoader extends AsyncTaskLoader<List<Contact>> {
     private List<Contact> contacts;
+    private int id;
 
-    public ContactLoader(@NonNull Context context) {
+    public ContactDBLoader(@NonNull Context context, int id) {
         super(context);
-
+        this.id = id;
     }
 
     @Override
@@ -43,5 +44,10 @@ public class ContactLoader extends AsyncTaskLoader<List<Contact>> {
         super.onReset();
         onStopLoading();
         contacts = null;
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 }

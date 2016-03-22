@@ -15,12 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Contacts extends ApiSection {
-    private static final String URL_ADDITION = "contacts/";
+    private static final String URL_ADDITION = "contact/";
 
     @Override
     protected String getUrlAddition() {
@@ -33,18 +34,23 @@ public class Contacts extends ApiSection {
 
     @NonNull
     public Pair<List<Contact>, Integer> getContacts() throws IOException {
-        final String requestURL = "info";
+        final String requestURL = "getListContactsUser";
         final String requestMethod = "GET";
+
+        OwnerProfile ownerProfile = new OwnerProfile(getContext());
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("id", ownerProfile.getUid()));
 
         int contactsLength;
         List<Contact> contactList;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                contactsLength = data.getInt("contacts_length");
-                JSONArray contacts = data.getJSONArray("contacts");
+                // JSONObject data = result.getJSONObject("data");
+                // contactsLength = data.getInt("contacts_length");
+                JSONArray contacts = result.getJSONArray("data");
+                contactsLength = contacts.length();
 
                 contactList = contactsFrom(contacts);
             } else {
@@ -52,6 +58,7 @@ public class Contacts extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
+            e.printStackTrace();
             throw new IOException("Server error");
         }
 
