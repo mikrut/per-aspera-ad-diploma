@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONArray;
@@ -21,7 +22,7 @@ import ru.mail.park.chat.models.OwnerProfile;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Auth extends ApiSection {
-    private static final String URL_ADDITION = "chats/";
+    private static final String URL_ADDITION = "auth/";
 
     @Override
     protected String getUrlAddition() {
@@ -85,6 +86,7 @@ public class Auth extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
+            e.printStackTrace();
             throw new IOException("Server error");
         }
 

@@ -39,15 +39,19 @@ public class Contact implements Comparable<Contact> {
     }
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
-        setUid(contact.getString("uid"));
+        setUid(contact.getString("id"));
         setLogin(contact.getString("login"));
-        setPhone(contact.getString("phone"));
 
-        DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
-        java.util.Date dateLastSeen = iso8601.parse(contact.getString("last_seen"));
-        GregorianCalendar lastSeen = new GregorianCalendar();
-        lastSeen.setTime(dateLastSeen);
-        setLastSeen(lastSeen);
+        if (contact.has("phone"))
+            setPhone(contact.getString("phone"));
+
+        if (contact.has("last_seen")) {
+            DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+            java.util.Date dateLastSeen = iso8601.parse(contact.getString("last_seen"));
+            GregorianCalendar lastSeen = new GregorianCalendar();
+            lastSeen.setTime(dateLastSeen);
+            setLastSeen(lastSeen);
+        }
     }
 
     public Contact(Cursor cursor) {

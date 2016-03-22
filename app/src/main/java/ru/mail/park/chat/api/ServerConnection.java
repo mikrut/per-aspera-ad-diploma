@@ -34,7 +34,7 @@ import info.guardianproject.netcipher.proxy.OrbotHelper;
 // FIXME: don't trust everyone!
 // TODO: check security
 public class ServerConnection {
-    HttpsURLConnection httpsURLConnection;
+    HttpURLConnection httpURLConnection;
     Context context;
     String parameters = null;
 
@@ -72,15 +72,21 @@ public class ServerConnection {
         try {
             if (torStart) {
                 NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
-                httpsURLConnection = NetCipher.getHttpsURLConnection(url);
+                if (url.getProtocol().equals("https")) {
+                    httpURLConnection = NetCipher.getHttpsURLConnection(url);
+                } else {
+                    httpURLConnection = NetCipher.getHttpURLConnection(url);
+                }
             } else {
-                httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                httpURLConnection = (HttpURLConnection) url.openConnection();
             }
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{getTrustManager()}, null);
 
-            httpsURLConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+            if (httpURLConnection instanceof HttpsURLConnection) {
+                ((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(sslContext.getSocketFactory());
+            }
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
@@ -91,7 +97,7 @@ public class ServerConnection {
     }
 
     public void setRequestMethod(String method) throws ProtocolException {
-        httpsURLConnection.setRequestMethod(method);
+        httpURLConnection.setRequestMethod(method);
     }
 
     public String getResponse() {
@@ -99,18 +105,18 @@ public class ServerConnection {
 
         try {
             // AFAIK everything except GET sends parameters the same way
-            if (!httpsURLConnection.getRequestMethod().equals("GET")) {
+            if (!httpURLConnection.getRequestMethod().equals("GET")) {
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
 
-                httpsURLConnection.setDoOutput(true);
-                httpsURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                httpsURLConnection.setRequestProperty("charset", "utf-8");
-                httpsURLConnection.setRequestProperty("Content-Length", Integer.toString(postData.length));
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                httpURLConnection.setRequestProperty("charset", "utf-8");
+                httpURLConnection.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
-                httpsURLConnection.getOutputStream().write(postData);
+                httpURLConnection.getOutputStream().write(postData);
             }
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(httpsURLConnection.getInputStream()));
+            BufferedReader rd = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
             String line;
             while ((line = rd.readLine()) != null) {
                 responseBuilder.append(line);

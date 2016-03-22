@@ -18,7 +18,8 @@ import java.util.Map;
  */
 public class ApiSection {
     private final static String AUTH_TOKEN_PARAMETER_NAME = " auth_token";
-    private final static String SERVER_URL = "https://servername.example.com";
+    // FIXME: use SSL connection
+    private final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
     private final String AUTH_TOKEN;
     private Context context;
@@ -78,9 +79,9 @@ public class ApiSection {
                 result.append("&");
 
             try {
-                result.append(URLEncoder.encode(pair.first, "UTF-8"));
+                result.append(URLEncoder.encode(String.valueOf(pair.first), "UTF-8"));
                 result.append("=");
-                result.append(URLEncoder.encode(pair.second, "UTF-8"));
+                result.append(URLEncoder.encode(String.valueOf(pair.second), "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }

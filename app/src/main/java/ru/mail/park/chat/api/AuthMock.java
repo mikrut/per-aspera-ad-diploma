@@ -3,6 +3,7 @@ package ru.mail.park.chat.api;
 import android.content.Context;
 
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by Михаил on 19.03.2016.
@@ -19,23 +20,23 @@ public class AuthMock extends Auth {
     }
 
     @Override
-    public Contact signUp(String login, String password, String email) {
+    public OwnerProfile signUp(String login, String password, String email) {
         this.login = login;
         this.password = password;
         this.email = email;
 
-        Contact user = new Contact();
+        OwnerProfile user = new OwnerProfile();
         user.setLogin(login);
         user.setEmail(email);
         return user;
     }
 
     @Override
-    public Contact signIn(String login, String password) {
+    public OwnerProfile signIn(String login, String password) {
         this.login = login;
         this.password = password;
 
-        Contact user = new Contact();
+        OwnerProfile user = new OwnerProfile();
         user.setLogin(login);
         user.setEmail(email);
         isLoggedIn = true;

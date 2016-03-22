@@ -79,6 +79,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
         String login = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        Toast.makeText(this, login + password, Toast.LENGTH_SHORT).show();
         new LoginTask(this, this).execute(login, password);
     }
 

@@ -77,7 +77,7 @@ public class ChatHelper {
         Cursor chatsCursor = getChatsCursor();
         ArrayList<Chat> chatsList = new ArrayList<>(chatsCursor.getCount());
 
-        for(chatsCursor.moveToFirst(); chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
+        for(chatsCursor.moveToFirst(); !chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
             chatsList.add(new Chat(chatsCursor));
         }
         return chatsList;

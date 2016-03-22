@@ -20,6 +20,11 @@ public class OwnerProfile extends Contact {
     @Nullable
     private String authToken;
 
+    @Deprecated
+    public OwnerProfile() {
+        setAuthToken("randomtoken");
+    }
+
     private OwnerProfile(Cursor cursor) {
         super(cursor);
     }
