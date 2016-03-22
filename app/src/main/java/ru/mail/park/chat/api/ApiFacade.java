@@ -34,6 +34,6 @@ public class ApiFacade {
         contacts = new Contacts(context);
         messages = new Messages(sConn);
         p2p = new P2P(sConn);
-        users = new Users(sConn);
+        users = new Users(context);
     }
 }

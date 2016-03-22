@@ -9,7 +9,7 @@ public class ContactsContract {
             "CREATE TABLE " + ContactsEntry.TABLE_NAME + " (" +
                     ContactsEntry.COLUMN_NAME_UID + " INT PRIMARY KEY NOT NULL" + COMMA_SEP +
                     ContactsEntry.COLUMN_NAME_LOGIN + " TEXT NOT NULL" + COMMA_SEP +
-                    ContactsEntry.COLUMN_NAME_EMAIL + " TEXT NOT NULL" +
+                    ContactsEntry.COLUMN_NAME_EMAIL + " TEXT" +
                     ")";
 
     static final String DROP_TABLE =

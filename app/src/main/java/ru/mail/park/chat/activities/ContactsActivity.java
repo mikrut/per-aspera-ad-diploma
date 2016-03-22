@@ -52,8 +52,6 @@ public class ContactsActivity extends AppCompatActivity {
             new LoaderManager.LoaderCallbacks<List<Contact>>() {
                 @Override
                 public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
-                    Log.v("crelo", "create loader" + String.valueOf(id));
-
                     switch (id) {
                         case DB_LOADER:
                             return new ContactListDBLoader(ContactsActivity.this, id);
@@ -66,7 +64,6 @@ public class ContactsActivity extends AppCompatActivity {
 
                 @Override
                 public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
-                    Log.v("crelo", "loading finished");
                     if (data != null) {
                         contactsView.setAdapter(new ContactAdapter(data));
                     }

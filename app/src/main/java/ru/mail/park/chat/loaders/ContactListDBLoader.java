@@ -3,6 +3,7 @@ package ru.mail.park.chat.loaders;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.List;
 
@@ -19,9 +20,10 @@ public class ContactListDBLoader extends AsyncTaskLoader<List<Contact>> {
     }
 
     @Override
+    @NonNull
     public List<Contact> loadInBackground() {
-        ContactHelper chatHelper = new ContactHelper(getContext());
-        contacts = chatHelper.getContactsList();
+        ContactHelper contactHelper = new ContactHelper(getContext());
+        contacts = contactHelper.getContactsList();
         return contacts;
     }
 

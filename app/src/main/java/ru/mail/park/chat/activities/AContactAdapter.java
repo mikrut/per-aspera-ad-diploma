@@ -39,6 +39,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
         contactHolder.setContactName(contact.getLogin());
+        contactHolder.setUid(contact.getUid());
+
         Calendar lastSeen = contact.getLastSeen();
         if (lastSeen != null) {
             contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
@@ -57,6 +59,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         private TextView contactName;
         private TextView contactLastSeen;
 
+        private String uid;
+
         public ContactHolder(View itemView) {
             super(itemView);
             contactImage = (ImageView) itemView.findViewById(R.id.contactImage);
@@ -67,10 +71,13 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
+                    intent.putExtra(UserProfileActivity.UID_EXTRA, uid);
                     v.getContext().startActivity(intent);
                 }
             });
         }
+
+        public void setUid(String uid) {this.uid = uid;}
 
         public void setContactImage(Bitmap bitmap) {
             contactImage.setImageBitmap(bitmap);
