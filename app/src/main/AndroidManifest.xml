@@ -45,15 +45,18 @@
             android:label="@string/title_activity_register" />
         <activity android:name=".activities.ContactsActivity" />
         <activity
+            android:label="@string/title_activity_contacts"
             android:name=".activities.ContactSearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.UserProfileActivity"
             android:label="@string/title_activity_user_profile"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.ProfileActivity"
-            android:label="@string/title_activity_profile"></activity>
+            android:parentActivityName=".activities.UserProfileActivity"
+            android:theme="@style/AppTheme"
+            android:label="@string/title_activity_profile" />
     </application>
 
 </manifest>

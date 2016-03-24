@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONArray;
@@ -18,6 +19,7 @@ import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by mikrut on 22.03.16
@@ -74,6 +76,32 @@ public class Users extends ApiSection {
         }
 
         return contactList;
+    }
+
+    public boolean updateProfile(OwnerProfile profile) throws IOException {
+        final String requestURL = "updateProfile";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("email", profile.getEmail()));
+
+        boolean success = false;
+        try {
+            String response = executeRequest(requestURL, requestMethod, parameters);
+            Log.v("response", response);
+            JSONObject result = new JSONObject(response);
+            final int status = result.getInt("status");
+            if (status == 200) {
+                success = true;
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error");
+        }
+
+        return success;
     }
 
 }

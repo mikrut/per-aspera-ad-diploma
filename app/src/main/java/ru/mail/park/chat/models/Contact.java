@@ -30,6 +30,8 @@ public class Contact implements Comparable<Contact> {
     private @NonNull String login;
     private @Nullable String email;
 
+    public enum Relation {FRIEND, SELF, OTHER};
+
     @Deprecated
     public Contact() {
         login = "v.pupkin";

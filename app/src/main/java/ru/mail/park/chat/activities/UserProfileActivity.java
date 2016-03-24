@@ -1,14 +1,20 @@
 package ru.mail.park.chat.activities;
 
 import android.app.LoaderManager;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Loader;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
@@ -26,14 +32,28 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private String uid;
 
+    private CollapsingToolbarLayout toolbarLayout;
+    private Toolbar toolbar;
+    private FloatingActionButton userAddToContacts;
+    private FloatingActionButton userSendMessage;
+
     private ImageView userPicture;
     private TextView userLogin;
     private TextView userEmail;
+
+    private Contact.Relation relation = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
+
+        toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        userAddToContacts = (FloatingActionButton) findViewById(R.id.user_add_to_contacts);
+        userSendMessage = (FloatingActionButton) findViewById(R.id.user_send_message);
 
         userPicture = (ImageView) findViewById(R.id.user_picture);
         userLogin = (TextView) findViewById(R.id.user_login);
@@ -47,12 +67,12 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
         if (uid.equals(owner.getUid())) {
-            setUserData(owner);
+            setUserData(owner, Contact.Relation.SELF);
         } else {
             ContactHelper contactHelper = new ContactHelper(this);
             Contact profile = contactHelper.getContact(uid);
             if (profile != null) {
-                setUserData(profile);
+                setUserData(profile, Contact.Relation.FRIEND);
             } else {
                 Bundle args = new Bundle();
                 args.putString(ProfileWebLoader.UID_ARG, uid);
@@ -63,9 +83,26 @@ public class UserProfileActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_user_profile, menu);
+        super.onCreateOptionsMenu(menu);
+        // getMenuInflater().inflate(R.menu.menu_user_profile, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        if (relation != null) {
+            switch (relation) {
+                case FRIEND:
+                    getMenuInflater().inflate(R.menu.menu_user_profile, menu);
+                    break;
+                case SELF:
+                    break;
+                case OTHER:
+                    break;
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -83,14 +120,38 @@ public class UserProfileActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void setUserData(Contact user) {
+    // TODO: fix titles + scrolling + etc
+    public void setUserData(Contact user, Contact.Relation relation) {
+        // toolbarLayout.setTitle(user.getLogin());
         userLogin.setText(user.getLogin());
+
         if (user.getEmail() != null) {
             userEmail.setText(user.getEmail());
             userEmail.setVisibility(View.VISIBLE);
         } else {
             userEmail.setVisibility(View.GONE);
         }
+
+        this.relation = relation;
+
+        if (relation != null) {
+            switch (relation) {
+                case FRIEND:
+                    userAddToContacts.setVisibility(View.INVISIBLE);
+                    userSendMessage.setVisibility(View.VISIBLE);
+                    break;
+                case SELF:
+                    userAddToContacts.setVisibility(View.INVISIBLE);
+                    userSendMessage.setVisibility(View.INVISIBLE);
+                    break;
+                case OTHER:
+                    userAddToContacts.setVisibility(View.VISIBLE);
+                    userSendMessage.setVisibility(View.VISIBLE);
+                    break;
+            }
+        }
+
+        invalidateOptionsMenu();
     }
 
     LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
@@ -103,7 +164,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 @Override
                 public void onLoadFinished(Loader<Contact> loader, Contact data) {
                     if (data != null) {
-                        setUserData(data);
+                        setUserData(data, Contact.Relation.OTHER);
                     }
                 }
 

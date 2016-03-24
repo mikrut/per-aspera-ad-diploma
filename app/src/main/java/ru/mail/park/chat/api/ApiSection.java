@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ru.mail.park.chat.database.PreferenceConstants;
+
 /**
  * Created by Михаил on 19.03.2016.
  */
 public class ApiSection {
-    private final static String AUTH_TOKEN_PARAMETER_NAME = " auth_token";
+    private final static String AUTH_TOKEN_PARAMETER_NAME = "accessToken";
     // FIXME: use SSL connection
     private final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
@@ -26,8 +28,8 @@ public class ApiSection {
 
     public ApiSection(@NonNull Context context) {
         this.context = context;
-        SharedPreferences preferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
-        AUTH_TOKEN = preferences.getString("auth_token", null);
+        SharedPreferences preferences = context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, Context.MODE_PRIVATE);
+        AUTH_TOKEN = preferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
     }
 
     protected String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
