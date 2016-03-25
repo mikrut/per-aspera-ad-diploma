@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'info.guardianproject.netcipher:netcipher:1.2'
     compile 'de.hdodenhof:circleimageview:2.0.0'
+    compile 'com.neovisionaries:nv-websocket-client:1.23'
 }

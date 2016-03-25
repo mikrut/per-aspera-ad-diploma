@@ -20,7 +20,7 @@ public class ApiFacade {
     private SharedPreferences sharedPreferences;
     private ServerConnection sConn;
 
-    public ApiFacade(Context context) {
+    public ApiFacade(Context context) throws IOException {
         sharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
 
         try {
@@ -32,7 +32,11 @@ public class ApiFacade {
         auth = new Auth(context);
         chats = new Chats(context);
         contacts = new Contacts(context);
-        messages = new Messages(sConn);
+        try {
+            messages = new Messages(context);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         p2p = new P2P(sConn);
         users = new Users(sConn);
     }
