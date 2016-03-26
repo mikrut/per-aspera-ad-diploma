@@ -26,7 +26,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_margin="5dp"
-        android:id="@+id/conctactPicture"
+        android:id="@+id/contactPicture"
         android:src="@android:color/black"
         android:layout_gravity="bottom"/>
 

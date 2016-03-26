@@ -19,15 +19,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.adapters.ChatsAdapter;
+import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;

@@ -1,4 +1,4 @@
-package ru.mail.park.chat.activities;
+package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.UserProfileActivity;
 import ru.mail.park.chat.models.Contact;
 
 /**

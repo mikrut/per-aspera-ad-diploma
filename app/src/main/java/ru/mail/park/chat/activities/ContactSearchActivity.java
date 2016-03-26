@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.adapters.ContactSearchAdapter;
 import ru.mail.park.chat.models.Contact;
 
 public class ContactSearchActivity extends AppCompatActivity {
