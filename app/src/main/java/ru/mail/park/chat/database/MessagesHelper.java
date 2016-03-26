@@ -35,7 +35,7 @@ public class MessagesHelper {
         return db.query(MessagesContract.MessagesEntry.TABLE_NAME,
                 MessagesContract.MESSAGE_PROJECTION,
                 selection, selectionArgs,
-                null, null, null, null);
+                null, null, MessagesContract.MessagesEntry.COLUMN_NAME_MID + " ASC", null);
     }
 
     @NonNull

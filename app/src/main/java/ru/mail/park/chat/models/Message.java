@@ -18,7 +18,7 @@ import ru.mail.park.chat.database.MessengerDBHelper;
 /**
  * Created by Михаил on 26.03.2016.
  */
-public class Message {
+public class Message implements Comparable<Message> {
     private @Nullable String mid;
     private @NonNull String messageBody;
     private @NonNull String cid;
@@ -127,4 +127,14 @@ public class Message {
         }
     }
 
+    @Override
+    public int compareTo(@NonNull Message another) {
+        if (mid != null) {
+          if (another.mid != null) {
+            return mid.compareTo(another.mid);
+          }
+            return 1;
+        }
+        return -1;
+    }
 }

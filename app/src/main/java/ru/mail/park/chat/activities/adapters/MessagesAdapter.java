@@ -25,11 +25,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     protected static final int INCOMING_MESSAGE = 0;
     protected static final int OUTGOING_MESSAGE = 1;
 
-    private final List<Message> messagesList;
+    private final List<Message> messagesSet;
     private final String ownerUID;
 
-    public MessagesAdapter(@NonNull List<Message> messagesList, @NonNull String ownerUID) {
-        this.messagesList = messagesList;
+    public MessagesAdapter(@NonNull List<Message> messagesSet, @NonNull String ownerUID) {
+        this.messagesSet = messagesSet;
         this.ownerUID = ownerUID;
     }
 
@@ -71,17 +71,17 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.setMessageText(messagesList.get(position).getMessageBody());
+        holder.setMessageText(messagesSet.get(position).getMessageBody());
     }
 
     @Override
     public int getItemCount() {
-        return messagesList.size();
+        return messagesSet.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        String senderUID = messagesList.get(position).getUid();
+        String senderUID = messagesSet.get(position).getUid();
         if (senderUID.equals(ownerUID)) {
             return OUTGOING_MESSAGE;
         } else {
