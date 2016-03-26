@@ -62,7 +62,7 @@ public class ContactHelper {
     }
 
     @NonNull
-    public Cursor getContactsCursor() {
+    private Cursor getContactsCursor() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         return db.query(

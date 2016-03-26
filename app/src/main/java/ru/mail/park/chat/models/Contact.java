@@ -16,6 +16,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import ru.mail.park.chat.database.ContactsContract;
+import ru.mail.park.chat.database.MessengerDBHelper;
 
 /**
  * Created by Михаил on 08.03.2016.
@@ -48,8 +49,7 @@ public class Contact implements Comparable<Contact> {
             setPhone(contact.getString("phone"));
 
         if (contact.has("last_seen")) {
-            DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
-            java.util.Date dateLastSeen = iso8601.parse(contact.getString("last_seen"));
+            java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);
