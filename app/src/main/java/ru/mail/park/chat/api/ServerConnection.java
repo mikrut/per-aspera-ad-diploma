@@ -106,8 +106,10 @@ public class ServerConnection {
 
         try {
             // AFAIK everything except GET sends parameters the same way
+            Log.w("url", httpURLConnection.getURL().toString());
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
+                Log.w("post", parameters);
 
                 httpURLConnection.setDoOutput(true);
                 httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -134,6 +136,8 @@ public class ServerConnection {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return responseBuilder.toString();
+        String reply = responseBuilder.toString();
+        Log.v("reply", reply);
+        return reply;
     }
 }

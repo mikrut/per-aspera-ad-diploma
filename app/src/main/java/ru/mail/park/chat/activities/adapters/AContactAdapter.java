@@ -45,6 +45,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         Calendar lastSeen = contact.getLastSeen();
         if (lastSeen != null) {
             contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+        } else {
+            contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
         }
     }
 
