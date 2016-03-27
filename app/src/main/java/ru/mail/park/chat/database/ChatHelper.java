@@ -38,7 +38,7 @@ public class ChatHelper {
 
     // FIXME: ORDER BY last_message_time DESC
     @NonNull
-    public Cursor getChatsCursor() {
+    private Cursor getChatsCursor() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         return db.query(

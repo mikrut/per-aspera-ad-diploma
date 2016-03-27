@@ -1,4 +1,4 @@
-package ru.mail.park.chat.activities;
+package ru.mail.park.chat.activities.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;

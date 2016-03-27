@@ -16,6 +16,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import ru.mail.park.chat.database.ContactsContract;
+import ru.mail.park.chat.database.MessengerDBHelper;
 
 /**
  * Created by Михаил on 08.03.2016.
@@ -29,6 +30,8 @@ public class Contact implements Comparable<Contact> {
     private @Nullable Calendar lastSeen;
     private @NonNull String login;
     private @Nullable String email;
+
+    public enum Relation {FRIEND, SELF, OTHER};
 
     @Deprecated
     public Contact() {
@@ -46,8 +49,7 @@ public class Contact implements Comparable<Contact> {
             setPhone(contact.getString("phone"));
 
         if (contact.has("last_seen")) {
-            DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
-            java.util.Date dateLastSeen = iso8601.parse(contact.getString("last_seen"));
+            java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);
@@ -87,8 +89,7 @@ public class Contact implements Comparable<Contact> {
         this.phone = phone;
     }
 
-    @Nullable
-    public Calendar getLastSeen() {
+    public @Nullable Calendar getLastSeen() {
         return lastSeen;
     }
 
@@ -101,8 +102,8 @@ public class Contact implements Comparable<Contact> {
         return this.login.compareTo(another.getLogin());
     }
     
-    @Nullable
-    public String getEmail() {
+
+    public @Nullable String getEmail() {
         return email;
     }
 

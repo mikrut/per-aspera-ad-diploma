@@ -1,7 +1,9 @@
 package ru.mail.park.chat.activities;
 
+import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,11 +19,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.adapters.ContactAdapter;
+import ru.mail.park.chat.activities.adapters.ContactSearchAdapter;
+import ru.mail.park.chat.loaders.ContactListDBLoader;
+import ru.mail.park.chat.loaders.ContactListWebLoader;
+import ru.mail.park.chat.loaders.ContactsSearchLoader;
 import ru.mail.park.chat.models.Contact;
 
 public class ContactSearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private RecyclerView contactsView;
+
+    private static final int SEARCH_LOADER_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +42,7 @@ public class ContactSearchActivity extends AppCompatActivity {
 
         contactsView = (RecyclerView) findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(this));
-        List<Contact> contactList = new LinkedList<>();
-        contactList.add(new Contact());
-        contactList.add(new Contact());
-        contactList.add(new Contact());
-
-        contactsView.setAdapter(new ContactSearchAdapter(contactList));
+        getLoaderManager().initLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
     }
 
     @Override
@@ -67,6 +71,20 @@ public class ContactSearchActivity extends AppCompatActivity {
         searchView.setIconifiedByDefault(false);
         searchView.requestFocus();
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                return true;
+            }
+        });
+
         searchMenuItem.expandActionView();
 
         return true;
@@ -90,4 +108,31 @@ public class ContactSearchActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
+            new LoaderManager.LoaderCallbacks<List<Contact>>() {
+                @Override
+                public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
+                    ContactsSearchLoader loader = new ContactsSearchLoader(ContactSearchActivity.this);
+                    if (searchView != null) {
+                        loader.setSearchQuery(searchView.getQuery().toString());
+                    } else {
+                        loader.setSearchQuery("");
+                    }
+                    return loader;
+                }
+
+                @Override
+                public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+                    if (data != null) {
+                        contactsView.setAdapter(new ContactAdapter(data));
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<List<Contact>> loader) {
+                    ContactsSearchLoader searchLoader = (ContactsSearchLoader) loader;
+                    searchLoader.setSearchQuery(searchView.getQuery().toString());
+                }
+            };
 }

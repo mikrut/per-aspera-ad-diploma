@@ -1,4 +1,4 @@
-package ru.mail.park.chat.authentication;
+package ru.mail.park.chat.auth_signup;
 
 /**
  * Created by Михаил on 23.02.2016.

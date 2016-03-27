@@ -1,15 +1,11 @@
-package ru.mail.park.chat.activities;
+package ru.mail.park.chat.activities.adapters;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Collections;
@@ -117,7 +113,7 @@ public class ContactAdapter extends AContactAdapter {
         Pair<Character, Integer> result = getKeyForPosition(position);
 
         List<Contact> contactGroup = contactGroups.get(result.first);
-        return contactGroup.get(position - result.second - 1);
+        return contactGroup.get(result.second);
     }
 
     @Override

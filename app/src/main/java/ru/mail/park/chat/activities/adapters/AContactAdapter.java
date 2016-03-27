@@ -1,4 +1,4 @@
-package ru.mail.park.chat.activities;
+package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.UserProfileActivity;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -38,7 +40,12 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
         contactHolder.setContactName(contact.getLogin());
-        contactHolder.setContactLastSeen(contact.getLastSeen().getTime().toGMTString());
+        contactHolder.setUid(contact.getUid());
+
+        Calendar lastSeen = contact.getLastSeen();
+        if (lastSeen != null) {
+            contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+        }
     }
 
     protected abstract Contact getContactForPosition(int position);
@@ -53,6 +60,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         private TextView contactName;
         private TextView contactLastSeen;
 
+        private String uid;
+
         public ContactHolder(View itemView) {
             super(itemView);
             contactImage = (ImageView) itemView.findViewById(R.id.contactImage);
@@ -63,10 +72,13 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
+                    intent.putExtra(UserProfileActivity.UID_EXTRA, uid);
                     v.getContext().startActivity(intent);
                 }
             });
         }
+
+        public void setUid(String uid) {this.uid = uid;}
 
         public void setContactImage(Bitmap bitmap) {
             contactImage.setImageBitmap(bitmap);

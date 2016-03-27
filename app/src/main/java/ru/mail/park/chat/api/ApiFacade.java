@@ -38,6 +38,6 @@ public class ApiFacade {
             e.printStackTrace();
         }
         p2p = new P2P(sConn);
-        users = new Users(sConn);
+        users = new Users(context);
     }
 }

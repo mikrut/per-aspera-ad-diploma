@@ -1,6 +1,8 @@
 package ru.mail.park.chat.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -15,8 +17,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.mail.park.chat.activities.tasks.LoginTask;
-import ru.mail.park.chat.authentication.IAuthCallbacks;
+import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -53,6 +56,15 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
                 LoginActivity.this.startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             }
         });
+
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                PreferenceConstants.PREFERENCE_NAME,
+                Context.MODE_PRIVATE);
+        if (sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null) != null) {
+            Intent intent = new Intent(this, ChatsActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {

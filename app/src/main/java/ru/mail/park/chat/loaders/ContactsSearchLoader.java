@@ -2,26 +2,39 @@ package ru.mail.park.chat.loaders;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import java.io.IOException;
 import java.util.List;
 
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.api.Users;
 import ru.mail.park.chat.models.Contact;
 
-public class ContactLoader extends AsyncTaskLoader<List<Contact>> {
+/**
+ * Created by Михаил on 27.03.2016.
+ */
+public class ContactsSearchLoader extends AsyncTaskLoader<List<Contact>> {
     private List<Contact> contacts;
+    private String searchQuery;
 
-    public ContactLoader(@NonNull Context context) {
+    public ContactsSearchLoader(Context context) {
         super(context);
+    }
 
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
     }
 
     @Override
+    @Nullable
     public List<Contact> loadInBackground() {
-        ContactHelper chatHelper = new ContactHelper(getContext());
-        contacts = chatHelper.getContactsList();
-        return contacts;
+        Users users = new Users(getContext());
+        try {
+            return users.search(searchQuery);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

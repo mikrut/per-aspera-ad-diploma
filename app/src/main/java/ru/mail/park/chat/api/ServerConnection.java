@@ -8,6 +8,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -113,10 +114,18 @@ public class ServerConnection {
                 httpURLConnection.setRequestProperty("charset", "utf-8");
                 httpURLConnection.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
-                httpURLConnection.getOutputStream().write(postData);
+                OutputStream wr = httpURLConnection.getOutputStream();
+                wr.write(postData);
+                wr.flush();
+                wr.close();
             }
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+            BufferedReader rd;
+            if (httpURLConnection.getResponseCode() == 200) {
+               rd = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+            } else {
+               rd = new BufferedReader(new InputStreamReader(httpURLConnection.getErrorStream()));
+            }
             String line;
             while ((line = rd.readLine()) != null) {
                 responseBuilder.append(line);
