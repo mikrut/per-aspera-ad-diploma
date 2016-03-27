@@ -13,6 +13,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import ru.mail.park.chat.activities.tasks.IncomeMessageTask;
+
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
@@ -35,8 +37,7 @@ public class Messages extends ApiSection {
                     .createSocket(getUrlAddition())
                     .addListener(new WebSocketAdapter() {
                         public void onTextMessage(WebSocket websocket, String message) {
-                            //System.out.println(message);
-                            // Тут обрабатывать входящие!!!
+                            new IncomeMessageTask().execute(message);
                         }
                     })
                     .connect();

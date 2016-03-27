@@ -9,6 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,11 +21,12 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
+import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 
 // TODO: emoticons
 // TODO: send message
-public class DialogActivity extends AppCompatActivity {
+public class DialogActivity extends AppCompatActivity implements IMessageReaction {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
 
     private RecyclerView messagesList;
@@ -77,5 +83,39 @@ public class DialogActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    @Override
+    public void onIncomeMessage(String message) throws JSONException, ParseException {
+        try {
+            JSONObject msgJson = new JSONObject(message);
+            Message incomeMsg = new Message(msgJson);
+            addMessage(incomeMsg);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onActionDeleteMessage(int mid) {
+        removeMessage(String.valueOf(mid));
+    }
+
+    @Override
+    public void onActionSendMessage(String msg) throws JSONException, ParseException {
+        try {
+            onIncomeMessage(msg);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onGetHistoryMessages(ArrayList<Message> msg_list) {
+        receivedMessageList.clear();
+        receivedMessageList.addAll(msg_list);
+        Collections.sort(receivedMessageList);
+
+        messagesAdapter.notifyDataSetChanged();
     }
 }
