@@ -86,7 +86,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     }
 
     @Override
-    public void onIncomeMessage(String message) throws JSONException, ParseException {
+    public void onIncomeMessage(String message){
         try {
             JSONObject msgJson = new JSONObject(message);
             Message incomeMsg = new Message(msgJson);
@@ -102,7 +102,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     }
 
     @Override
-    public void onActionSendMessage(String msg) throws JSONException, ParseException {
+    public void onActionSendMessage(String msg){
         try {
             onIncomeMessage(msg);
         } catch(Exception e) {
@@ -116,6 +116,8 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         receivedMessageList.addAll(msg_list);
         Collections.sort(receivedMessageList);
 
+        MessagesHelper messagesHelper = new MessagesHelper(this);
+        messagesHelper.deleteMessages(msg_list.get(0).getCid());
         messagesAdapter.notifyDataSetChanged();
     }
 }

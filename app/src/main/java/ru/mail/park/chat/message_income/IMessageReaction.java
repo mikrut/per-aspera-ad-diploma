@@ -1,5 +1,8 @@
 package ru.mail.park.chat.message_income;
 
+import org.json.JSONException;
+
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import ru.mail.park.chat.models.Message;
@@ -9,7 +12,7 @@ import ru.mail.park.chat.models.Message;
  */
 public interface IMessageReaction {
     void onIncomeMessage(String message);
-    void onActionSendMesssage();
+    void onActionSendMessage(String msg);
     void onActionDeleteMessage(int mid);
-    void onGetHistoryMessages(ArrayList<Message>);
+    void onGetHistoryMessages(ArrayList<Message> msg_list);
 }

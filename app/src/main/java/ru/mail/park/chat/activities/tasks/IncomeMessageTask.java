@@ -38,7 +38,7 @@ public class IncomeMessageTask extends AsyncTask<String, Void, Void> {
 
         switch(method) {
             case "SEND":
-                listener.onActionSendMesssage(params[0]);
+                listener.onActionSendMessage(params[0]);
                 break;
             case "DELETE":
                 listener.onActionDeleteMessage(mid);
@@ -47,7 +47,7 @@ public class IncomeMessageTask extends AsyncTask<String, Void, Void> {
                 try {
                     JSONArray jsonMsgArray = jsonIncome.getJSONArray("messages");
 
-                    for(i = 0; i < jsonMsgArray.length(); i++)
+                    for(int i = 0; i < jsonMsgArray.length(); i++)
                     {
                         JSONObject item = jsonMsgArray.getJSONObject(i);
                         Message msg = new Message(item);
