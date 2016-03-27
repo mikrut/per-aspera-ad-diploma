@@ -16,11 +16,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -28,11 +30,13 @@ import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
+import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
+import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ChatsActivity extends AppCompatActivity {
+public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     protected FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
@@ -73,7 +77,7 @@ public class ChatsActivity extends AppCompatActivity {
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
-        String[] titles = {"Edit profile","Show profile","Contacts", "Help"};
+        String[] titles = {"Edit profile","Show profile","Contacts", "Help", "Log out"};
         View.OnClickListener[] listeners = {new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,7 +96,16 @@ public class ChatsActivity extends AppCompatActivity {
                 Intent intent = new Intent(ChatsActivity.this, ContactsActivity.class);
                 startActivity(intent);
             }
-        }, null};
+        },
+        null,
+        new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("[TechMail]", "starting LogoutTask");
+                new LogoutTask((Context)ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile((Context)ChatsActivity.this).getAuthToken());
+            }
+        }};
+
         int[] pictures = {android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_help};
         OwnerProfile owner = new OwnerProfile(this);
         RecyclerView.Adapter mAdapter = new MenuAdapter(
@@ -154,6 +167,25 @@ public class ChatsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onStartLogout() {
+        Log.d("[TechMail]", "calling onStartLogout");
+    }
+
+    @Override
+    public void onLogoutSuccess() {
+        Log.d("[TechMail]", "calling onLogoutSuccess");
+        Toast.makeText(this, "open login activity", Toast.LENGTH_SHORT);
+        new OwnerProfile((Context)ChatsActivity.this).removeFromPreferences((Context)ChatsActivity.this);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onLogoutFail() {
+        Log.d("[TechMail]", "calling onLogoutFail");
+    }
 
     LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Chat>>() {

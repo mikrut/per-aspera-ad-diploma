@@ -65,6 +65,15 @@ public class OwnerProfile extends Contact {
         preferenceEditor.apply();
     }
 
+    public void removeFromPreferences(Context context) {
+        SharedPreferences sharedPreferences =
+                context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
+                        Context.MODE_APPEND);
+        SharedPreferences.Editor preferenceEditor = sharedPreferences.edit();
+        preferenceEditor.clear();
+        preferenceEditor.apply();
+    }
+
     @Nullable
     public String getAuthToken() {
         return authToken;
