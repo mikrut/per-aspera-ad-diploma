@@ -38,12 +38,18 @@ public class Auth extends ApiSection {
     }
 
     @NonNull
-    public OwnerProfile signUp(String login, String password, String email) throws IOException {
+    public OwnerProfile signUp(String login,
+                               String firstName,
+                               String lastName,
+                               String password,
+                               String email) throws IOException {
         final String requestURL = "signUp";
         final String requestMethod = "PUT";
 
         List<Pair<String, String>> parameters = new ArrayList<>(4);
         parameters.add(new Pair<>("login", login));
+        parameters.add(new Pair<>("firstName", firstName));
+        parameters.add(new Pair<>("lastName", lastName));
         parameters.add(new Pair<>("password", password));
         parameters.add(new Pair<>("email", email));
 

@@ -1,6 +1,5 @@
-package ru.mail.park.chat.authentication;
+package ru.mail.park.chat.auth_signup;
 
-import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**

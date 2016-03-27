@@ -17,7 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.mail.park.chat.activities.tasks.LoginTask;
-import ru.mail.park.chat.authentication.IAuthCallbacks;
+import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.OwnerProfile;
