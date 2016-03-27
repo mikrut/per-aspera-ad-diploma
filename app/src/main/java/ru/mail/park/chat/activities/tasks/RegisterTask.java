@@ -26,14 +26,16 @@ public class RegisterTask extends AsyncTask<String, Void, Pair<String, OwnerProf
     @Override
     protected Pair<String, OwnerProfile> doInBackground(String... params) {
         String login = params[0];
-        String password = params[1];
-        String email = params[2];
+        String firstName = params[1];
+        String lastName = params[2];
+        String password = params[3];
+        String email = params[4];
 
         OwnerProfile user = null;
         String message = null;
 
         try {
-            user = auth.signUp(login, password, email);
+            user = auth.signUp(login, firstName, lastName, password, email);
         } catch (IOException e) {
             message = e.getLocalizedMessage();
         }

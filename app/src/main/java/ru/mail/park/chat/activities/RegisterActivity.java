@@ -21,6 +21,8 @@ import ru.mail.park.chat.models.OwnerProfile;
 public class RegisterActivity extends AppCompatActivity implements IRegisterCallbacks {
 
     private AutoCompleteTextView mLoginView;
+    private AutoCompleteTextView mFirstNameView;
+    private AutoCompleteTextView mLastNameView;
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private ProgressBar mProgressView;
@@ -34,6 +36,8 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         mPasswordView = (EditText) findViewById(R.id.register_password);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.register_email);
         mLoginView = (AutoCompleteTextView) findViewById(R.id.register_login);
+        mFirstNameView = (AutoCompleteTextView) findViewById(R.id.register_first_name);
+        mLastNameView = (AutoCompleteTextView) findViewById(R.id.register_last_name);
 
         mProgressView = (ProgressBar) findViewById(R.id.register_progress);
         emailSignUpButton = (Button) findViewById(R.id.email_sign_up_button);
@@ -51,9 +55,12 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
     private void register() {
         RegisterTask task = new RegisterTask(this, this);
         String login = mLoginView.getText().toString();
+        String firstName = mFirstNameView.getText().toString();
+        String lastName = mLastNameView.getText().toString();
         String password = mPasswordView.getText().toString();
         String email = mEmailView.getText().toString();
-        task.execute(login, password, email);
+
+        task.execute(login, firstName, lastName, password, email);
     }
 
     @Override
