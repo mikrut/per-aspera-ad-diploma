@@ -122,7 +122,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     // TODO: fix titles + scrolling + etc
     public void setUserData(Contact user, Contact.Relation relation) {
-        // toolbarLayout.setTitle(user.getLogin());
+        toolbarLayout.setTitle(user.getLogin());
         userLogin.setText(user.getLogin());
 
         if (user.getEmail() != null) {
