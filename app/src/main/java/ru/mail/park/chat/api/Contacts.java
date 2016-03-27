@@ -21,7 +21,7 @@ import ru.mail.park.chat.models.OwnerProfile;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Contacts extends ApiSection {
-    private static final String URL_ADDITION = "contact/";
+    private static final String URL_ADDITION = "contacts/";
 
     @Override
     protected String getUrlAddition() {
@@ -34,8 +34,8 @@ public class Contacts extends ApiSection {
 
     @NonNull
     public Pair<List<Contact>, Integer> getContacts() throws IOException {
-        final String requestURL = "getListContactsUser";
-        final String requestMethod = "GET";
+        final String requestURL = "list";
+        final String requestMethod = "POST";
 
         OwnerProfile ownerProfile = new OwnerProfile(getContext());
         List<Pair<String, String>> parameters = new ArrayList<>(2);

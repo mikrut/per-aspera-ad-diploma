@@ -56,7 +56,25 @@ public class Users extends ApiSection {
             parameters.add(new Pair<>(String.format("idUsers[%d]", i), uids[i]));
         }
 
-        List<Contact> contactList = new ArrayList<>(uids.length);
+        return contactListFromRequest(requestURL, requestMethod, parameters);
+    }
+
+    @NonNull
+    public List<Contact> search(@NonNull String login) throws IOException {
+        final String requestURL = "search";
+        final String requestMethod = "GET";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("login", login));
+
+        return contactListFromRequest(requestURL, requestMethod, parameters);
+    }
+
+    @NonNull
+    private List<Contact> contactListFromRequest(String requestURL,
+                                                 String requestMethod,
+                                                 List<Pair<String, String>> parameters) throws IOException {
+        List<Contact> contactList = new ArrayList<>();
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
