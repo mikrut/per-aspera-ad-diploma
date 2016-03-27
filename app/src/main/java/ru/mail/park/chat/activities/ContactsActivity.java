@@ -3,6 +3,7 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,7 @@ import ru.mail.park.chat.models.Contact;
 public class ContactsActivity extends AppCompatActivity {
     private RecyclerView contactsView;
     private LinearLayout findFriends;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
@@ -36,6 +38,14 @@ public class ContactsActivity extends AppCompatActivity {
 
         contactsView = (RecyclerView) findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(this));
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+            }
+        });
 
         getLoaderManager().initLoader(DB_LOADER, null, contactsLoaderListener);
     }
@@ -64,6 +74,8 @@ public class ContactsActivity extends AppCompatActivity {
 
                 @Override
                 public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+                    swipeRefreshLayout.setRefreshing(false);
+
                     if (data != null) {
                         contactsView.setAdapter(new ContactAdapter(data));
                     }
