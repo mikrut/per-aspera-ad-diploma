@@ -125,7 +125,7 @@ public class ContactSearchActivity extends AppCompatActivity {
                 @Override
                 public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
                     if (data != null) {
-                        contactsView.setAdapter(new ContactAdapter(data));
+                        contactsView.setAdapter(new ContactSearchAdapter(data));
                     }
                 }
 

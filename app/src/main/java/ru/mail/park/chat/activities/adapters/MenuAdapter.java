@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.content.Intent;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.UserProfileActivity;
 
 /**
  * Created by Михаил on 08.03.2016.
@@ -32,12 +34,19 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private TextView userEmail;
         private ImageView userPicture;
 
-        public HeaderHolder(View headerView) {
+        public HeaderHolder(final View headerView) {
             super(headerView);
             userName = (TextView) headerView.findViewById(R.id.userName);
             userEmail = (TextView) headerView.findViewById(R.id.userEmail);
             userPicture = (ImageView) headerView.findViewById(R.id.userPicture);
 
+            headerView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(headerView.getContext(), UserProfileActivity.class);
+                    headerView.getContext().startActivity(intent);
+                }
+            });
         }
 
         public void setUserName(String name) {

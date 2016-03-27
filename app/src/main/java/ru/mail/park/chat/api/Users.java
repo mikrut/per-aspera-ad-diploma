@@ -49,7 +49,7 @@ public class Users extends ApiSection {
     @NonNull
     public List<Contact> getUsers(@NonNull String... uids) throws IOException {
         final String requestURL = "getUsers";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(uids.length + 1);
         for (int i = 0; i < uids.length; i++) {

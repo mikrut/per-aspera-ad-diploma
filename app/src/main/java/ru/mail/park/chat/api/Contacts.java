@@ -65,33 +65,25 @@ public class Contacts extends ApiSection {
         return new Pair<>(contactList, contactsLength);
     }
 
-    @NonNull
-    public Pair<Contact, Integer> addContact(@NonNull String uid) throws IOException {
+    public boolean addContact(@NonNull String uid) throws IOException {
         final String requestURL = "info";
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
-        parameters.add(new Pair<>("uid", uid));
+        parameters.add(new Pair<>("idUser", uid));
 
-        int contactsLength;
-        Contact contact = null;
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                contactsLength = data.getInt("contacts_length");
-                JSONObject newContact = data.getJSONObject("new_contact");
-                contact = new Contact(newContact);
+                return true;
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
-        } catch (JSONException | ParseException e) {
+        } catch (JSONException e) {
             throw new IOException("Server error");
         }
-
-        return new Pair<>(contact, contactsLength);
     }
 
     public int deleteContect(@NonNull String uid) throws IOException {

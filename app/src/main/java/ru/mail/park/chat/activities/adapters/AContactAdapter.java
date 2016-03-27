@@ -45,6 +45,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         Calendar lastSeen = contact.getLastSeen();
         if (lastSeen != null) {
             contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+        } else {
+            contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
         }
     }
 
@@ -56,11 +58,11 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     public static class ContactHolder extends RecyclerView.ViewHolder {
-        private ImageView contactImage;
-        private TextView contactName;
-        private TextView contactLastSeen;
+        protected ImageView contactImage;
+        protected TextView contactName;
+        protected TextView contactLastSeen;
 
-        private String uid;
+        protected String uid;
 
         public ContactHolder(View itemView) {
             super(itemView);

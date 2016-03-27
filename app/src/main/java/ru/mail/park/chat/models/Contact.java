@@ -30,6 +30,7 @@ public class Contact implements Comparable<Contact> {
     private @Nullable Calendar lastSeen;
     private @NonNull String login;
     private @Nullable String email;
+    private boolean online = false;
 
     public enum Relation {FRIEND, SELF, OTHER};
 
@@ -54,12 +55,24 @@ public class Contact implements Comparable<Contact> {
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);
         }
+
+        if (contact.has("online")) {
+            setOnline(contact.getBoolean("online"));
+        }
     }
 
     public Contact(Cursor cursor) {
         uid = cursor.getString(ContactsContract.PROJECTION_UID_INDEX);
         login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
         email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 
     @NonNull

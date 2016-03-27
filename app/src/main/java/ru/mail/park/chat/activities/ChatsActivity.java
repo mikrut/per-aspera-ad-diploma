@@ -94,12 +94,17 @@ public class ChatsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         }, null};
-        int[] pictures = {android.R.drawable.ic_menu_edit, android.R.drawable.ic_menu_help};
+        int[] pictures = {
+                R.drawable.ic_edit_black_24dp,
+                R.drawable.ic_person_black_48dp,
+                R.drawable.ic_group_black_24dp,
+                R.drawable.ic_help_black_24dp
+            };
         OwnerProfile owner = new OwnerProfile(this);
         RecyclerView.Adapter mAdapter = new MenuAdapter(
                 owner.getLogin(),
                 owner.getEmail(),
-                android.R.drawable.ic_dialog_map,
+                R.drawable.ic_user_picture,
                 titles,
                 listeners,
                 pictures);
