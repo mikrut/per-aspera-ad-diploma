@@ -19,6 +19,7 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
+import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
@@ -37,6 +38,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     private String chatID;
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
+    private Messages messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,8 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
         inputMessage = (EditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
+
+        messages = new Messages(this, this);
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         if (chatID != null) {

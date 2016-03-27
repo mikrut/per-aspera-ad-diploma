@@ -32,11 +32,11 @@ public class ApiFacade {
         auth = new Auth(context);
         chats = new Chats(context);
         contacts = new Contacts(context);
-        try {
+/*        try {
             messages = new Messages(context);
         } catch(Exception e) {
             e.printStackTrace();
-        }
+        }*/
         p2p = new P2P(sConn);
         users = new Users(context);
     }

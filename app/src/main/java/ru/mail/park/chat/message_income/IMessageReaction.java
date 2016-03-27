@@ -1,8 +1,5 @@
 package ru.mail.park.chat.message_income;
 
-import org.json.JSONException;
-
-import java.text.ParseException;
 import java.util.ArrayList;
 
 import ru.mail.park.chat.models.Message;

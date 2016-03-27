@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities.tasks;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import org.json.JSONArray;
@@ -7,6 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 
@@ -16,9 +18,8 @@ import ru.mail.park.chat.models.Message;
 public class IncomeMessageTask extends AsyncTask<String, Void, Void> {
     private IMessageReaction listener;
 
-    public IncomeMessageTask(IMessageReaction listener) {
+    public IncomeMessageTask(Context context, IMessageReaction listener) {
         this.listener = listener;
-
     }
 
     @Override

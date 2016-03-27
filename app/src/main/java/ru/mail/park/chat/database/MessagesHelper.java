@@ -63,22 +63,4 @@ public class MessagesHelper {
         messagesCursor.close();
         return messagesList;
     }
-
-    @NonNull
-    public void clearMessages(@NonNull String cid) {
-        Cursor messagesCursor = getMessagesCursor(cid);
-        ArrayList<Message> messagesList = new ArrayList<>(messagesCursor.getCount());
-
-        for(messagesCursor.moveToFirst();
-            !messagesCursor.isAfterLast(); messagesCursor.moveToNext()) {
-            try {
-                messagesList.add(new Message(messagesCursor));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-
-        messagesCursor.close();
-        return messagesList;
-    }
 }

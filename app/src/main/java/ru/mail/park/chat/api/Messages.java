@@ -13,7 +13,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.activities.tasks.IncomeMessageTask;
+import ru.mail.park.chat.message_income.IMessageReaction;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -22,14 +24,19 @@ public class Messages extends ApiSection {
     private static final int TIMEOUT = 5000;
     private static final String URL_ADDITION = "messages/message";
     private WebSocket ws;
+    private final IMessageReaction taskListener;
+    private final Context taskContext;
 
     @Override
     protected String getUrlAddition() {
         return super.getUrlAddition() + URL_ADDITION;
     }
 
-    public Messages(@NonNull Context context) throws IOException {
+    public Messages(@NonNull Context context, IMessageReaction listener) {
         super(context);
+
+        this.taskContext = context;
+        this.taskListener = listener;
 
         try {
             ws = new WebSocketFactory()
@@ -37,7 +44,7 @@ public class Messages extends ApiSection {
                     .createSocket(getUrlAddition())
                     .addListener(new WebSocketAdapter() {
                         public void onTextMessage(WebSocket websocket, String message) {
-                            new IncomeMessageTask().execute(message);
+                            new IncomeMessageTask(taskContext, taskListener).execute(message);
                         }
                     })
                     .connect();
