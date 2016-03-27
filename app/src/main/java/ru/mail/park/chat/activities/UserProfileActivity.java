@@ -163,6 +163,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
                 @Override
                 public void onLoadFinished(Loader<Contact> loader, Contact data) {
+                    Log.d("loader", "received data");
                     if (data != null) {
                         setUserData(data, Contact.Relation.OTHER);
                     }

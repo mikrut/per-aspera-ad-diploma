@@ -37,7 +37,7 @@
         android:layout_toRightOf="@+id/contactImage"
         android:layout_toEndOf="@+id/contactImage" />
 
-    <ImageView
+    <ImageButton
         android:src="@drawable/ic_person_add_black_24dp"
         android:tint="@color/colorPrimary"
         android:layout_width="wrap_content"
