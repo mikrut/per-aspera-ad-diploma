@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,6 +100,8 @@ public class ContactAdapter extends AContactAdapter {
             key = iKey.next();
             if (currentPosition + contactGroups.get(key).size() >= position) {
                 break;
+            } else {
+                currentPosition += contactGroups.get(key).size() + 1;
             }
         }
         return new Pair<>(key, currentPosition);
@@ -111,9 +114,11 @@ public class ContactAdapter extends AContactAdapter {
     @Override
     protected Contact getContactForPosition(int position) {
         Pair<Character, Integer> result = getKeyForPosition(position);
+        Log.v("pos", String.valueOf(position));
+        Log.v("interpos", String.valueOf(result.second));
 
         List<Contact> contactGroup = contactGroups.get(result.first);
-        return contactGroup.get(result.second);
+        return contactGroup.get(position - result.second - 1);
     }
 
     @Override

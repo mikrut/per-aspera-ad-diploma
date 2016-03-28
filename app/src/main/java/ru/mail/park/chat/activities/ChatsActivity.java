@@ -29,6 +29,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.loaders.ChatLoader;
+import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -166,12 +167,15 @@ public class ChatsActivity extends AppCompatActivity {
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
-                    return new ChatLoader(ChatsActivity.this);
+                    return new ChatWebLoader(ChatsActivity.this);
                 }
 
                 @Override
                 public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
-                    chatsList.setAdapter(new ChatsAdapter(data));
+                    if (data != null) {
+                        chatsList.setAdapter(new ChatsAdapter(data));
+                    }
+                    swipeContainer.setRefreshing(false);
                 }
 
                 @Override
@@ -183,7 +187,7 @@ public class ChatsActivity extends AppCompatActivity {
     SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-
+            getLoaderManager().restartLoader(0, null, messagesLoaderListener);
         }
     };
 

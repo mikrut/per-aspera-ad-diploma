@@ -14,11 +14,10 @@ import ru.mail.park.chat.models.Chat;
  */
 // TODO: implement limit, start number etc.
 public class ChatLoader extends AsyncTaskLoader<List<Chat>> {
-    private List<Chat> chats;
+    protected List<Chat> chats;
 
     public ChatLoader(@NonNull Context context) {
         super(context);
-
     }
 
     @Override

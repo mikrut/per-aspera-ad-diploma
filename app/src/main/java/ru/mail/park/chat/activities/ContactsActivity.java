@@ -46,8 +46,12 @@ public class ContactsActivity extends AppCompatActivity {
                 getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
             }
         });
+    }
 
-        getLoaderManager().initLoader(DB_LOADER, null, contactsLoaderListener);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(DB_LOADER, null, contactsLoaderListener);
     }
 
     View.OnClickListener findFriendsListener = new View.OnClickListener() {
@@ -80,7 +84,7 @@ public class ContactsActivity extends AppCompatActivity {
                         contactsView.setAdapter(new ContactAdapter(data));
                     }
                     if (loader.getId() == DB_LOADER) {
-                        getLoaderManager().initLoader(WEB_LOADER, null, contactsLoaderListener);
+                        getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
                     }
                 }
 
