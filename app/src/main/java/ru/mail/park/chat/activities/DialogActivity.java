@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -24,6 +25,7 @@ import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 // TODO: emoticons
 // TODO: send message
@@ -66,6 +68,19 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
             messagesList.setAdapter(messagesAdapter);
             messagesList.setLayoutManager(new LinearLayoutManager(this));
         }
+
+        sendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int uid = Integer.valueOf((new OwnerProfile(DialogActivity.this)).getUid());
+                String cid = chatID;
+                try {
+                    messages.sendMessage(uid, cid, inputMessage.getText().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void addMessage(@NonNull Message message) {
