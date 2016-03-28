@@ -37,7 +37,10 @@ public class Message implements Comparable<Message> {
         this(message.getString("msg_body"),
                 message.getString("cid"),
                 String.valueOf(message.getLong("uid")));
-        setMid(message.getString("mid"));
+
+        if (message.has("mid")) {
+            setMid(message.getString("mid"));
+        }
 
         if (message.has("dtCreate")) {
             String dateString = message.getString("dtCreate");

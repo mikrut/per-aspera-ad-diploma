@@ -3,6 +3,7 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.Loader;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +19,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
 import ru.mail.park.chat.loaders.ContactListWebLoader;
@@ -79,6 +81,13 @@ public class UserProfileActivity extends AppCompatActivity {
                 getLoaderManager().initLoader(WEB_LOADER, args, contactsLoaderListener);
             }
         }
+
+        userAddToContacts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new AddContactTask(UserProfileActivity.this).execute(uid);
+            }
+        });
     }
 
     @Override

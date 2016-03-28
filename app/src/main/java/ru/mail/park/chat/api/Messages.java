@@ -1,5 +1,6 @@
 package ru.mail.park.chat.api;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
@@ -8,14 +9,17 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.activities.tasks.IncomeMessageTask;
 import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -35,7 +39,7 @@ public class Messages extends ApiSection {
         return result;
     }
 
-    public Messages(@NonNull Context context, IMessageReaction listener) {
+    public Messages(@NonNull final Activity context, IMessageReaction listener) {
         super(context);
 
         this.taskContext = context;
@@ -46,11 +50,65 @@ public class Messages extends ApiSection {
                     .setConnectionTimeout(TIMEOUT)
                     .createSocket(getUrl())
                     .addListener(new WebSocketAdapter() {
-                        public void onTextMessage(WebSocket websocket, String message) {
-                            new IncomeMessageTask(taskContext, taskListener).execute(message);
+                        public void onTextMessage(WebSocket websocket, final String message) {
+
+                            // new IncomeMessageTask(taskContext, taskListener).execute(message);
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    IMessageReaction listener = taskListener;
+                                    String income = message;
+                                    JSONObject jsonIncome = new JSONObject();
+                                    String method = "";
+                                    int mid = 0;
+                                    ArrayList<Message> msgList = new ArrayList<>();
+
+                                    try {
+                                        jsonIncome = new JSONObject(income);
+                                        method = jsonIncome.getString("method");
+                                        if (jsonIncome.has("mid")) {
+                                            mid = jsonIncome.getInt("mid");
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    switch (method) {
+                                        case "SEND":
+                                            listener.onActionSendMessage(income);
+                                            break;
+                                        case "DELETE":
+                                            listener.onActionDeleteMessage(mid);
+                                            break;
+                                        case "GET":
+                                            try {
+                                                JSONArray jsonMsgArray = jsonIncome.getJSONArray("messages");
+
+                                                for (int i = 0; i < jsonMsgArray.length(); i++) {
+                                                    JSONObject item = jsonMsgArray.getJSONObject(i);
+                                                    Message msg = new Message(item);
+
+                                                    msgList.add(msg);
+                                                }
+
+                                                listener.onGetHistoryMessages(msgList);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            break;
+                                        case "POST":
+                                        case "INCOME":
+                                            listener.onIncomeMessage(income);
+                                            break;
+                                        case "COMET":
+                                            break;
+                                    }
+                                }
+                            });
+
                         }
                     })
-                    .connect();
+                    .connectAsynchronously();
         } catch(Exception e){
             e.printStackTrace();
         }

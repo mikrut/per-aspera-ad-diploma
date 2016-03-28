@@ -24,22 +24,25 @@ public class IncomeMessageTask extends AsyncTask<String, Void, Void> {
 
     @Override
     protected Void doInBackground(String... params) {
+        String income = params[0];
         JSONObject jsonIncome = new JSONObject();
         String method = "";
         int mid = 0;
         ArrayList<Message> msgList = new ArrayList<>();
 
         try {
-            jsonIncome = new JSONObject(params[0]);
+            jsonIncome = new JSONObject(income);
             method = jsonIncome.getString("method");
-            mid = jsonIncome.getInt("mid");
+            if (jsonIncome.has("mid")) {
+                mid = jsonIncome.getInt("mid");
+            }
         } catch(Exception e) {
             e.printStackTrace();
         }
 
         switch(method) {
             case "SEND":
-                listener.onActionSendMessage(params[0]);
+                listener.onActionSendMessage(income);
                 break;
             case "DELETE":
                 listener.onActionDeleteMessage(mid);
@@ -61,8 +64,9 @@ public class IncomeMessageTask extends AsyncTask<String, Void, Void> {
                     e.printStackTrace();
                 }
                 break;
+            case "POST":
             case "INCOME":
-                listener.onIncomeMessage(params[0]);
+                listener.onIncomeMessage(income);
                 break;
             case "COMET":
                 break;

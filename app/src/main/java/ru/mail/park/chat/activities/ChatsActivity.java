@@ -62,8 +62,11 @@ public class ChatsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Query queryer = new Query();
-                queryer.execute((String[]) null);
+                // Query queryer = new Query();
+                // queryer.execute((String[]) null);
+                Intent intent = new Intent(ChatsActivity.this, DialogActivity.class);
+                intent.putExtra(DialogActivity.CHAT_ID, "123");
+                startActivity(intent);
             }
         });
 

@@ -14,7 +14,7 @@ public abstract class MessagesContract {
                     MessagesEntry.COLUMN_NAME_CID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_UID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_MESSAGE_BODY + " TEXT NOT NULL" + COMMA_SEP +
-                    MessagesEntry.COLUMN_NAME_DATETIME + "TEXT" +
+                    MessagesEntry.COLUMN_NAME_DATETIME + " TEXT" +
                     ")";
 
     static final String DROP_TABLE =

@@ -91,6 +91,9 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
                 return;
             }
         }
+
+        receivedMessageList.add(receivedMessageList.size(), message);
+        messagesAdapter.notifyItemInserted(receivedMessageList.size());
     }
 
     public void removeMessage(@NonNull String messageID) {
