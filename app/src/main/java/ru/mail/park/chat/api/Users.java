@@ -98,7 +98,11 @@ public class Users extends ApiSection {
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("login", profile.getLogin()));
         parameters.add(new Pair<>("email", profile.getEmail()));
+        parameters.add(new Pair<>("phone", profile.getPhone()));
+        parameters.add(new Pair<>("firstName", profile.getFirstName()));
+        parameters.add(new Pair<>("lastName", profile.getLastName()));
 
         try {
             String response = executeRequest(requestURL, requestMethod, parameters);

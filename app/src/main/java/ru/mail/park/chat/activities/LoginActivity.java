@@ -112,6 +112,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
     @Override
     public void onLoginFail(String message) {
+        mProgressView.setVisibility(View.GONE);
         mPasswordView.setOnEditorActionListener(onPasswordListener);
         mEmailSignInButton.setOnClickListener(onSignInListener);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();

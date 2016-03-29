@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,6 +104,8 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setPhone(@Nullable String phone) {
+        if (TextUtils.equals(phone, ""))
+            phone = null;
         this.phone = phone;
     }
 
@@ -125,6 +128,8 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setEmail(@Nullable String email) {
+        if (TextUtils.equals(email, ""))
+            email = null;
         this.email = email;
     }
 
@@ -134,6 +139,8 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setFirstName(@Nullable String firstName) {
+        if (TextUtils.equals(firstName, ""))
+            firstName = null;
         this.firstName = firstName;
     }
 
@@ -143,6 +150,8 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setLastName(@Nullable String lastName) {
+        if (TextUtils.equals(lastName, ""))
+            lastName = null;
         this.lastName = lastName;
     }
 

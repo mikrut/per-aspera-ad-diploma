@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.Objects;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.database.PreferenceConstants;
@@ -71,5 +73,21 @@ public class OwnerProfile extends Contact {
 
     public void setAuthToken(@Nullable String authToken) {
         this.authToken = authToken;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o != null && o instanceof OwnerProfile) {
+            OwnerProfile other = (OwnerProfile) o;
+            return TextUtils.equals(getLogin(), other.getLogin()) &&
+                    TextUtils.equals(getEmail(), other.getEmail()) &&
+                    TextUtils.equals(getPhone(), other.getPhone()) &&
+                    TextUtils.equals(getFirstName(), other.getFirstName()) &&
+                    TextUtils.equals(getLastName(), other.getLastName());
+        }
+        return super.equals(o);
     }
 }
