@@ -6,18 +6,12 @@ import android.support.annotation.NonNull;
 
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-import ru.mail.park.chat.activities.DialogActivity;
-import ru.mail.park.chat.activities.tasks.IncomeMessageTask;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;

@@ -3,7 +3,6 @@ package ru.mail.park.chat.activities.tasks;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Pair;
 import android.widget.Toast;
 
 import java.io.IOException;

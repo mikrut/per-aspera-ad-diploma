@@ -2,10 +2,8 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.util.Pair;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,8 +12,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.mail.park.chat.models.Chat;
-import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**

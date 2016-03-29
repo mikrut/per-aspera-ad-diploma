@@ -1,7 +1,6 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Pair;
 
@@ -86,7 +85,7 @@ public class Contacts extends ApiSection {
         }
     }
 
-    public int deleteContect(@NonNull String uid) throws IOException {
+    public int deleteContact(@NonNull String uid) throws IOException {
         final String requestURL = "info";
         final String requestMethod = "DELETE";
 

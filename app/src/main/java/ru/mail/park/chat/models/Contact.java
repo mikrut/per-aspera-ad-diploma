@@ -8,12 +8,9 @@ import android.support.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import ru.mail.park.chat.database.ContactsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
@@ -22,7 +19,6 @@ import ru.mail.park.chat.database.MessengerDBHelper;
  * Created by Михаил on 08.03.2016.
  */
 
-// TODO: implement firstname, lastname + stringification
 // TODO: implement drawables
 public class Contact implements Comparable<Contact> {
     private @NonNull String uid;
@@ -36,13 +32,13 @@ public class Contact implements Comparable<Contact> {
 
     private boolean online = false;
 
-    public enum Relation {FRIEND, SELF, OTHER};
+    public enum Relation {FRIEND, SELF, OTHER}
 
     protected Contact() {}
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
-        setUid(contact.getString("id"));
-        setLogin(contact.getString("login"));
+        uid = contact.getString("id");
+        login = contact.getString("login");
 
         if (contact.has("email"))
             setEmail(contact.getString("email"));

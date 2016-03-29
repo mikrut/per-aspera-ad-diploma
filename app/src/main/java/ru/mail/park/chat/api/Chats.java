@@ -1,7 +1,6 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
@@ -13,10 +12,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -81,7 +78,7 @@ public class Chats extends ApiSection {
                     return super.toString();
             }
         }
-    };
+    }
 
     @NonNull
     public Chat addUser(@NonNull String cid, @NonNull String uid) throws IOException {

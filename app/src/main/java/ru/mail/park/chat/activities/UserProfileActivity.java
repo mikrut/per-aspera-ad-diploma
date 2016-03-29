@@ -1,9 +1,6 @@
 package ru.mail.park.chat.activities;
 
 import android.app.LoaderManager;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
 import android.content.Loader;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -15,14 +12,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.database.ContactHelper;
-import ru.mail.park.chat.loaders.ContactListDBLoader;
-import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;

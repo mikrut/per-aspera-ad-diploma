@@ -20,7 +20,7 @@ public class OwnerProfile extends Contact {
     @Nullable
     private String authToken;
 
-    private OwnerProfile(Cursor cursor){};
+    private OwnerProfile(Cursor cursor){}
 
     public OwnerProfile(JSONObject owner) throws JSONException, ParseException {
         super(owner);
@@ -29,16 +29,13 @@ public class OwnerProfile extends Contact {
 
 
     public OwnerProfile(Context context) {
-        final String anonymousName = context.getString(R.string.anonymous_name);
-        final String noUid = context.getString(R.string.no_uid);
-
         SharedPreferences sharedPreferences =
                 context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
                         Context.MODE_PRIVATE);
 
         setEmail(sharedPreferences.getString(PreferenceConstants.USER_EMAIL_N, null));
-        setLogin(sharedPreferences.getString(PreferenceConstants.USER_LOGIN_N, anonymousName));
-        setUid(sharedPreferences.getString(PreferenceConstants.USER_UID_N, noUid));
+        setLogin(sharedPreferences.getString(PreferenceConstants.USER_LOGIN_N, null));
+        setUid(sharedPreferences.getString(PreferenceConstants.USER_UID_N, null));
         setPhone(sharedPreferences.getString(PreferenceConstants.USER_PHONE_N, null));
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
