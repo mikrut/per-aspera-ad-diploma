@@ -39,7 +39,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
-        contactHolder.setContactName(contact.getLogin());
+        contactHolder.setContactName(contact.getContactTitle());
         contactHolder.setUid(contact.getUid());
 
         Calendar lastSeen = contact.getLastSeen();

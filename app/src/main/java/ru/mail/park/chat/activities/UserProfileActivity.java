@@ -129,9 +129,8 @@ public class UserProfileActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // TODO: fix titles + scrolling + etc
     public void setUserData(Contact user, Contact.Relation relation) {
-        toolbarLayout.setTitle(user.getLogin());
+        toolbarLayout.setTitle(user.getContactTitle());
         userLogin.setText(user.getLogin());
 
         if (user.getEmail() != null) {

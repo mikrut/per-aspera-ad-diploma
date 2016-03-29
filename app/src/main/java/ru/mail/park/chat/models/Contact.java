@@ -26,28 +26,32 @@ import ru.mail.park.chat.database.MessengerDBHelper;
 // TODO: implement drawables
 public class Contact implements Comparable<Contact> {
     private @NonNull String uid;
-    private @Nullable String phone;
-    private @Nullable Calendar lastSeen;
     private @NonNull String login;
+
     private @Nullable String email;
+    private @Nullable String phone;
+    private @Nullable String firstName;
+    private @Nullable String lastName;
+    private @Nullable Calendar lastSeen;
+
     private boolean online = false;
 
     public enum Relation {FRIEND, SELF, OTHER};
 
-    @Deprecated
-    public Contact() {
-        login = "v.pupkin";
-        uid = "abcd1234";
-        phone = "8-800-555-35-35";
-        lastSeen = Calendar.getInstance();
-    }
+    protected Contact() {}
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
         setUid(contact.getString("id"));
         setLogin(contact.getString("login"));
 
+        if (contact.has("email"))
+            setEmail(contact.getString("email"));
         if (contact.has("phone"))
             setPhone(contact.getString("phone"));
+        if (contact.has("firstName"))
+            setFirstName(contact.getString("firstName"));
+        if (contact.has("lastName"))
+            setFirstName(contact.getString("lastName"));
 
         if (contact.has("last_seen")) {
             java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
@@ -64,7 +68,11 @@ public class Contact implements Comparable<Contact> {
     public Contact(Cursor cursor) {
         uid = cursor.getString(ContactsContract.PROJECTION_UID_INDEX);
         login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
+
         email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
+        phone = cursor.getString(ContactsContract.PROJECTION_PHONE_INDEX);
+        firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
+        lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
     }
 
     public boolean isOnline() {
@@ -124,12 +132,47 @@ public class Contact implements Comparable<Contact> {
         this.email = email;
     }
 
+    @Nullable
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@Nullable String firstName) {
+        this.firstName = firstName;
+    }
+
+    @Nullable
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@Nullable String lastName) {
+        this.lastName = lastName;
+    }
+
     @NonNull
     public ContentValues getContentValues() {
         ContentValues contentValues = new ContentValues();
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_UID, uid);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN, login);
+
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_EMAIL, email);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PHONE, phone);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
         return contentValues;
+    }
+
+    @NonNull
+    public String getContactTitle() {
+        StringBuilder titleBuilder = new StringBuilder();
+        titleBuilder.append(firstName != null ? firstName : "");
+        if (firstName != null && lastName != null)
+            titleBuilder.append(" ");
+        titleBuilder.append(lastName != null ? lastName : "");
+        if (firstName == null && lastName == null) {
+            return  getLogin();
+        }
+        return titleBuilder.toString();
     }
 }

@@ -20,14 +20,7 @@ public class OwnerProfile extends Contact {
     @Nullable
     private String authToken;
 
-    @Deprecated
-    public OwnerProfile() {
-        setAuthToken("randomtoken");
-    }
-
-    private OwnerProfile(Cursor cursor) {
-        super(cursor);
-    }
+    private OwnerProfile(Cursor cursor){};
 
     public OwnerProfile(JSONObject owner) throws JSONException, ParseException {
         super(owner);
