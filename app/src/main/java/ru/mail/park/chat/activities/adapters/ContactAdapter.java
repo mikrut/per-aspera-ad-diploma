@@ -124,9 +124,6 @@ public class ContactAdapter extends AContactAdapter {
     @Override
     protected Contact getContactForPosition(int position) {
         Pair<Character, Integer> result = getKeyForPosition(position);
-        Log.v("pos", String.valueOf(position));
-        Log.v("interpos", String.valueOf(result.second));
-
         List<Contact> contactGroup = contactGroups.get(result.first);
         return contactGroup.get(position - result.second - 1);
     }

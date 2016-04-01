@@ -1,8 +1,6 @@
 package ru.mail.park.chat.activities;
 
 import android.app.LoaderManager;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -15,14 +13,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.SearchView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.database.ContactHelper;
-import ru.mail.park.chat.loaders.ContactListDBLoader;
-import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -42,6 +37,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private ImageView userPicture;
     private TextView userLogin;
     private TextView userEmail;
+    private TextView userPhone;
 
     private Contact.Relation relation = null;
 
@@ -53,6 +49,13 @@ public class UserProfileActivity extends AppCompatActivity {
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
         userAddToContacts = (FloatingActionButton) findViewById(R.id.user_add_to_contacts);
         userSendMessage = (FloatingActionButton) findViewById(R.id.user_send_message);
@@ -60,6 +63,7 @@ public class UserProfileActivity extends AppCompatActivity {
         userPicture = (ImageView) findViewById(R.id.user_picture);
         userLogin = (TextView) findViewById(R.id.user_login);
         userEmail = (TextView) findViewById(R.id.user_email);
+        userPhone = (TextView) findViewById(R.id.user_phone);
 
         OwnerProfile owner = new OwnerProfile(this);
         if (getIntent().hasExtra(UID_EXTRA)) {
@@ -106,6 +110,7 @@ public class UserProfileActivity extends AppCompatActivity {
                     getMenuInflater().inflate(R.menu.menu_user_profile, menu);
                     break;
                 case SELF:
+                    getMenuInflater().inflate(R.menu.menu_owner_profile, menu);
                     break;
                 case OTHER:
                     break;
@@ -122,16 +127,17 @@ public class UserProfileActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_edit_contact) {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    // TODO: fix titles + scrolling + etc
     public void setUserData(Contact user, Contact.Relation relation) {
-        toolbarLayout.setTitle(user.getLogin());
+        toolbarLayout.setTitle(user.getContactTitle());
         userLogin.setText(user.getLogin());
 
         if (user.getEmail() != null) {
@@ -139,6 +145,13 @@ public class UserProfileActivity extends AppCompatActivity {
             userEmail.setVisibility(View.VISIBLE);
         } else {
             userEmail.setVisibility(View.GONE);
+        }
+
+        if (user.getPhone() != null) {
+            userPhone.setText(user.getPhone());
+            userPhone.setVisibility(View.VISIBLE);
+        } else {
+            userPhone.setVisibility(View.GONE);
         }
 
         this.relation = relation;

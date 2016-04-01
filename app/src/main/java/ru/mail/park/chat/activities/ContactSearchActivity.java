@@ -15,14 +15,10 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.adapters.ContactAdapter;
 import ru.mail.park.chat.activities.adapters.ContactSearchAdapter;
-import ru.mail.park.chat.loaders.ContactListDBLoader;
-import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.loaders.ContactsSearchLoader;
 import ru.mail.park.chat.models.Contact;
 

@@ -43,7 +43,10 @@
         <activity
             android:name=".activities.RegisterActivity"
             android:label="@string/title_activity_register" />
-        <activity android:name=".activities.ContactsActivity" />
+        <activity
+            android:name=".activities.ContactsActivity"
+            android:label="Contacts"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.ContactSearchActivity"
             android:label="@string/title_activity_contacts"

@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 

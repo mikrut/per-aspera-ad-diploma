@@ -24,7 +24,6 @@ public class ContactListWebLoader extends ContactListDBLoader {
 
     @Override
     public @Nullable List<Contact> loadInBackground() {
-        Log.v("webloader", "load in back");
         Contacts contactsAPI = new Contacts(getContext());
         List<Contact> contactList = null;
         try {

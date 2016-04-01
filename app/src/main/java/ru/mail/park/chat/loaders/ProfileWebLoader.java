@@ -4,11 +4,9 @@ import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.io.IOException;
 
-import ru.mail.park.chat.api.Contacts;
 import ru.mail.park.chat.api.Users;
 import ru.mail.park.chat.models.Contact;
 

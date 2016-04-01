@@ -1,7 +1,6 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -14,10 +13,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -39,9 +36,9 @@ public class Users extends ApiSection {
 
     @Nullable
     public Contact getUser(@NonNull String uid) throws IOException {
-        List<Contact> userlist = getUsers(uid);
-        if (userlist.size() > 0) {
-            return userlist.get(0);
+        List<Contact> userList = getUsers(uid);
+        if (userList.size() > 0) {
+            return userList.get(0);
         }
         return null;
     }
@@ -101,16 +98,19 @@ public class Users extends ApiSection {
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("login", profile.getLogin()));
         parameters.add(new Pair<>("email", profile.getEmail()));
+        parameters.add(new Pair<>("phone", profile.getPhone()));
+        parameters.add(new Pair<>("firstName", profile.getFirstName()));
+        parameters.add(new Pair<>("lastName", profile.getLastName()));
 
-        boolean success = false;
         try {
             String response = executeRequest(requestURL, requestMethod, parameters);
             Log.v("response", response);
             JSONObject result = new JSONObject(response);
             final int status = result.getInt("status");
             if (status == 200) {
-                success = true;
+                return true;
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -118,8 +118,6 @@ public class Users extends ApiSection {
         } catch (JSONException e) {
             throw new IOException("Server error");
         }
-
-        return success;
     }
 
 }

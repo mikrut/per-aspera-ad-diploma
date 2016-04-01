@@ -4,16 +4,14 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import ru.mail.park.chat.database.ContactsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
@@ -22,32 +20,35 @@ import ru.mail.park.chat.database.MessengerDBHelper;
  * Created by Михаил on 08.03.2016.
  */
 
-// TODO: implement firstname, lastname + stringification
 // TODO: implement drawables
 public class Contact implements Comparable<Contact> {
     private @NonNull String uid;
-    private @Nullable String phone;
-    private @Nullable Calendar lastSeen;
     private @NonNull String login;
+
     private @Nullable String email;
+    private @Nullable String phone;
+    private @Nullable String firstName;
+    private @Nullable String lastName;
+    private @Nullable Calendar lastSeen;
+
     private boolean online = false;
 
-    public enum Relation {FRIEND, SELF, OTHER};
+    public enum Relation {FRIEND, SELF, OTHER}
 
-    @Deprecated
-    public Contact() {
-        login = "v.pupkin";
-        uid = "abcd1234";
-        phone = "8-800-555-35-35";
-        lastSeen = Calendar.getInstance();
-    }
+    protected Contact() {}
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
-        setUid(contact.getString("id"));
-        setLogin(contact.getString("login"));
+        uid = contact.getString("id");
+        login = contact.getString("login");
 
+        if (contact.has("email"))
+            setEmail(contact.getString("email"));
         if (contact.has("phone"))
             setPhone(contact.getString("phone"));
+        if (contact.has("firstName"))
+            setFirstName(contact.getString("firstName"));
+        if (contact.has("lastName"))
+            setFirstName(contact.getString("lastName"));
 
         if (contact.has("last_seen")) {
             java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
@@ -64,7 +65,11 @@ public class Contact implements Comparable<Contact> {
     public Contact(Cursor cursor) {
         uid = cursor.getString(ContactsContract.PROJECTION_UID_INDEX);
         login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
+
         email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
+        phone = cursor.getString(ContactsContract.PROJECTION_PHONE_INDEX);
+        firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
+        lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
     }
 
     public boolean isOnline() {
@@ -99,6 +104,8 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setPhone(@Nullable String phone) {
+        if (TextUtils.equals(phone, ""))
+            phone = null;
         this.phone = phone;
     }
 
@@ -121,7 +128,31 @@ public class Contact implements Comparable<Contact> {
     }
 
     public void setEmail(@Nullable String email) {
+        if (TextUtils.equals(email, ""))
+            email = null;
         this.email = email;
+    }
+
+    @Nullable
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@Nullable String firstName) {
+        if (TextUtils.equals(firstName, ""))
+            firstName = null;
+        this.firstName = firstName;
+    }
+
+    @Nullable
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@Nullable String lastName) {
+        if (TextUtils.equals(lastName, ""))
+            lastName = null;
+        this.lastName = lastName;
     }
 
     @NonNull
@@ -129,7 +160,24 @@ public class Contact implements Comparable<Contact> {
         ContentValues contentValues = new ContentValues();
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_UID, uid);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN, login);
+
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_EMAIL, email);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PHONE, phone);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
         return contentValues;
+    }
+
+    @NonNull
+    public String getContactTitle() {
+        StringBuilder titleBuilder = new StringBuilder();
+        titleBuilder.append(firstName != null ? firstName : "");
+        if (firstName != null && lastName != null)
+            titleBuilder.append(" ");
+        titleBuilder.append(lastName != null ? lastName : "");
+        if (firstName == null && lastName == null) {
+            return  getLogin();
+        }
+        return titleBuilder.toString();
     }
 }

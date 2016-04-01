@@ -8,8 +8,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import ru.mail.park.chat.models.Contact;
-
 /**
  * Created by Михаил on 06.03.2016.
  */

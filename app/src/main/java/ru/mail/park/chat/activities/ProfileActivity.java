@@ -1,11 +1,9 @@
 package ru.mail.park.chat.activities;
 
 import android.app.ProgressDialog;
-import android.support.v4.app.TaskStackBuilder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.provider.MediaStore;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
@@ -24,6 +23,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
+    private TextView  userTitle;
     public static final int REQUEST_IMAGE_CAPTURE = 1;
     public static final int GET_FROM_GALLERY = 3;
 
@@ -31,6 +31,7 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText userEmail;
     private EditText firstName;
     private EditText lastName;
+    private EditText userPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,15 +40,21 @@ public class ProfileActivity extends AppCompatActivity {
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
         imgUploadPicture = (ImageView) findViewById(R.id.user_upload_picture);
+        userTitle = (TextView) findViewById(R.id.user_title);
 
         userLogin = (EditText) findViewById(R.id.user_login);
         userEmail = (EditText) findViewById(R.id.user_email);
+        userPhone = (EditText) findViewById(R.id.user_phone);
         firstName = (EditText) findViewById(R.id.first_name);
         lastName  = (EditText) findViewById(R.id.last_name);
 
         OwnerProfile ownerProfile = new OwnerProfile(this);
+        userTitle.setText(ownerProfile.getContactTitle());
         userLogin.setText(ownerProfile.getLogin());
         userEmail.setText(ownerProfile.getEmail());
+        userPhone.setText(ownerProfile.getPhone());
+        firstName.setText(ownerProfile.getFirstName());
+        lastName.setText(ownerProfile.getLastName());
 
         imgCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,25 +91,41 @@ public class ProfileActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-        alertBuilder.setMessage("Cancel changes?");
-        alertBuilder.setPositiveButton(getString(android.R.string.ok),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ProfileActivity.super.onBackPressed();
-                    }
-                });
-        alertBuilder.setNegativeButton(getString(android.R.string.cancel), null);
-        alertBuilder.show();
+        OwnerProfile currentProfile = new OwnerProfile(this);
+        OwnerProfile updatedProfile = getUpdatedProfile();
+
+        if (!currentProfile.equals(updatedProfile)) {
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+            alertBuilder.setMessage("Cancel changes?");
+            alertBuilder.setPositiveButton(getString(android.R.string.ok),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ProfileActivity.super.onBackPressed();
+                        }
+                    });
+            alertBuilder.setNegativeButton(getString(android.R.string.cancel), null);
+            alertBuilder.show();
+        } else {
+            ProfileActivity.super.onBackPressed();
+        }
+    }
+
+    private OwnerProfile getUpdatedProfile() {
+        OwnerProfile profile = new OwnerProfile(this);
+        profile.setEmail(userEmail.getText().toString());
+        profile.setLogin(userLogin.getText().toString());
+        profile.setPhone(userPhone.getText().toString());
+        profile.setFirstName(firstName.getText().toString());
+        profile.setLastName(lastName.getText().toString());
+        return profile;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_save:
-                OwnerProfile profile = new OwnerProfile(this);
-                profile.setEmail(userEmail.getText().toString());
+                OwnerProfile profile = getUpdatedProfile();
 
                 ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
                 dialogBuilder.setTitle("Saving user data");

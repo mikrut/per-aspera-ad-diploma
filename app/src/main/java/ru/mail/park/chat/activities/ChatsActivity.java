@@ -32,9 +32,7 @@ import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
-import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
-import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -127,7 +125,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 @Override
                 public void onClick(View v) {
                     Log.d("[TechMail]", "starting LogoutTask");
-                    new LogoutTask((Context)ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile((Context)ChatsActivity.this).getAuthToken());
+                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile(ChatsActivity.this).getAuthToken());
                 }
             }
         };
@@ -207,8 +205,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     @Override
     public void onLogoutSuccess() {
         Log.d("[TechMail]", "calling onLogoutSuccess");
-        Toast.makeText(this, "open login activity", Toast.LENGTH_SHORT);
-        new OwnerProfile((Context)ChatsActivity.this).removeFromPreferences((Context)ChatsActivity.this);
+        new OwnerProfile(ChatsActivity.this).removeFromPreferences(ChatsActivity.this);
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
         finish();

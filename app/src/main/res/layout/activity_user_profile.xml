@@ -70,7 +70,15 @@ tools:context="ru.mail.park.chat.activities.UserProfileActivity">
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/fab_margin"
     android:src="@drawable/ic_sms_black_48dp"
+    app:layout_anchor="@+id/splitter2"
+    app:layout_anchorGravity="left|center_vertical" />
+
+<View
+    android:id="@+id/splitter2"
+    android:layout_width="10dp"
+    android:layout_height="1dp"
     app:layout_anchor="@id/app_bar"
-    app:layout_anchorGravity="bottom|end" />
+    app:layout_anchorGravity="bottom|end"
+    android:layout_gravity="bottom|end"/>
 
 </android.support.design.widget.CoordinatorLayout>
