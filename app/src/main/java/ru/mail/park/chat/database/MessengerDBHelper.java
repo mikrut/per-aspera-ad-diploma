@@ -14,7 +14,7 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 06.03.2016.
  */
 public class MessengerDBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "Messenger.db";
 
     public static final DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());

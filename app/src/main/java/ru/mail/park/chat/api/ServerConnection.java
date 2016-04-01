@@ -1,6 +1,8 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -27,6 +29,7 @@ import javax.net.ssl.X509TrustManager;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -79,7 +82,15 @@ public class ServerConnection {
                     httpURLConnection = NetCipher.getHttpURLConnection(url);
                 }
             } else {
-                httpURLConnection = (HttpURLConnection) url.openConnection();
+                boolean onlyTorIsAllowed = PreferenceManager
+                        .getDefaultSharedPreferences(context)
+                        .getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true);
+
+                if (!onlyTorIsAllowed) {
+                    httpURLConnection = (HttpURLConnection) url.openConnection();
+                } else {
+                    throw new IOException("Cannot establish TOR connection");
+                }
             }
 
             SSLContext sslContext = SSLContext.getInstance("TLS");

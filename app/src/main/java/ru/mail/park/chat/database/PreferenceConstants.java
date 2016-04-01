@@ -12,4 +12,6 @@ public abstract class PreferenceConstants {
     public static final String USER_PHONE_N = "user_phone";
     public static final String USER_UID_N   = "user_uid";
 
+    public static final String SECURITY_PARANOID_N = "paranoid_mode_switch";
+
 }

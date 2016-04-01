@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -48,6 +49,8 @@ public class ContactsActivity extends AppCompatActivity {
         });
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -83,8 +86,15 @@ public class ContactsActivity extends AppCompatActivity {
                     if (data != null) {
                         contactsView.setAdapter(new ContactAdapter(data));
                     }
-                    if (loader.getId() == DB_LOADER) {
-                        getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+
+                    switch (loader.getId()) {
+                        case DB_LOADER:
+                            getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+                            break;
+                        case WEB_LOADER:
+                            if (data == null)
+                                Toast.makeText(ContactsActivity.this, "Load error. Check your connection.", Toast.LENGTH_SHORT).show();
+                            break;
                     }
                 }
 
