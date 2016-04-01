@@ -10,13 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.UserProfileActivity;
@@ -48,6 +41,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         } else {
             contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
         }
+
+        contactHolder.setContact(contact);
     }
 
     protected abstract Contact getContactForPosition(int position);
@@ -63,6 +58,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         protected TextView contactLastSeen;
 
         protected String uid;
+        protected Contact contact;
 
         public ContactHolder(View itemView) {
             super(itemView);
@@ -70,14 +66,22 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
+            setOnContactClickListener(new OnContactClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onContactClick(View v, ContactHolder holder) {
                     Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
                     intent.putExtra(UserProfileActivity.UID_EXTRA, uid);
                     v.getContext().startActivity(intent);
                 }
             });
+        }
+
+        public void setContact(Contact contact) {
+            this.contact = contact;
+        }
+
+        public Contact getContact() {
+            return contact;
         }
 
         public void setUid(String uid) {this.uid = uid;}
@@ -92,6 +96,19 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         public void setContactLastSeen(String lastSeen) {
             contactLastSeen.setText(lastSeen);
+        }
+
+        public void setOnContactClickListener(final OnContactClickListener listener) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onContactClick(v, ContactHolder.this);
+                }
+            });
+        }
+
+        public interface OnContactClickListener {
+            void onContactClick(View contactView, ContactHolder viewHolder);
         }
     }
 }

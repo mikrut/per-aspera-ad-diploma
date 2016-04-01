@@ -1,6 +1,7 @@
 package ru.mail.park.chat.activities.adapters;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
@@ -25,9 +26,16 @@ import ru.mail.park.chat.models.Contact;
  */
 public class ContactAdapter extends AContactAdapter {
     private Map<Character, List<Contact>> contactGroups;
+    private ContactHolder.OnContactClickListener contactClickListener;
     private int itemCount;
 
     protected static final int LETTER = 0;
+
+    public ContactAdapter(@NonNull List<Contact> contactList,
+                          @Nullable ContactHolder.OnContactClickListener contactClickListener) {
+        this(contactList);
+        this.contactClickListener = contactClickListener;
+    }
 
     public ContactAdapter(@NonNull List<Contact> contactList) {
         contactGroups = new TreeMap<>();
@@ -85,6 +93,8 @@ public class ContactAdapter extends AContactAdapter {
                 break;
             case CONTACT:
                 super.onBindViewHolder(holder, position);
+                if (contactClickListener != null)
+                    ((ContactHolder) holder).setOnContactClickListener(contactClickListener);
                 break;
         }
     }

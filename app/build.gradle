@@ -28,4 +28,5 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.0.0'
     compile 'com.neovisionaries:nv-websocket-client:1.23'
     compile 'com.android.support:support-v4:23.2.1'
+    compile 'com.doodle.android:android-material-chips:1.0.1'
 }

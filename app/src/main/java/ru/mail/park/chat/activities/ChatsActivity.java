@@ -86,6 +86,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         String[] titles = {
                 "Edit profile",
                 "Show profile",
+                "Group chats",
                 "Contacts",
                 "Settings",
                 "Help",
@@ -101,6 +102,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ChatsActivity.this, UserProfileActivity.class);
+                startActivity(intent);
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatsActivity.this, GroupDialogCreateActivity.class);
                 startActivity(intent);
             }
         }, new View.OnClickListener() {
