@@ -99,12 +99,15 @@ public class Auth extends ApiSection {
         return user;
     }
 
-    public void logOut() throws IOException {
+    public void logOut(String accessToken) throws IOException {
         final String requestURL = "logOut";
         final String requestMethod = "POST";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(1);
+        parameters.add(new Pair<>("access_token", accessToken));
+
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if(status != 200) {
                 String message = result.getString("message");

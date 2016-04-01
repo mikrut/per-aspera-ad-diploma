@@ -61,7 +61,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             chatName.setText(chat.getName());
             // FIXME: take values from DB
             lastMessageTime.setText("Sun");
-            lastMessageText.setText("Dummy text");
+            lastMessageText.setText(chat.getDescription());
             // TODO: chat pictures
         }
     }

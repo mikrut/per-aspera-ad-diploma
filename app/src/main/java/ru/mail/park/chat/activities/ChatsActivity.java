@@ -16,11 +16,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -28,11 +30,15 @@ import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
+import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
+import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.loaders.ChatLoader;
+import ru.mail.park.chat.loaders.ChatWebLoader;
+import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ChatsActivity extends AppCompatActivity {
+public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     protected FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
@@ -60,8 +66,11 @@ public class ChatsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Query queryer = new Query();
-                queryer.execute((String[]) null);
+                // Query queryer = new Query();
+                // queryer.execute((String[]) null);
+                Intent intent = new Intent(ChatsActivity.this, DialogActivity.class);
+                intent.putExtra(DialogActivity.CHAT_ID, "123");
+                startActivity(intent);
             }
         });
 
@@ -79,7 +88,8 @@ public class ChatsActivity extends AppCompatActivity {
                 "Show profile",
                 "Contacts",
                 "Settings",
-                "Help"
+                "Help",
+                "Log out"
         };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
             @Override
@@ -105,8 +115,16 @@ public class ChatsActivity extends AppCompatActivity {
                 Intent intent = new Intent(ChatsActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
-        }, null};
-
+        }, null,
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d("[TechMail]", "starting LogoutTask");
+                    new LogoutTask((Context)ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile((Context)ChatsActivity.this).getAuthToken());
+                }
+            }
+        };
+        
         int[] pictures = {
                 R.drawable.ic_edit_black_24dp,
                 R.drawable.ic_person_black_48dp,
@@ -174,17 +192,39 @@ public class ChatsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onStartLogout() {
+        Log.d("[TechMail]", "calling onStartLogout");
+    }
+
+    @Override
+    public void onLogoutSuccess() {
+        Log.d("[TechMail]", "calling onLogoutSuccess");
+        Toast.makeText(this, "open login activity", Toast.LENGTH_SHORT);
+        new OwnerProfile((Context)ChatsActivity.this).removeFromPreferences((Context)ChatsActivity.this);
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onLogoutFail() {
+        Log.d("[TechMail]", "calling onLogoutFail");
+    }
 
     LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
-                    return new ChatLoader(ChatsActivity.this);
+                    return new ChatWebLoader(ChatsActivity.this);
                 }
 
                 @Override
                 public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
-                    chatsList.setAdapter(new ChatsAdapter(data));
+                    if (data != null) {
+                        chatsList.setAdapter(new ChatsAdapter(data));
+                    }
+                    swipeContainer.setRefreshing(false);
                 }
 
                 @Override
@@ -196,7 +236,7 @@ public class ChatsActivity extends AppCompatActivity {
     SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-
+            getLoaderManager().restartLoader(0, null, messagesLoaderListener);
         }
     };
 

@@ -6,21 +6,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
+import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
+import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 // TODO: emoticons
 // TODO: send message
-public class DialogActivity extends AppCompatActivity {
+public class DialogActivity extends AppCompatActivity implements IMessageReaction {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
 
     private RecyclerView messagesList;
@@ -31,6 +40,7 @@ public class DialogActivity extends AppCompatActivity {
     private String chatID;
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
+    private Messages messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +51,8 @@ public class DialogActivity extends AppCompatActivity {
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
         inputMessage = (EditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
+
+        messages = new Messages(this, this);
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         if (chatID != null) {
@@ -56,6 +68,19 @@ public class DialogActivity extends AppCompatActivity {
             messagesList.setAdapter(messagesAdapter);
             messagesList.setLayoutManager(new LinearLayoutManager(this));
         }
+
+        sendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int uid = Integer.valueOf((new OwnerProfile(DialogActivity.this)).getUid());
+                String cid = chatID;
+                try {
+                    messages.sendMessage(uid, cid, inputMessage.getText().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void addMessage(@NonNull Message message) {
@@ -66,6 +91,9 @@ public class DialogActivity extends AppCompatActivity {
                 return;
             }
         }
+
+        receivedMessageList.add(receivedMessageList.size(), message);
+        messagesAdapter.notifyItemInserted(receivedMessageList.size());
     }
 
     public void removeMessage(@NonNull String messageID) {
@@ -77,5 +105,41 @@ public class DialogActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    @Override
+    public void onIncomeMessage(String message){
+        try {
+            JSONObject msgJson = new JSONObject(message);
+            Message incomeMsg = new Message(msgJson);
+            addMessage(incomeMsg);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onActionDeleteMessage(int mid) {
+        removeMessage(String.valueOf(mid));
+    }
+
+    @Override
+    public void onActionSendMessage(String msg){
+        try {
+            onIncomeMessage(msg);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onGetHistoryMessages(ArrayList<Message> msg_list) {
+        receivedMessageList.clear();
+        receivedMessageList.addAll(msg_list);
+        Collections.sort(receivedMessageList);
+
+        MessagesHelper messagesHelper = new MessagesHelper(this);
+        messagesHelper.deleteMessages(msg_list.get(0).getCid());
+        messagesAdapter.notifyDataSetChanged();
     }
 }

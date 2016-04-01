@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -44,7 +45,7 @@ public class Chats extends ApiSection {
 
     @NonNull
     public List<Chat> getChats() throws IOException {
-        final String requestURL = "dialogs";
+        final String requestURL = "list";
         final String requestMethod = "GET";
 
         List<Chat> chatsList;
@@ -52,8 +53,7 @@ public class Chats extends ApiSection {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
             final int status = result.getInt("status");
             if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                JSONArray chats = data.getJSONArray("dialogs");
+                JSONArray chats = result.getJSONArray("data");
 
                 chatsList = chatsFrom(chats);
             } else {
@@ -61,7 +61,7 @@ public class Chats extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
 
         return chatsList;

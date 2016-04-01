@@ -27,6 +27,14 @@ public class MessagesHelper {
         return db.insert(MessagesContract.MessagesEntry.TABLE_NAME, null, values);
     }
 
+    public int deleteMessages(@NonNull String cid) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String selection = MessagesContract.MessagesEntry.COLUMN_NAME_CID + " = ?";
+        String[] selectionArgs = { cid };
+        return db.delete(MessagesContract.MessagesEntry.TABLE_NAME,
+                selection, selectionArgs);
+    }
+
     @NonNull
     private Cursor getMessagesCursor(@NonNull String cid) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
