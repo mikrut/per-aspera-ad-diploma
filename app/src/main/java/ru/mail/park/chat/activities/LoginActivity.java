@@ -3,6 +3,8 @@ package ru.mail.park.chat.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Paint;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -12,6 +14,8 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +35,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private CheckBox withoutTorAllowedCheckBox;
     private TextView tvRegisterLink;
     private Button mEmailSignInButton;
 
@@ -49,7 +54,20 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
+        withoutTorAllowedCheckBox = (CheckBox) findViewById(R.id.withoutTorAllowedCheckBox);
+        withoutTorAllowedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences preferences =
+                        PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean(PreferenceConstants.SECURITY_PARANOID_N, !isChecked);
+                editor.commit();
+            }
+        });
+
         tvRegisterLink = (TextView) findViewById(R.id.register_link);
+        tvRegisterLink.setPaintFlags(tvRegisterLink.getPaintFlags() |   Paint.UNDERLINE_TEXT_FLAG);
         tvRegisterLink.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,6 +83,14 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
             startActivity(intent);
             finish();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences preferences =
+                PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+        withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true));
     }
 
     TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
@@ -91,7 +117,6 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
         String login = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
-        Toast.makeText(this, login + password, Toast.LENGTH_SHORT).show();
         new LoginTask(this, this).execute(login, password);
     }
 
@@ -103,8 +128,10 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
     @Override
     public void onLoginSuccess(OwnerProfile contact) {
-        contact.saveToPreferences(this);
         mProgressView.setVisibility(View.GONE);
+
+        contact.saveToPreferences(this);
+
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);
         finish();
@@ -112,6 +139,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
     @Override
     public void onLoginFail(String message) {
+        mProgressView.setVisibility(View.GONE);
+
         mPasswordView.setOnEditorActionListener(onPasswordListener);
         mEmailSignInButton.setOnClickListener(onSignInListener);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
