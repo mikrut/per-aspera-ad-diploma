@@ -6,6 +6,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="ru.mail.park.chat.activities.ContactsActivity">
 
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:id="@+id/app_bar"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
     <LinearLayout
         android:visibility="gone"
         android:orientation="horizontal"
@@ -13,6 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_below="@+id/app_bar"
         android:padding="10dp"
         android:id="@+id/findFriends"
         android:background="?attr/selectableItemBackground"
@@ -37,8 +55,13 @@
             android:id="@+id/textView" />
     </LinearLayout>
 
-    <com.doodle.android.chips.ChipsView
-        android:id="@+id/contacts_chips"
+    <EditText
+        android:id="@+id/choosen_contacts_list"
+        android:lines="2"
+        android:inputType="none"
+        android:focusable="false"
+        android:hint="Add contacts to dialog..."
+        android:layout_below="@+id/findFriends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

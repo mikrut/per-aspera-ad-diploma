@@ -8,9 +8,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
-import com.doodle.android.chips.ChipsView;
-
+import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.AContactAdapter;
@@ -21,12 +21,14 @@ import ru.mail.park.chat.models.Contact;
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity extends ContactsActivity {
-    ChipsView contactsChips;
+    EditText choosenContactsList;
+    TreeSet<Contact> choosenContacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        contactsChips = (ChipsView) findViewById(R.id.contacts_chips);
+        choosenContactsList = (EditText) findViewById(R.id.choosen_contacts_list);
+        choosenContacts = new TreeSet<>();
     }
 
     @Override
@@ -40,8 +42,27 @@ public class GroupDialogCreateActivity extends ContactsActivity {
             @Override
             public void onContactClick(View contactView, AContactAdapter.ContactHolder viewHolder) {
                 Contact contact = viewHolder.getContact();
+                if (choosenContacts.contains(contact)) {
+                    choosenContacts.remove(contact);
+                } else {
+                    choosenContacts.add(contact);
+                }
+                rebuildContactsList();
             }
         });
+    }
+
+    private void rebuildContactsList() {
+        StringBuilder builder = new StringBuilder();
+        Iterator<Contact> contactIterator = choosenContacts.iterator();
+        for (int i = 0; i < choosenContacts.size(); i++) {
+            Contact currentContact = contactIterator.next();
+            builder.append(currentContact.getContactTitle());
+            if (i != choosenContacts.size() - 1) {
+                builder.append(", ");
+            }
+        }
+        choosenContactsList.setText(builder.toString());
     }
 
     @Override

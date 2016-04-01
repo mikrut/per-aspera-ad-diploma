@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -179,5 +180,32 @@ public class Contact implements Comparable<Contact> {
             return  getLogin();
         }
         return titleBuilder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o != null && o instanceof Contact) {
+            Contact other = (Contact) o;
+            return TextUtils.equals(getLogin(), other.getLogin()) &&
+                    TextUtils.equals(getEmail(), other.getEmail()) &&
+                    TextUtils.equals(getPhone(), other.getPhone()) &&
+                    TextUtils.equals(getFirstName(), other.getFirstName()) &&
+                    TextUtils.equals(getLastName(), other.getLastName());
+        }
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(getLogin())
+                .append(getEmail())
+                .append(getPhone())
+                .append(getFirstName())
+                .append(getLastName())
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.mail.park.chat" >
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
@@ -42,10 +43,15 @@
         </activity>
         <activity
             android:name=".activities.RegisterActivity"
-            android:label="@string/title_activity_register" />
+            android:label="@string/title_activity_register"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.ContactsActivity"
             android:label="Contacts"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activities.GroupDialogCreateActivity"
+            android:label="Create Group Dialog"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".activities.ContactSearchActivity"

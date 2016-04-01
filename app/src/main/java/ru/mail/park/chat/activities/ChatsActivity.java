@@ -134,6 +134,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 R.drawable.ic_edit_black_24dp,
                 R.drawable.ic_person_black_48dp,
                 R.drawable.ic_group_black_24dp,
+                R.drawable.ic_group_black_24dp,
                 R.drawable.ic_settings_black_24dp,
                 R.drawable.ic_help_black_24dp
             };
