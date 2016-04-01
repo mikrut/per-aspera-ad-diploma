@@ -1,0 +1,9 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="paranoid_mode_switch"
+        android:title="@string/pref_title_paranoid_mode"
+        android:summary="@string/pref_description_paranoid_mode"
+        android:defaultValue="false" />
+
+</PreferenceScreen>

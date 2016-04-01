@@ -116,4 +116,16 @@
     <!-- Owner-related constants -->
     <string name="anonymous_name">anonymous</string>
     <string name="no_uid">no$uid</string>
+    <string name="title_activity_settings">Application Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_security">Security</string>
+
+    <string name="pref_title_paranoid_mode">Enable paranoid mode</string>
+    <string name="pref_description_paranoid_mode">Use TOR-only connections, onion version of server.
+        See help for additional information.
+    </string>
+
 </resources>

@@ -73,7 +73,14 @@ public class ChatsActivity extends AppCompatActivity {
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
-        String[] titles = {"Edit profile","Show profile","Contacts", "Help"};
+
+        String[] titles = {
+                "Edit profile",
+                "Show profile",
+                "Contacts",
+                "Settings",
+                "Help"
+        };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,11 +99,19 @@ public class ChatsActivity extends AppCompatActivity {
                 Intent intent = new Intent(ChatsActivity.this, ContactsActivity.class);
                 startActivity(intent);
             }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatsActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
         }, null};
+
         int[] pictures = {
                 R.drawable.ic_edit_black_24dp,
                 R.drawable.ic_person_black_48dp,
                 R.drawable.ic_group_black_24dp,
+                R.drawable.ic_settings_black_24dp,
                 R.drawable.ic_help_black_24dp
             };
         OwnerProfile owner = new OwnerProfile(this);

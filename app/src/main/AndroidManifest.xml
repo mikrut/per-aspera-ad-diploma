@@ -59,6 +59,14 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".activities.DialogActivity" >
         </activity>
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".activities.ChatsActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.mail.park.chat.activities.ChatsActivity" />
+        </activity>
     </application>
 
 </manifest>
