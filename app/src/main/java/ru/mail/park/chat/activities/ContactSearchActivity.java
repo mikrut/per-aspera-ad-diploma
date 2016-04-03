@@ -3,7 +3,9 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Loader;
+import android.database.Cursor;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +21,8 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ContactSearchAdapter;
+import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.loaders.ContactListDBWhereLoader;
 import ru.mail.park.chat.loaders.ContactsSearchLoader;
 import ru.mail.park.chat.models.Contact;
 
@@ -27,6 +31,7 @@ public class ContactSearchActivity extends AppCompatActivity {
     private RecyclerView contactsView;
 
     private static final int SEARCH_LOADER_ID = 0;
+    private static final int SEARCH_BASE_LOADER_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +75,19 @@ public class ContactSearchActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderListener);
+                if(contactsView.getAdapter().getItemCount() <= 0)
+                    getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderListener);
+                if(contactsView.getAdapter().getItemCount() <= 0)
+                    getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+
                 return true;
             }
         });
@@ -128,6 +139,33 @@ public class ContactSearchActivity extends AppCompatActivity {
                 @Override
                 public void onLoaderReset(Loader<List<Contact>> loader) {
                     ContactsSearchLoader searchLoader = (ContactsSearchLoader) loader;
+                    searchLoader.setSearchQuery(searchView.getQuery().toString());
+                }
+            };
+
+    LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderBaseListener =
+            new LoaderManager.LoaderCallbacks<List<Contact>>() {
+                @Override
+                public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
+                    ContactListDBWhereLoader loader = new ContactListDBWhereLoader(ContactSearchActivity.this);
+                    if (searchView != null) {
+                        loader.setSearchQuery(searchView.getQuery().toString());
+                    } else {
+                        loader.setSearchQuery("");
+                    }
+                    return loader;
+                }
+
+                @Override
+                public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+                    if (data != null) {
+                        contactsView.setAdapter(new ContactSearchAdapter(data));
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<List<Contact>> loader) {
+                    ContactListDBWhereLoader searchLoader = (ContactListDBWhereLoader) loader;
                     searchLoader.setSearchQuery(searchView.getQuery().toString());
                 }
             };

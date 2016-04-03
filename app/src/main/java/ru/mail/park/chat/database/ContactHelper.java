@@ -75,6 +75,21 @@ public class ContactHelper {
         );
     }
 
+    @NonNull
+    public Cursor getParticularContactsCursor(String pattern) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        return db.query(
+                ContactsContract.ContactsEntry.TABLE_NAME,
+                ContactsContract.CONTACT_PROJECTION,
+                ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN + " LIKE %?%", // Return contacts where login like %pattern%
+                new String[] {pattern}, // array of values to fill where clause
+                null, // No GROUP BY
+                null, // No GROUP BY filter
+                ContactsContract.ContactsEntry.COLUMN_NAME_LOGIN  // ORDER BY login
+        );
+    }
+
     @Nullable
     public Contact getContact(@NonNull String uid) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
