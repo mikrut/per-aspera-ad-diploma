@@ -24,8 +24,7 @@
         android:id="@+id/contactName"
         android:layout_alignTop="@+id/contactImage"
         android:layout_toRightOf="@+id/contactImage"
-        android:layout_toEndOf="@+id/contactImage"
-        android:textColor="#212121" />
+        android:layout_toEndOf="@+id/contactImage" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -39,7 +38,7 @@
 
     <ImageButton
         android:src="@drawable/ic_person_add_black_24dp"
-        android:tint="@color/colorPrimary"
+        android:tint="@color/textColorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/addFriendImage"
