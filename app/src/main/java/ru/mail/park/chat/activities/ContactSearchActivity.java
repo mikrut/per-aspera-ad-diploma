@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
@@ -32,10 +33,12 @@ public class ContactSearchActivity extends AppCompatActivity {
 
     private static final int SEARCH_LOADER_ID = 0;
     private static final int SEARCH_BASE_LOADER_ID = 1;
+    private static final String LOG_TAG = "[TP-diploma]";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "Started activity");
         setContentView(R.layout.activity_contact_search);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -44,6 +47,7 @@ public class ContactSearchActivity extends AppCompatActivity {
         contactsView = (RecyclerView) findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(this));
         getLoaderManager().initLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+        getLoaderManager().initLoader(SEARCH_LOADER_ID, null, contactsLoaderBaseListener);
     }
 
     @Override
@@ -75,19 +79,26 @@ public class ContactSearchActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderListener);
-                if(contactsView.getAdapter().getItemCount() <= 0)
+                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderBaseListener);
+                Log.d(LOG_TAG, "Loaded from base");
+
+                if(contactsView.getAdapter().getItemCount() <= 0) {
                     getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                    Log.d(LOG_TAG, "Loaded from web");
+                }
 
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderListener);
-                if(contactsView.getAdapter().getItemCount() <= 0)
-                    getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                getLoaderManager().restartLoader(SEARCH_BASE_LOADER_ID, null, contactsLoaderBaseListener);
+                Log.d(LOG_TAG, "Loaded from base");
 
+                if(contactsView.getAdapter().getItemCount() <= 0) {
+                    getLoaderManager().restartLoader(SEARCH_LOADER_ID, null, contactsLoaderListener);
+                    Log.d(LOG_TAG, "Loaded from web");
+                }
                 return true;
             }
         });
