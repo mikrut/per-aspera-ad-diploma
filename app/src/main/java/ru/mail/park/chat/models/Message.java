@@ -1,7 +1,10 @@
 package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -14,6 +17,7 @@ import java.util.GregorianCalendar;
 
 import ru.mail.park.chat.database.MessagesContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
  * Created by Михаил on 26.03.2016.
@@ -33,18 +37,32 @@ public class Message implements Comparable<Message> {
         uid = userID;
     }
 
-    public Message(@NonNull JSONObject message) throws JSONException, ParseException {
-        this(message.getString("msg_body"),
-                message.getString("cid"),
-                String.valueOf(message.getLong("uid")));
+    public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
+        String uid;
+        if (message.has("user")) {
+            uid = String.valueOf(message.getJSONObject("user").getLong("uid"));
+        } else {
+            SharedPreferences pref =
+                    context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
+                            Context.MODE_PRIVATE);
+            uid = pref.getString(PreferenceConstants.USER_UID_N, "");
+        }
+
+        messageBody = message.getString("textMessage");
+        cid = message.getString("idRoom");
+        this.uid = uid;
 
         if (message.has("mid")) {
             setMid(message.getString("mid"));
         }
 
-        if (message.has("dtCreate")) {
-            String dateString = message.getString("dtCreate");
-            setDate(dateString);
+        if (message.has("dtCreateMessage")) {
+            String dateString = message.getString("dtCreateMessage");
+            try {
+                setDate(dateString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
     

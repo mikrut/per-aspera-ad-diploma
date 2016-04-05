@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +25,6 @@ import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
-import ru.mail.park.chat.models.OwnerProfile;
 
 // TODO: emoticons
 // TODO: send message
@@ -51,7 +51,11 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         inputMessage = (EditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
 
-        messages = new Messages(this, this);
+        try {
+            messages = new Messages(this, this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         if (chatID != null) {
@@ -71,10 +75,9 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int uid = Integer.valueOf((new OwnerProfile(DialogActivity.this)).getUid());
                 String cid = chatID;
                 try {
-                    messages.sendMessage(uid, cid, inputMessage.getText().toString());
+                    messages.sendMessage(cid, inputMessage.getText().toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -107,10 +110,9 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     }
 
     @Override
-    public void onIncomeMessage(String message){
+    public void onIncomeMessage(JSONObject message){
         try {
-            JSONObject msgJson = new JSONObject(message);
-            Message incomeMsg = new Message(msgJson);
+            Message incomeMsg = new Message(message, this);
             addMessage(incomeMsg);
         } catch(Exception e) {
             e.printStackTrace();
@@ -123,7 +125,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     }
 
     @Override
-    public void onActionSendMessage(String msg){
+    public void onActionSendMessage(JSONObject msg){
         try {
             onIncomeMessage(msg);
         } catch(Exception e) {

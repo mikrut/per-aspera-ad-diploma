@@ -29,7 +29,7 @@
 
         <ImageButton
             android:contentDescription="Insert emoticon"
-            android:layout_margin="10dp"
+            android:padding="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/insertEmoticon"
@@ -46,9 +46,9 @@
 
         <ImageButton
             android:contentDescription="Send message"
-            android:layout_marginLeft="-40dp"
-            android:layout_marginStart="-40dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="-50dp"
+            android:layout_marginStart="-50dp"
+            android:padding="10dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"

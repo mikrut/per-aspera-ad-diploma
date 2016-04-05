@@ -2,16 +2,28 @@ package ru.mail.park.chat.api;
 
 import android.app.Activity;
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.neovisionaries.ws.client.ProxySettings;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
+import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
+import com.neovisionaries.ws.client.WebSocketFrame;
 
 import org.json.JSONArray;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.util.ArrayList;
+import java.util.IllegalFormatException;
 
+import info.guardianproject.netcipher.NetCipher;
+import info.guardianproject.netcipher.proxy.OrbotHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -27,103 +39,163 @@ public class Messages extends ApiSection {
     private WebSocket ws;
     private final IMessageReaction taskListener;
     private final Context taskContext;
+    private final OwnerProfile profile;
 
     private String getUrl() {
         String server = "http://p30480.lab1.stud.tech-mail.ru/ws/";
-        String id = new OwnerProfile(taskContext).getUid();
+        String id = profile.getUid();
         String result = server + "?idUser=" + id;
 
         return result;
     }
 
-    public Messages(@NonNull final Activity context, IMessageReaction listener) {
+    public Messages(@NonNull final Activity context, final IMessageReaction listener) throws IOException {
         super(context);
 
         this.taskContext = context;
         this.taskListener = listener;
 
-        try {
-            ws = new WebSocketFactory()
-                    .setConnectionTimeout(TIMEOUT)
-                    .createSocket(getUrl())
-                    .addListener(new WebSocketAdapter() {
-                        public void onTextMessage(WebSocket websocket, final String message) {
+        profile = new OwnerProfile(taskContext);
 
-                            // new IncomeMessageTask(taskContext, taskListener).execute(message);
-                            context.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    IMessageReaction listener = taskListener;
-                                    String income = message;
-                                    JSONObject jsonIncome = new JSONObject();
-                                    String method = "";
-                                    int mid = 0;
-                                    ArrayList<Message> msgList = new ArrayList<>();
+        WebSocketFactory wsFactory = new WebSocketFactory();
 
-                                    try {
-                                        jsonIncome = new JSONObject(income);
+        // TODO: fix proxy
+        /* ProxySettings proxySettings = wsFactory.getProxySettings();
+        boolean torStart = OrbotHelper.requestStartTor(context);
+        if (torStart) {
+            NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
+            Proxy netCipherProxy = NetCipher.getProxy();
+            Log.v(Messages.class.getCanonicalName(), netCipherProxy.address().toString());
+            proxySettings.setHost(netCipherProxy.address().toString());
+        } else {
+            boolean onlyTorIsAllowed = PreferenceManager
+                    .getDefaultSharedPreferences(context)
+                    .getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true);
+
+            if (onlyTorIsAllowed) {
+                throw new IOException("Cannot establish TOR connection");
+            }
+        } */
+
+        ws =    wsFactory
+                .setConnectionTimeout(TIMEOUT)
+                .createSocket(getUrl())
+                .addListener(new WebSocketAdapter() {
+                    @Override
+                    public void onConnectError(WebSocket websocket, WebSocketException exception) throws Exception {
+                        super.onConnectError(websocket, exception);
+                        Log.e("connect error", exception.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
+                        super.onDisconnected(websocket, serverCloseFrame, clientCloseFrame, closedByServer);
+                        Log.v("disconnected", closedByServer ? "by server" : "by itself");
+                    }
+
+                    @Override
+                    public void onSendError(WebSocket websocket, WebSocketException cause, WebSocketFrame frame) throws Exception {
+                        super.onSendError(websocket, cause, frame);
+                        Log.e("send error", cause.getLocalizedMessage());
+                    }
+
+                    public void onTextMessage(WebSocket websocket, final String message) {
+                        context.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Log.v(Messages.class.getCanonicalName(), message);
+                                    JSONObject jsonIncome = new JSONObject(message);
+
+                                    String method;
+                                    if (jsonIncome.has("method")) {
                                         method = jsonIncome.getString("method");
-                                        if (jsonIncome.has("mid")) {
-                                            mid = jsonIncome.getInt("mid");
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                                    } else if (jsonIncome.has("typePushe")) {
+                                        method = jsonIncome.getString("typePushe");
+                                    } else {
+                                        method = "SEND";
+                                        // FIXME: restore this throw when backend is fixed
+                                        // throw new IOException("No method field in server response");
                                     }
+
+                                    int status = jsonIncome.getInt("status");
+
+                                    if (status != 200)
+                                        throw new IOException("Wrong income status: " + String.valueOf(status));
 
                                     switch (method) {
                                         case "SEND":
-                                            listener.onActionSendMessage(income);
+                                            dispatchSend(jsonIncome);
+                                            break;
+                                        case "newMessage":
+                                            dispatchNewMessage(jsonIncome);
                                             break;
                                         case "DELETE":
-                                            listener.onActionDeleteMessage(mid);
+                                            dispatchDelete(jsonIncome);
                                             break;
                                         case "GET":
-                                            try {
-                                                JSONArray jsonMsgArray = jsonIncome.getJSONArray("messages");
-
-                                                for (int i = 0; i < jsonMsgArray.length(); i++) {
-                                                    JSONObject item = jsonMsgArray.getJSONObject(i);
-                                                    Message msg = new Message(item);
-
-                                                    msgList.add(msg);
-                                                }
-
-                                                listener.onGetHistoryMessages(msgList);
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                            break;
-                                        case "POST":
-                                        case "INCOME":
-                                            listener.onIncomeMessage(income);
-                                            break;
-                                        case "COMET":
+                                            dispatchGet(jsonIncome);
                                             break;
                                     }
+                                } catch (JSONException | IOException e) {
+                                    e.printStackTrace();
                                 }
-                            });
+                            }
+                        });
 
-                        }
-                    })
-                    .connectAsynchronously();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
+
+                    }
+                })
+                .connectAsynchronously();
     }
 
-    public void sendMessage(int uid, String cid, String msg_body) throws JSONException{
-        JSONObject jsonData = new JSONObject();
+    private void dispatchSend(JSONObject income) throws JSONException {
+        JSONObject data = income.getJSONObject("data");
+
+        String message = data.getString("textMessage");
+        String cid = data.getString("idMessage");
+        String creationDate = data.getString("dtCreateMessage");
+
+        taskListener.onActionSendMessage(data);
+    }
+
+    private void dispatchNewMessage(JSONObject income) throws JSONException {
+        JSONObject data = income.getJSONObject("data");
+
+        String message = data.getString("textMessage");
+        JSONObject user = data.getJSONObject("user");
+        String cid = data.getString("idRoom");
+        String creationDate = data.getString("dtCreate");
+
+        taskListener.onIncomeMessage(data);
+    }
+
+    private void dispatchDelete(JSONObject income) throws JSONException {
+        int mid = income.getInt("mid");
+        taskListener.onActionDeleteMessage(mid);
+    }
+
+    private void dispatchGet(JSONObject income) {
+
+    }
+
+    public void sendMessage(String cid, String msg_body) throws JSONException {
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
 
         try {
-            jsonData.put("method", "POST");
-            jsonData.put("uid", uid);
-            jsonData.put("cid", cid);
-            jsonData.put("msg_body", msg_body);
+            jsonRequest.put("controller", "Messages");
+            jsonRequest.put("method", "send");
+            jsonRequest.put("data", data);
+            data.put("accessToken", profile.getAuthToken());
+            data.put("idRoom", cid);
+            data.put("textMessage", msg_body);
         } catch(JSONException e) {
             e.printStackTrace();
         }
 
-        ws.sendText(jsonData.toString());
+        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        ws.sendText(jsonRequest.toString());
     }
 
     public void deleteMessage(int mid, String cid) {
