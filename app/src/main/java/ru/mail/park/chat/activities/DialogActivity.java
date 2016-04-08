@@ -1,14 +1,22 @@
 package ru.mail.park.chat.activities;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.EditText;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+
+import com.rockerhieu.emojicon.EmojiconEditText;
+import com.rockerhieu.emojicon.EmojiconGridFragment;
+import com.rockerhieu.emojicon.EmojiconsFragment;
+import com.rockerhieu.emojicon.emoji.Emojicon;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +28,7 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
+import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
@@ -28,12 +37,16 @@ import ru.mail.park.chat.models.Message;
 
 // TODO: emoticons
 // TODO: send message
-public class DialogActivity extends AppCompatActivity implements IMessageReaction {
+public class DialogActivity extends AppCompatActivity implements IMessageReaction,
+        EmojiconGridFragment.OnEmojiconClickedListener,
+        EmojiconsFragment.OnEmojiconBackspaceClickedListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
 
+    private KeyboardDetectingLinearLayout globalLayout;
+    private FrameLayout emojicons;
     private RecyclerView messagesList;
     private ImageButton insertEmoticon;
-    private EditText inputMessage;
+    private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
 
     private String chatID;
@@ -41,15 +54,35 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     private MessagesAdapter messagesAdapter;
     private Messages messages;
 
+    private boolean isEmojiFragmentShown = false;
+    private boolean isSoftKeyboardShown = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dialog);
 
+        globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
         messagesList = (RecyclerView) findViewById(R.id.messagesList);
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
-        inputMessage = (EditText) findViewById(R.id.inputMessage);
+        inputMessage = (EmojiconEditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
+        emojicons = (FrameLayout) findViewById(R.id.emojicons);
+
+        globalLayout.setOnKeyboardEventListener(new KeyboardDetectingLinearLayout.OnKeyboardEventListener() {
+            @Override
+            public void onSoftKeyboardShown() {
+                isSoftKeyboardShown = true;
+                isEmojiFragmentShown = false;
+                emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void onSoftKeyboardHidden() {
+                isSoftKeyboardShown = false;
+                emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
+            }
+        });
 
         try {
             messages = new Messages(this, this);
@@ -83,6 +116,25 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
                 }
             }
         });
+
+        insertEmoticon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isSoftKeyboardShown) {
+                    isEmojiFragmentShown = !isEmojiFragmentShown;
+                    emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
+                } else {
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                    isEmojiFragmentShown = true;
+                }
+            }
+        });
+
+        setEmojiconFragment(false);
     }
 
     public void addMessage(@NonNull Message message) {
@@ -142,5 +194,22 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         MessagesHelper messagesHelper = new MessagesHelper(this);
         messagesHelper.deleteMessages(msg_list.get(0).getCid());
         messagesAdapter.notifyDataSetChanged();
+    }
+
+    private void setEmojiconFragment(boolean useSystemDefault) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.emojicons, EmojiconsFragment.newInstance(useSystemDefault))
+                .commit();
+    }
+
+    @Override
+    public void onEmojiconBackspaceClicked(View v) {
+        EmojiconsFragment.backspace(inputMessage);
+    }
+
+    @Override
+    public void onEmojiconClicked(Emojicon emojicon) {
+        EmojiconsFragment.input(inputMessage, emojicon);
     }
 }
