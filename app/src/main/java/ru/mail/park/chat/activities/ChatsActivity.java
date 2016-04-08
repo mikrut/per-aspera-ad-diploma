@@ -82,7 +82,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         mRecyclerView.setHasFixedSize(true);
 
         String[] titles = {
-                "Edit profile",
                 "Show profile",
                 "Group chats",
                 "Contacts",
@@ -91,12 +90,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 "Log out"
         };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ChatsActivity.this, ProfileActivity.class);
-                startActivity(intent);
-            }
-        },new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ChatsActivity.this, UserProfileActivity.class);
@@ -131,12 +124,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         };
         
         int[] pictures = {
-                R.drawable.ic_edit_black_24dp,
                 R.drawable.ic_person_black_48dp,
                 R.drawable.ic_group_black_24dp,
-                R.drawable.ic_group_black_24dp,
+                R.drawable.ic_contacts_black_24dp,
                 R.drawable.ic_settings_black_24dp,
-                R.drawable.ic_help_black_24dp
+                R.drawable.ic_help_black_24dp,
+                R.drawable.ic_lock_black_24dp
             };
         OwnerProfile owner = new OwnerProfile(this);
         RecyclerView.Adapter mAdapter = new MenuAdapter(

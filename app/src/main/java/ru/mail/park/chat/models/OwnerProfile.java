@@ -29,6 +29,21 @@ public class OwnerProfile extends Contact {
         setAuthToken(owner.getString("accessToken"));
     }
 
+    public OwnerProfile(Contact contact, Context context) {
+        SharedPreferences sharedPreferences =
+                context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
+                        Context.MODE_PRIVATE);
+
+        setEmail(contact.getEmail());
+        setPhone(contact.getPhone());
+        setFirstName(contact.getFirstName());
+        setLastName(contact.getLastName());
+        setLogin(contact.getLogin());
+        setUid(contact.getUid());
+
+        setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
+    }
+
 
     public OwnerProfile(Context context) {
         SharedPreferences sharedPreferences =
@@ -39,8 +54,12 @@ public class OwnerProfile extends Contact {
         setLogin(sharedPreferences.getString(PreferenceConstants.USER_LOGIN_N, null));
         setUid(sharedPreferences.getString(PreferenceConstants.USER_UID_N, null));
         setPhone(sharedPreferences.getString(PreferenceConstants.USER_PHONE_N, null));
+        setFirstName(sharedPreferences.getString(PreferenceConstants.USER_FIRST_NAME_N, null));
+        setLastName(sharedPreferences.getString(PreferenceConstants.USER_LAST_NAME_N, null));
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
+
+
 
     public void saveToPreferences(Context context) {
         SharedPreferences sharedPreferences =
@@ -52,6 +71,8 @@ public class OwnerProfile extends Contact {
         preferenceEditor.putString(PreferenceConstants.USER_LOGIN_N, getLogin());
         preferenceEditor.putString(PreferenceConstants.USER_PHONE_N, getPhone());
         preferenceEditor.putString(PreferenceConstants.USER_UID_N, getUid());
+        preferenceEditor.putString(PreferenceConstants.USER_FIRST_NAME_N, getFirstName());
+        preferenceEditor.putString(PreferenceConstants.USER_LAST_NAME_N, getLastName());
         preferenceEditor.putString(PreferenceConstants.AUTH_TOKEN_N, getAuthToken());
 
         preferenceEditor.apply();
