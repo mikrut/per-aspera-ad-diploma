@@ -12,6 +12,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
+import com.neovisionaries.ws.client.WebSocketState;
 
 import org.json.JSONArray;
 
@@ -59,14 +60,16 @@ public class Messages extends ApiSection {
 
         WebSocketFactory wsFactory = new WebSocketFactory();
 
-        // TODO: fix proxy
-        /* ProxySettings proxySettings = wsFactory.getProxySettings();
+        ProxySettings proxySettings = wsFactory.getProxySettings();
         boolean torStart = OrbotHelper.requestStartTor(context);
         if (torStart) {
             NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
             Proxy netCipherProxy = NetCipher.getProxy();
             Log.v(Messages.class.getCanonicalName(), netCipherProxy.address().toString());
-            proxySettings.setHost(netCipherProxy.address().toString());
+
+            String[] ipPort = netCipherProxy.address().toString().split(":");
+            proxySettings.setHost(ipPort[0].substring(1));
+            proxySettings.setPort(Integer.valueOf(ipPort[1]));
         } else {
             boolean onlyTorIsAllowed = PreferenceManager
                     .getDefaultSharedPreferences(context)
@@ -75,7 +78,7 @@ public class Messages extends ApiSection {
             if (onlyTorIsAllowed) {
                 throw new IOException("Cannot establish TOR connection");
             }
-        } */
+        }
 
         ws =    wsFactory
                 .setConnectionTimeout(TIMEOUT)
@@ -180,6 +183,8 @@ public class Messages extends ApiSection {
     }
 
     public void sendMessage(String cid, String msg_body) throws JSONException {
+        reconnect();
+
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
 
@@ -199,6 +204,8 @@ public class Messages extends ApiSection {
     }
 
     public void deleteMessage(int mid, String cid) {
+        reconnect();
+
         JSONObject jsonData = new JSONObject();
 
         try {
@@ -213,6 +220,8 @@ public class Messages extends ApiSection {
     }
 
     public void getHistory(String cid) {
+        reconnect();
+
         JSONObject jsonData = new JSONObject();
 
         try {
@@ -223,5 +232,16 @@ public class Messages extends ApiSection {
         }
 
      //   ws.sendText(jsonData.toString());
+    }
+
+    private void reconnect() {
+        if (ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING)) {
+            try {
+                ws = ws.recreate();
+                ws.connectAsynchronously();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
