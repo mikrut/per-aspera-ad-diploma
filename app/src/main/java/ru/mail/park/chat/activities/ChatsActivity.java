@@ -79,12 +79,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         mRecyclerView.setHasFixedSize(true);
 
         String[] titles = {
-                "Show profile",
-                "Group chats",
-                "Contacts",
-                "Settings",
-                "Help",
-                "Log out"
+                getString(R.string.action_show_profile),
+                getString(R.string.action_group_chats),
+                getString(R.string.contacts),
+                getString(R.string.action_settings),
+                getString(R.string.action_help),
+                getString(R.string.action_log_out)
         };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
             @Override
