@@ -24,10 +24,10 @@
         android:id="@+id/contactName"
         android:layout_alignTop="@+id/contactImage"
         android:layout_toRightOf="@+id/contactImage"
-        android:layout_toEndOf="@+id/contactImage"
-        android:textColor="#212121" />
+        android:layout_toEndOf="@+id/contactImage" />
 
     <TextView
+        android:tint="@color/textColorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"

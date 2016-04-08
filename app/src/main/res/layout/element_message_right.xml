@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_marginTop="5dp"
     android:layout_marginBottom="5dp"
@@ -9,6 +9,7 @@
     android:layout_marginRight="5dp"
     android:layout_marginEnd="5dp"
     android:gravity="right"
+    tools:background="#ffffff"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -24,7 +25,8 @@
         android:paddingRight="50dp"
         android:paddingEnd="50dp"
         android:gravity="start|center_vertical"
-        android:text="Example message text"
+        tools:text="Example message text"
+        android:textColor="@color/textColorPrimaryInverse"
         android:background="@drawable/white_bubble"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
