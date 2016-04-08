@@ -38,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Created by Михаил on 02.04.2016.
  */
 public class AuthKeyCreator {
-    interface ServerProxy {
+    public interface ServerProxy {
         enum Method {
             REQ_PQ,
             RES_PQ,
@@ -74,7 +74,13 @@ public class AuthKeyCreator {
 
     @NonNull
     byte[] getSerializedPQClientResponse(int p, int q, Nonce nonce, Nonce serverNonce, Nonce newNonce) {
-        return null;
+        return ByteBuffer.allocate(4 * 2 + Nonce.LENGTH * 3)
+                .putInt(p)
+                .putInt(q)
+                .put(nonce.getNonce())
+                .put(serverNonce.getNonce())
+                .put(newNonce.getNonce())
+                .array();
     }
 
     private ServerProxy serverProxy;
@@ -294,9 +300,17 @@ public class AuthKeyCreator {
     }
 
     private Pair<Integer, Integer> decomposePQ(long pq) {
+
+        return decomposePQTrivial(pq);
+    }
+
+    private Pair<Integer, Integer> decomposePQTrivial(long pq) {
         int i = 2;
+        if (pq % i == 0)
+            return new Pair<>(i, (int) (pq/i));
+        i = 3;
         while (pq % i != 0) {
-            i++;
+            i += 2;
         }
         return new Pair<>(i, (int) (pq/i));
     }
@@ -310,6 +324,7 @@ public class AuthKeyCreator {
         return unixTime;
     }
 
+    // FIXME: sha1 instead of longValue
     private RSAPublicKey getRSAPublicKey(@NonNull long[] fingerprints) {
         RSAPublicKey[] publicKeys = getPublicKeys();
 
@@ -335,8 +350,9 @@ public class AuthKeyCreator {
                 messageUnixTime < unixTime + 30;
     }
 
+    public RSAPublicKey[] keys;
     @NonNull
     private RSAPublicKey[] getPublicKeys() {
-        return null;
+        return keys;
     }
 }
