@@ -23,6 +23,7 @@ import android.widget.Toast;
 import ru.mail.park.chat.activities.tasks.LoginTask;
 import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -131,6 +132,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         mProgressView.setVisibility(View.GONE);
 
         contact.saveToPreferences(this);
+        MessengerDBHelper dbHelper = new MessengerDBHelper(this);
+        dbHelper.onCreate(dbHelper.getWritableDatabase());
 
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);

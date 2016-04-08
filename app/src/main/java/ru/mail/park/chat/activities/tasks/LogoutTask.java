@@ -13,41 +13,45 @@ import ru.mail.park.chat.models.OwnerProfile;
 /**
  * Created by 1запуск BeCompact on 27.03.2016.
  */
-public class LogoutTask  extends AsyncTask<String, Void, Void> {
+public class LogoutTask extends AsyncTask<String, Void, Boolean> {
     private IAuthLogout listener;
     private Auth auth;
     private Context context;
 
     public LogoutTask(Context context, IAuthLogout listener) {
-        auth = new Auth(context);
         this.context = context;
         this.listener = listener;
-        listener.onStartLogout();
+        if (listener != null) {
+            listener.onStartLogout();
+        }
     }
 
     @Override
-    protected Void doInBackground(String... params) {
+    protected Boolean doInBackground(String... params) {
+        auth = new Auth(context);
         Log.d("[TechMail]", "calling doInBackground");
         String token = params[0];
 
-        OwnerProfile user = new OwnerProfile(context);
-        String message = null;
-
         try {
             auth.logOut(token);
-
-
         } catch (IOException e) {
-            message = e.getLocalizedMessage();
+            e.printStackTrace();
+            return false;
         }
 
-        return null;
+        return true;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
+    protected void onPostExecute(Boolean result) {
         super.onPostExecute(result);
         Log.d("[TechMail]", "calling onPostExecute");
-        listener.onLogoutSuccess();
+        if (listener != null) {
+            if (result) {
+                listener.onLogoutSuccess();
+            } else {
+                listener.onLogoutFail();
+            }
+        }
     }
 }

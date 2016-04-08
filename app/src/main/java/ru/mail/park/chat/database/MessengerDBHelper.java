@@ -31,12 +31,22 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(ChatsContract.DROP_TABLE);
-        db.execSQL(ContactsContract.DROP_TABLE);
-        db.execSQL(MessagesContract.DROP_TABLE);
+        dropDatabase(db);
         onCreate(db);
     }
 
+    public void dropDatabase() {
+        SQLiteDatabase db = getWritableDatabase();
+        dropDatabase(db);
+    }
+
+    public void dropDatabase(SQLiteDatabase db) {
+        db.execSQL(ChatsContract.DROP_TABLE);
+        db.execSQL(ContactsContract.DROP_TABLE);
+        db.execSQL(MessagesContract.DROP_TABLE);
+    }
+
+    @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }

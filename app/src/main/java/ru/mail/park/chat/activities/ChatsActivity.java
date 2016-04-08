@@ -32,6 +32,7 @@ import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -118,7 +119,16 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 @Override
                 public void onClick(View v) {
                     Log.d("[TechMail]", "starting LogoutTask");
-                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile(ChatsActivity.this).getAuthToken());
+                    OwnerProfile owner = new OwnerProfile(ChatsActivity.this);
+                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(owner.getAuthToken());
+
+                    owner.removeFromPreferences(ChatsActivity.this);
+                    MessengerDBHelper dbHelper = new MessengerDBHelper(ChatsActivity.this);
+                    dbHelper.dropDatabase();
+
+                    Intent intent = new Intent(ChatsActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
             }
         };
@@ -145,19 +155,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeContainer.setOnRefreshListener(refreshListener);
-    }
-
-    class Query extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            return NetcipherTester.testNetcipher(ChatsActivity.this);
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            Snackbar.make(fab, s, Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
-        }
     }
 
     @Override
@@ -199,10 +196,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     @Override
     public void onLogoutSuccess() {
         Log.d("[TechMail]", "calling onLogoutSuccess");
-        new OwnerProfile(ChatsActivity.this).removeFromPreferences(ChatsActivity.this);
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
     }
 
     @Override
