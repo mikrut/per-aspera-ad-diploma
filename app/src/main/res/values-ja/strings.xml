@@ -1,0 +1,69 @@
+<resources>
+    <string name="app_name">"チャット"</string>
+    <string name="action_settings">"[設定]"</string>
+    <string name="action_search">"サーチ"</string>
+    <string name="title_activity_login">"ログイン"</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_login">"ログイン"</string>
+    <string name="prompt_password">"パスワード"</string>
+    <string name="action_sign_in">"ログイン"</string>
+    <string name="action_sign_up">"サインアップ"</string>
+    <string name="action_sign_in_short">"ログイン"</string>
+    <string name="title_activity_register">"登録"</string>
+
+    <string name="action_save_profile">"変更内容を保存"</string>
+
+    <string name="title_activity_profile">"プロファイリング"</string>
+
+    <string name="title_activity_user_profile">"ユーザープロフィール"</string>
+
+    <string name="title_activity_contacts">"連絡先"</string>
+
+    <string name="open">"オープン"</string>
+    <string name="close">"了う"</string>
+    <string name="large_text" translatable="false">"「材料はメタファーです。\ nは\ n \"\"この材料のメタファーは、合理化宇宙の統一理論とモーションのシステムです。」想像力と魔法に技術的に高度な、オープン \"\"材料は、触覚現実に根ざした紙とインクの研究に触発され、まだされている \"。\ n\" \"このサーフェスと材料のエッジが現実に接地されている視覚的な手がかりを提供しています。ザ・「材料の「柔軟性」は、物理的にあるものを優先し、新しいアフォーダンス作成」おなじみの触覚の使用は、ユーザーが迅速にアフォーダンスを理解するのに役立ちます。しかし、属性 \"\"物理学のルールを壊すことなく、世界を。\ n \"\"この光のファンダメンタルズ、表面、及び運動は、「「太字」に相互作用し、空間内で、お互いに関連して存在する。現実的な照明ショー \"\"、オブジェクトがどのように動くかを伝えるの鍵である \"継ぎ目、スペースを分割し、可動部品を示しています。\ n \ nグラフィック、意図的なています。\ n \ n \"\"とイメージガイドの視覚処理の使用「印刷ベースの設計タイポグラフィ、グリッド、スペース、スケール、色、の基本的要素」。これらの要素は、「「目を喜ばせるよりもはるかに多くを行う。彼らは、体験でユーザーを浸す「インターフェース」大胆でグラフィックを作成する画像、大規模なタイポグラフィ、および意図的な空白を \"\"階層、意味を作成し、焦点を当てています。意図的な色の選択、エッジにエッジた。\ n \"\"に重点をユーザーアクションは、コア機能がすぐに明らかになり、「提供する」ユーザーのためのウェイポイントをています。\ n \ n \"\"モーションの意味を提供しています。\ n \ n \"\"モーションの点や原動機などのユーザーを強化します。プライマリユーザーアクション」である「デザイン全体を変換する運動を開始する変曲点、。\ n \"は\"すべてのアクションは、単一の環境で行われます。オブジェクトは、「なしユーザに提示されている \"彼らは変換および再編成さえとしての経験の連続性を破壊する\ n\" \"モーションが注意を集中し、継続性を維持するのに役立つ、有意義かつ適切です。 \"\"フィードバックは微妙なまだ明確です。トランジションは、n \。まだコヒーレントEFのfi cientです\ n \"は\" 3Dワールドています。\ n \ n \"\"材料環境では、すべてのオブジェクトがx、y、z \"\"寸法を持っていることを意味し、3D空間、です。 z軸は垂直」、「正のz軸は、観察者に向かって延びる、ディスプレイの平面に整列されます。材料のすべてのシートは、単一の「「z軸に沿った位置を標準1DP厚さを有している。\ n \"占有\"ウェブ上で、z軸は、視点のための積層ずに使用されています。 3Dの世界では、「y軸を操作することによってエミュレートされます。\ n \ n \"\"である「光と影ています。\ n \ n \"\"材料環境では、仮想ライトシーンを照らします。 「周囲光があらゆる角度からソフトシャドウを作成しながら、指向性の影を。\ n \"はキーライトが「作成「影を材料環境でこれら二つの光源によって鋳造されます。 「Androidのではz軸に沿った様々な位置 \"\"開発、影は光源がで材料のシートによってブロックされたときに発生します \"。ウェブ上で、影のみ \"\" Y軸を操作することによって示されています。次の例では、6DPの高さを持つカードを示しています。\ n \ n \"\"昇格を休止ています。\ n \ n \"\"すべての材料のオブジェクトは、サイズに関係なく、変更されません休止標高、またはデフォルトの高さを \"\"持っています。オブジェクトが昇格を変更した場合、それは「できるだけ早く標高ています。\ n \ n \"\"その休止に戻るべきだ」コンポーネントの上昇をています。\ n \ n \"\"コンポーネントタイプの静止上昇はアプリ間で一貫性のある（例えば、FAB標高が \"\" 1つのアプリで）別のアプリで16dpする6DPから変化しない。\ n \"\"このコンポーネントは、環境の深さ \"\"に応じて、プラットフォーム間で異なる静止標高を有していてもよい（例えば、TVは携帯よりも大きな深さを有していますまたはデスクトップ）ています。\ n \ n \"\"応答標高とダイナミックな標高オフセットた。\ n \ n \"は\"いくつかのコンポーネントの種類は、彼らがユーザー入力に \"\"応じて高さを変更する意味、応答性の高さを持っている（例えば、通常のは、着目し、押されました）またはシステムイベント。これらの昇格 \"\"変更は一貫して、動的標高オフセットを使用して実装されています。\ n \"\"ダイナミック標高オフセットは、コンポーネントの休止状態への「相対に向かって部品移動」ことを目標上昇しています。彼らは、標高の変化がアクションとコンポーネント・タイプで \"\"一致していることを確認します。例えば、プレスで持ち上げ、すべてのコンポーネントが「持っている」彼らの休息の上昇に同じ高さの変化を相対的にます\ n \"\"入力イベントが完了またはキャンセルされると、コンポーネントはその休止 \"\"昇格に戻ります。\ N \ N彼らは安静時の標高と動的標高オフセット \"\"間を移動するように \"\"。標高の干渉を回避\ nは\ n \"は\"応答の標高を持つコンポーネントは、他のコンポーネントが発生することがあります。材料は「渡すことはできませんので\ n \"\"このコンポーネントレベルでは、コンポーネントが移動したりすることができ、コンポーネントごとに、またはアプリケーション全体のレイアウトを使用しているかどうか。 \"\"他の材料を介して、構成要素は、互いに任意の数の方法との干渉を避けます」彼らは干渉を起こす前に除去します。 \"\"例えば、フローティングアクションボタン（FAB）が消えることができますか前に画面をオフに移動する \"\"ユーザーカードをピックアップし、またはスナックバーが表示された場合、それが移動することができます。\ n \"\"このレイアウトレベルでは、アプリのレイアウトを設計します干渉の機会を最小限に抑えることができます。ユーザーがカードの1つをピックアップしようとすると、 \"\" \"FABが干渉しないように、例えば、カードの流れの一方の側にFABを配置」ています。\ n \ n\""</string>
+
+    <!-- Owner-related constants -->
+    <string name="anonymous_name">"匿名"</string>
+    <string name="no_uid" translatable="false">"全くの$ uidをしません"</string>
+    <string name="title_activity_settings">"アプリケーションの設定"</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_security">"セキュリティ"</string>
+
+    <string name="pref_title_paranoid_mode">"被害妄想モードを有効にします"</string>
+    <string name="pref_description_paranoid_mode">"TOR-接続のみ、サーバーのタマネギのバージョンを使用してください。追加情報については、ヘルプを参照してください。"</string>
+    <string name="action_save">"保存"</string>
+    <string name="action_delete">"削除"</string>
+    <string name="action_create">"作成"</string>
+    <string name="action_edit_contact">"編集"</string>
+    <string name="description_make_photo">"写真を作ります"</string>
+    <string name="description_upload_photo">"写真をアップロード"</string>
+    <string name="description_insert_emoticon">"絵文字を挿入"</string>
+    <string name="hint_input_message">"メッセージ"</string>
+    <string name="hint_login">"ログイン"</string>
+    <string name="hint_first_name">"ファーストネーム"</string>
+    <string name="hint_last_name">"苗字"</string>
+    <string name="find_friends">"友達を見つける"</string>
+    <string name="contacts">"X -連絡先"</string>
+    <string name="description_send_message">"メッセージ送信"</string>
+    <string name="hint_add_contacts_to_dialog">"ダイアログに連絡先を追加..."</string>
+    <string name="option_allow_without_TOR">"TORのない接続を許可します"</string>
+    <string name="hint_email">"メール"</string>
+    <string name="hint_phone">"電話"</string>
+    <string name="add_to_contacts">"連絡先に追加"</string>
+    <string name="description_menu_action_icon">"メニューアクションアイコン"</string>
+    <string name="description_user_picture">"ユーザー画像"</string>
+    <string name="description_application_logo">"アプリケーションのロゴ"</string>
+    <string name="title_activity_chats">"チャットリスト"</string>
+    <string name="action_show_profile">"ショープロフィール"</string>
+    <string name="action_group_chats">"グループチャット"</string>
+    <string name="action_help">"ヘルプ"</string>
+    <string name="action_log_out">"ログアウト"</string>
+    <string name="title_activity_create_group_dialog">"Groupダイアログを作成します。"</string>
+    <string name="title_activity_dialog">"Dialog"</string>
+
+</resources>

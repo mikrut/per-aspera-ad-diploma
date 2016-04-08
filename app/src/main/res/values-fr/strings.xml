@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">"Tchat"</string>
+    <string name="action_settings">"Paramètres"</string>
+    <string name="action_search">"Rechercher"</string>
+    <string name="title_activity_login">"Se connecter"</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_login">"S'identifier"</string>
+    <string name="prompt_password">"Mot de passe"</string>
+    <string name="action_sign_in">"Se connecter"</string>
+    <string name="action_sign_up">"S'enregistrer"</string>
+    <string name="action_sign_in_short">"Se connecter"</string>
+    <string name="title_activity_register">"Enregistrement"</string>
+
+    <string name="action_save_profile">"Enregistrer les modifications"</string>
+
+    <string name="title_activity_profile">"Profil"</string>
+
+    <string name="title_activity_user_profile">"Profil d'utilisateur"</string>
+
+    <string name="title_activity_contacts">"Contactez-moi"</string>
+
+    <string name="open">"Ouvrir"</string>
+    <string name="close">"Fermer"</string>
+    <string name="large_text" translatable="false">"
+        \"Le matériel est la métaphore. \ N \ n\" \"Une métaphore de la matière est la théorie unificatrice d'un espace rationalisées et un système de mouvement.\" \"Le matériau est ancré dans la réalité tactile, inspirée par l'étude de papier et de l'encre, mais\" \"technologiquement avancé et ouvert à l'imagination et la magie. \ N\" \"Les surfaces et les bords de la matière fournissent des repères visuels qui sont ancrées dans la réalité. La \"\" utilisation de tactile familier attributs permet aux utilisateurs de comprendre rapidement affordances. Pourtant, la \"\" flexibilité du matériau crée de nouvelles affordances qui supplantent ceux de la «physique» monde, sans enfreindre les règles de la physique. \ n \"\" les fondamentaux de la lumière, surface, et le mouvement sont la clé de transport de la façon dont les objets se déplacent \",\" interagissent, et existent dans l'espace et par rapport à l'autre. éclairage réalistes montre \"\" coutures, divise l'espace, et indique les pièces en mouvement. \ n \ n \"\" Gras, graphique, intentionnel \ n \ n \"\" les éléments fondamentaux de l'impression à base de la typographie de conception, de grilles, de l'espace, l'échelle, la couleur \",\" et l'utilisation de traitements visuels de guidage d'images. Ces éléments font bien plus que plaire à \"l'oeil\" Ils.. créer la hiérarchie, le sens, et de se concentrer. choix de couleurs délibérés, bord à bord \"\" l'imagerie, grande typographie à grande échelle, et de l'espace blanc intentionnel créer un audacieux et graphique \"\" interface qui plonge l'utilisateur dans l'expérience. \ n \"\" l'accent mis sur actions de l'utilisateur rend la fonctionnalité de base immédiatement apparente et fournit \"\" waypoints pour l'utilisateur. \ n \ n \"\" Mouvement donne un sens. \ n \ n \"\" respecte motion et renforce l'utilisateur comme le moteur principal. les actions des utilisateurs primaires sont \"\" points d'inflexion qui initient le mouvement, la transformation de l'ensemble de la conception. \ n \"\" Toute action se déroule dans un environnement unique. Les objets sont présentés à l'utilisateur sans \"\" rompre la continuité de l'expérience comme ils se transforment et se réorganisent. \ N \"\" Le mouvement est significatif et approprié, servant à attirer l'attention et de maintenir la continuité. »« La rétroaction est subtile mais claire. Les transitions sont ef fi cace mais cohérent. \ N \ n \"\" monde 3D. \ N \ n \"\" L'environnement matériel est un espace 3D, ce qui signifie que tous les objets ont x, y et z \"\" dimensions. L'axe z est perpendiculaire alignée au plan de l'affichage, avec l'axe z \"\" positif se prolongeant vers le spectateur. Chaque feuille de matériau occupe une seule position \"\" le long de l'axe z et a une épaisseur 1DP standard. \ N \"\" Sur le web, l'axe z est utilisé pour la superposition et non pas pour la perspective. Le monde 3D est \"\" émulé par la manipulation de l'axe y. \ N \ n \"\" Lumière et ombre. \ N \ n \"\" Dans l'environnement matériel, les lumières virtuelles illuminent la scène. lumières clés créent \"\" ombres directionnelles, tandis que la lumière ambiante crée des ombres douces sous tous les angles. \ n \"\" Ombres dans l'environnement matériel sont coulés par ces deux sources lumineuses. Dans Android \"\" le développement, les ombres se produisent lorsque les sources lumineuses sont bloquées par des feuilles de matériau à \"\" diverses positions le long de l'axe z. Sur la bande, les ombres sont représentés par la manipulation de l'axe Y \"\" seulement. L'exemple suivant montre la carte avec une hauteur de 6DP. \ N \ n \"\" Repos élévation. \ N \ n \"\" Tous les objets matériels, indépendamment de leur taille, ont une élévation de repos, ou une élévation par défaut \"\" qui ne change pas. Si un objet change d'élévation, il devrait revenir à son repos »« élévation le plus tôt possible. \ N \ n \"\" élévations de composants. \ N \ n \"\" L'élévation de repos pour un type de composant est cohérent à travers des applications (par exemple, FAB élévation \"\" ne varie pas d'6DP dans une application à 16DP dans une autre application). \ n \"\" les composants peuvent avoir différentes élévations de repos à travers les plates-formes, en fonction de la profondeur \"\" de l'environnement (par exemple, la télévision a une plus grande profondeur que mobiles ou de bureau). \ n \ n \"\" élévation et d'élévation dynamique des décalages Responsive. \ n \ n \"\" Certains types de composants ont élévation sensible, ce qui signifie qu'ils changent d'élévation en réponse \"\" à l'entrée de l'utilisateur (par exemple, normal, concentré, et pressé ) ou les événements du système. Ces élévation \"\" les changements sont systématiquement mises en œuvre en utilisant des décalages d'élévation dynamiques. \ N \"\" décalages d'élévation dynamiques sont l'élévation du but qui a se déplace vers composantes, par rapport \"\" à l'état de repos du composant. Ils veillent à ce que les changements d'élévation sont cohérentes \"\" à travers des actions et des types de composants. Par exemple, tous les composants qui soulèvent sur la presse ont \"\" le même changement d'élévation par rapport à leur élévation de repos. \ N \"\" Une fois que l'événement d'entrée est terminée ou annulée, le composant retourne à son repos \"\" élévation. \ N \ n \"\" éviter les interférences d'élévation. \ n \ n \"\" composants présentant des élévations sensibles peuvent rencontrer d'autres composants comme ils se déplacent entre \"\" leurs élévations de repos et les décalages d'élévation dynamiques. Parce que la matière ne peut pas passer \"\" par le biais d'autres matériaux, composants éviter d'interférer avec l'autre de plusieurs façons »,« que ce soit sur une base par composant ou en utilisant l'application entière disposition. \ N \"\" Au niveau des composants, les composants peuvent se déplacer ou être enlevés avant qu'ils ne provoquent des interférences. \"\" Par exemple, un bouton d'action flottante (FAB) peut disparaître ou se déplacer hors de l'écran devant un \"utilisateur\" ramasse une carte, ou il peut se déplacer si un snack apparaît. \ N \"\" Au niveau de la mise en page, la conception de votre application mise en page pour réduire au minimum les possibilités d'ingérence. \"\" Par exemple, positionner la FAB à un côté du courant d'une carte de sorte que le FAB ne gênera pas \"\" lorsqu'un utilisateur tente de ramasser une des cartes. \ N \ n \"
+    "</string>
+
+    <!-- Owner-related constants -->
+    <string name="anonymous_name">"anonymous"</string>
+    <string name="no_uid" translatable="false">"pas $ uid"</string>
+    <string name="title_activity_settings">"Paramètres de l'application"</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_security">"Sécurité"</string>
+
+    <string name="pref_title_paranoid_mode">"Activer le mode paranoïaque"</string>
+    <string name="pref_description_paranoid_mode">"Utilisez les connexions TOR uniquement, la version d'oignon du serveur. Voir l'aide pour plus d'informations.
+    "</string>
+    <string name="action_save">"auvegarder"</string>
+    <string name="action_delete">"Effacer"</string>
+    <string name="action_create">"Créer"</string>
+    <string name="action_edit_contact">"Modifier"</string>
+    <string name="description_make_photo">"Faire photo"</string>
+    <string name="description_upload_photo">"Téléchargez une photo"</string>
+    <string name="description_insert_emoticon">"Insérer émoticône"</string>
+    <string name="hint_input_message">"Méssage"</string>
+    <string name="hint_login">"S'identifier"</string>
+    <string name="hint_first_name">"Prénom"</string>
+    <string name="hint_last_name">"Nom de famille"</string>
+    <string name="find_friends">"Trouver des amis"</string>
+    <string name="contacts">"Contactez-moi"</string>
+    <string name="description_send_message">"Envoyer un message"</string>
+    <string name="hint_add_contacts_to_dialog">"Ajouter des contacts à dialoguer ..."</string>
+    <string name="option_allow_without_TOR">"Autoriser la connexion sans TOR"</string>
+    <string name="hint_email">"Courriel"</string>
+    <string name="hint_phone">"Téléphone"</string>
+    <string name="add_to_contacts">"Ajouter aux contacts"</string>
+    <string name="description_menu_action_icon">"Menu icone"</string>
+    <string name="description_user_picture">"Image de l'utilisateur"</string>
+    <string name="description_application_logo">"logo Application"</string>
+    <string name="title_activity_chats">"liste des conversations"</string>
+    <string name="action_show_profile">"Voir le profil"</string>
+    <string name="action_group_chats">"chats de groupe"</string>
+    <string name="action_help">"Aidez-Moi"</string>
+    <string name="action_log_out">"Déconnexion"</string>
+    <string name="title_activity_create_group_dialog">"Créer un groupe de dialogue"</string>
+    <string name="title_activity_dialog">"Dialogue"</string>
+
+</resources>
