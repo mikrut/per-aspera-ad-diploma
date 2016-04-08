@@ -13,63 +13,74 @@
     tools:showIn="@layout/activity_user_profile">
 
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:drawableStart="@drawable/ic_person_black_24dp"
-            android:drawableLeft="@drawable/ic_person_black_24dp"
-            android:drawablePadding="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Voloshin"
-            android:id="@+id/user_login"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginTop="10dp" />
-
-        <TextView
-            android:visibility="gone"
+        <ProgressBar
+            tools:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="last seen at 10:15"
-            android:id="@+id/user_last_seen"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:layout_below="@+id/user_login" />
+            android:id="@+id/progressBar"
+            android:layout_gravity="center_horizontal" />
 
-        <TextView
-            android:drawableStart="@drawable/ic_email_black_24dp"
-            android:drawableLeft="@drawable/ic_email_black_24dp"
-            android:drawablePadding="10dp"
-            android:layout_marginTop="10dp"
+        <LinearLayout
+            android:id="@+id/profileDataLayout"
+            android:visibility="gone"
+            tools:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="d.voloshin@corp.mail.ru"
-            android:id="@+id/user_email"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:orientation="vertical">
 
-        <TextView
-            android:drawableStart="@drawable/ic_phone_black_24dp"
-            android:drawableLeft="@drawable/ic_phone_black_24dp"
-            android:drawablePadding="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="8-123-456-78-90"
-            android:id="@+id/user_phone"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_alignBottom="@+id/phone_picture"
-            android:layout_alignLeft="@+id/user_email"
-            android:layout_alignStart="@+id/user_email" />
+            <TextView
+                android:drawableStart="@drawable/ic_person_black_24dp"
+                android:drawableLeft="@drawable/ic_person_black_24dp"
+                android:drawablePadding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Voloshin"
+                android:id="@+id/user_login"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_marginTop="10dp" />
 
-        <View
-            android:layout_marginTop="10dp"
-            android:paddingBottom="5dp"
-            android:layout_width="fill_parent"
-            android:layout_height="1dip"
-            android:background="#000000"
-            android:layout_alignBottom="@+id/phone_picture" />
+            <TextView
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="last seen at 10:15"
+                android:id="@+id/user_last_seen"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
+            <TextView
+                android:drawableStart="@drawable/ic_email_black_24dp"
+                android:drawableLeft="@drawable/ic_email_black_24dp"
+                android:drawablePadding="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="d.voloshin@corp.mail.ru"
+                android:id="@+id/user_email"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:drawableStart="@drawable/ic_phone_black_24dp"
+                android:drawableLeft="@drawable/ic_phone_black_24dp"
+                android:drawablePadding="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="8-123-456-78-90"
+                android:id="@+id/user_phone"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <View
+                android:layout_marginTop="10dp"
+                android:paddingBottom="5dp"
+                android:layout_width="fill_parent"
+                android:layout_height="1dip"
+                android:background="#000000" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>
