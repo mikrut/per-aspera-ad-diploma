@@ -150,7 +150,7 @@ public class UserProfileActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void setUserData(Contact user, Contact.Relation relation) {
+    private void setUserData(Contact user, Contact.Relation relation) {
         toolbarLayout.setTitle(user.getContactTitle());
         userLogin.setText(user.getLogin());
 
@@ -192,7 +192,7 @@ public class UserProfileActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
-    LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
+    private final LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<Contact>() {
                 @Override
                 public Loader<Contact> onCreateLoader(int id, Bundle args) {

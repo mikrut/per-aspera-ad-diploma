@@ -8,19 +8,19 @@ import java.io.IOException;
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
-public class ApiFacade {
+class ApiFacade {
 
-    private Auth auth;
-    private Chats chats;
-    private Contacts contacts;
+    private final Auth auth;
+    private final Chats chats;
+    private final Contacts contacts;
     private Messages messages;
-    private P2P p2p;
-    private Users users;
+    private final P2P p2p;
+    private final Users users;
 
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
     private ServerConnection sConn;
 
-    public ApiFacade(Context context) throws IOException {
+    public ApiFacade(Context context) {
         sharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
 
         try {

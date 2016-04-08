@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -63,11 +62,11 @@ public class ContactsActivity extends AppCompatActivity {
         });
     }
 
-    protected void onSetContentView() {
+    void onSetContentView() {
         setContentView(R.layout.activity_contacts);
     }
 
-    protected AContactAdapter onCreateContactAdapter(@NonNull List<Contact> data) {
+    AContactAdapter onCreateContactAdapter(@NonNull List<Contact> data) {
         return new ContactAdapter(data);
     }
 
@@ -77,7 +76,7 @@ public class ContactsActivity extends AppCompatActivity {
         getLoaderManager().restartLoader(DB_LOADER, null, contactsLoaderListener);
     }
 
-    View.OnClickListener findFriendsListener = new View.OnClickListener() {
+    private final View.OnClickListener findFriendsListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(ContactsActivity.this, ContactSearchActivity.class);
@@ -85,7 +84,7 @@ public class ContactsActivity extends AppCompatActivity {
         }
     };
 
-    LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Contact>>() {
                 @Override
                 public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {

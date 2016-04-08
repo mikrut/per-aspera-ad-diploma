@@ -130,7 +130,7 @@ public class Contacts extends ApiSection {
     }
 
     @NonNull
-    public SearchResult searchUser(@NonNull String partOfLogin, int minIndex, int responseLength) throws IOException, ParseException {
+    private SearchResult searchUser(@NonNull String partOfLogin, int minIndex, int responseLength) throws IOException, ParseException {
         final String requestURL = "info";
         final String requestMethod = "GET";
 

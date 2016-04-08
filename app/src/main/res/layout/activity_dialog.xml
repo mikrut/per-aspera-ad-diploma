@@ -31,7 +31,7 @@
             android:layout_height="wrap_content">
 
             <ImageButton
-                android:contentDescription="Insert emoticon"
+                android:contentDescription="@string/description_insert_emoticon"
                 android:padding="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -47,10 +47,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textCapSentences|textAutoCorrect|textMultiLine"
-                android:hint="Message" />
+                android:hint="@string/hint_input_message" />
 
             <ImageButton
-                android:contentDescription="Send message"
+                android:contentDescription="@string/description_send_message"
                 android:layout_marginLeft="-50dp"
                 android:layout_marginStart="-50dp"
                 android:padding="10dp"

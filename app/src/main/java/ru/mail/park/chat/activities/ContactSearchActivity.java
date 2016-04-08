@@ -105,7 +105,7 @@ public class ContactSearchActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Contact>>() {
                 @Override
                 public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {

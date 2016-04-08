@@ -37,6 +37,7 @@
                 android:minWidth="150dp"
                 android:minHeight="150dp"
                 android:background="#000000"
+                android:contentDescription="@string/description_application_logo"
                 android:src="@drawable/ic_anonymous"
                 android:layout_gravity="center_horizontal" />
 
@@ -76,7 +77,7 @@
             <CheckBox
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Allow connection without TOR"
+                android:text="@string/option_allow_without_TOR"
                 android:id="@+id/withoutTorAllowedCheckBox" />
 
             <Button

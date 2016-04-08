@@ -40,12 +40,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public View chatView;
+        public final View chatView;
 
-        public ImageView chatPicture;
-        public TextView chatName;
-        public TextView lastMessageTime;
-        public TextView lastMessageText;
+        public final ImageView chatPicture;
+        public final TextView chatName;
+        public final TextView lastMessageTime;
+        public final TextView lastMessageText;
 
         public ViewHolder(View chatView) {
             super(chatView);
@@ -60,7 +60,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         public void initView(Chat chat) {
             chatName.setText(chat.getName());
             // FIXME: take values from DB
-            lastMessageTime.setText("Sun");
+            // FIXME: get last message text, not description
             lastMessageText.setText(chat.getDescription());
             // TODO: chat pictures
         }

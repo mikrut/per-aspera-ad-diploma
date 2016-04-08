@@ -36,7 +36,7 @@ public class Contact implements Comparable<Contact> {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    protected Contact() {}
+    Contact() {}
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
         uid = contact.getString("id");
@@ -77,7 +77,7 @@ public class Contact implements Comparable<Contact> {
         return online;
     }
 
-    public void setOnline(boolean online) {
+    private void setOnline(boolean online) {
         this.online = online;
     }
 
@@ -86,7 +86,7 @@ public class Contact implements Comparable<Contact> {
         return uid;
     }
 
-    public void setUid(@NonNull String uid) {
+    void setUid(@NonNull String uid) {
         this.uid = uid;
     }
 
@@ -114,7 +114,7 @@ public class Contact implements Comparable<Contact> {
         return lastSeen;
     }
 
-    public void setLastSeen(@Nullable Calendar lastSeen) {
+    private void setLastSeen(@Nullable Calendar lastSeen) {
         this.lastSeen = lastSeen;
     }
 

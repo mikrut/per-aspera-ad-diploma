@@ -10,9 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
-import java.util.Objects;
 
-import ru.mail.park.chat.R;
 import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
@@ -92,7 +90,7 @@ public class OwnerProfile extends Contact {
         return authToken;
     }
 
-    public void setAuthToken(@Nullable String authToken) {
+    private void setAuthToken(@Nullable String authToken) {
         this.authToken = authToken;
     }
 

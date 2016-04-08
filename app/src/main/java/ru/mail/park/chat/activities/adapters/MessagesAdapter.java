@@ -22,8 +22,8 @@ import ru.mail.park.chat.models.Message;
 // http://stackoverflow.com/questions/31367599/how-to-update-recyclerview-adapter-data
 // http://stackoverflow.com/questions/28539666/recyclerview-adapter-and-viewholder-update-dynamically
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHolder> {
-    protected static final int INCOMING_MESSAGE = 0;
-    protected static final int OUTGOING_MESSAGE = 1;
+    private static final int INCOMING_MESSAGE = 0;
+    private static final int OUTGOING_MESSAGE = 1;
 
     private final List<Message> messagesSet;
     private final String ownerUID;
@@ -34,8 +34,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView messageText;
-        private ImageView contactPicture;
+        private final TextView messageText;
+        private final ImageView contactPicture;
 
         public ViewHolder(View itemView) {
             super(itemView);

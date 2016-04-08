@@ -14,19 +14,13 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketState;
 
-import org.json.JSONArray;
-
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.IllegalFormatException;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
-import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
 import org.json.JSONException;
@@ -45,9 +39,8 @@ public class Messages extends ApiSection {
     private String getUrl() {
         String server = "http://p30480.lab1.stud.tech-mail.ru/ws/";
         String id = profile.getUid();
-        String result = server + "?idUser=" + id;
 
-        return result;
+        return server + "?idUser=" + id;
     }
 
     public Messages(@NonNull final Activity context, final IMessageReaction listener) throws IOException {
@@ -182,7 +175,7 @@ public class Messages extends ApiSection {
 
     }
 
-    public void sendMessage(String cid, String msg_body) throws JSONException {
+    public void sendMessage(String cid, String msg_body) {
         reconnect();
 
         JSONObject jsonRequest = new JSONObject();

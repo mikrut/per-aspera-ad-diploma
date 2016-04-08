@@ -94,7 +94,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true));
     }
 
-    TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
+    private final TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         }
     };
 
-    OnClickListener onSignInListener = new OnClickListener() {
+    private final OnClickListener onSignInListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
             authenticate();

@@ -17,7 +17,8 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -28,6 +29,7 @@
         android:layout_alignParentTop="true"
         android:textStyle="bold"
         android:layout_toLeftOf="@+id/lastMessageTime"
+        android:layout_toStartOf="@+id/lastMessageTime"
         android:layout_toRightOf="@+id/chatPicture"
         android:layout_toEndOf="@+id/chatPicture" />
 
@@ -49,6 +51,7 @@
         android:id="@+id/lastMessageText"
         android:layout_below="@+id/chatName"
         android:layout_toRightOf="@+id/chatPicture"
+        android:layout_toEndOf="@+id/chatPicture"
         android:layout_alignRight="@+id/lastMessageTime"
         android:layout_alignEnd="@+id/lastMessageTime"
         android:layout_alignBottom="@+id/chatPicture"

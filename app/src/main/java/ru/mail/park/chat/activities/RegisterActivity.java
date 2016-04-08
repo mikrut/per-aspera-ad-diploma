@@ -44,7 +44,7 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         emailSignUpButton.setOnClickListener(signUpListener);
     }
 
-    private View.OnClickListener signUpListener = new View.OnClickListener() {
+    private final View.OnClickListener signUpListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             register();

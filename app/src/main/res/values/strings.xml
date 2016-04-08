@@ -127,5 +127,27 @@
     <string name="pref_description_paranoid_mode">Use TOR-only connections, onion version of server.
         See help for additional information.
     </string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_create">Create</string>
+    <string name="action_edit_contact">Edit</string>
+    <string name="description_make_photo">Make photo</string>
+    <string name="description_upload_photo">Upload photo</string>
+    <string name="description_insert_emoticon">Insert emoticon</string>
+    <string name="hint_input_message">Message</string>
+    <string name="hint_login">Login</string>
+    <string name="hint_first_name">First name</string>
+    <string name="hint_last_name">Last Name</string>
+    <string name="find_friends">Find Friends</string>
+    <string name="contacts">Contacts</string>
+    <string name="description_send_message">Send message</string>
+    <string name="hint_add_contacts_to_dialog">Add contacts to dialog...</string>
+    <string name="option_allow_without_TOR">Allow connection without TOR</string>
+    <string name="hint_email">E-Mail</string>
+    <string name="hint_phone">Phone</string>
+    <string name="add_to_contacts">Add to contacts</string>
+    <string name="description_menu_action_icon">Menu action icon</string>
+    <string name="description_user_picture">User picture</string>
+    <string name="description_application_logo">Application logo</string>
 
 </resources>

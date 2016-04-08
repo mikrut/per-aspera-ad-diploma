@@ -44,7 +44,7 @@ public class Users extends ApiSection {
     }
 
     @NonNull
-    public List<Contact> getUsers(@NonNull String... uids) throws IOException {
+    private List<Contact> getUsers(@NonNull String... uids) throws IOException {
         final String requestURL = "getUsers";
         final String requestMethod = "POST";
 

@@ -57,7 +57,7 @@ public class Chats extends ApiSection {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
-        } catch (JSONException | ParseException e) {
+        } catch (JSONException e) {
             throw new IOException("Server error", e);
         }
 
@@ -87,7 +87,7 @@ public class Chats extends ApiSection {
 
     @NonNull
     public Chat addUser(@NonNull String cid, @NonNull String uid,
-                        @Nullable DialogPrivilege privilege) throws IOException {
+                         @Nullable DialogPrivilege privilege) throws IOException {
         final String requestURL = "user";
         final String requestMethod = "POST";
 
@@ -147,7 +147,7 @@ public class Chats extends ApiSection {
         return chat;
     }
 
-    private static List<Chat> chatsFrom(JSONArray chats) throws JSONException, ParseException {
+    private static List<Chat> chatsFrom(JSONArray chats) throws JSONException {
         List<Chat> chatsList = new ArrayList<>(chats.length());
         for (int i = 0; i < chats.length(); i++) {
             Chat contact = new Chat(chats.getJSONObject(i));

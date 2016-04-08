@@ -17,8 +17,8 @@ public class ProfileWebLoader extends AsyncTaskLoader<Contact> {
     public static final String UID_ARG = "uid";
 
     private Contact profile;
-    private int id;
-    private String uid;
+    private final int id;
+    private final String uid;
 
     public ProfileWebLoader(@NonNull Context context, int id, Bundle args) {
         super(context);

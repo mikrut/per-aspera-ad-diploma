@@ -12,8 +12,8 @@ import java.util.Locale;
  * Created by Михаил on 06.03.2016.
  */
 public class MessengerDBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 3;
-    public static final String DATABASE_NAME = "Messenger.db";
+    private static final int DATABASE_VERSION = 3;
+    private static final String DATABASE_NAME = "Messenger.db";
 
     public static final DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
 
@@ -40,7 +40,7 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
         dropDatabase(db);
     }
 
-    public void dropDatabase(SQLiteDatabase db) {
+    private void dropDatabase(SQLiteDatabase db) {
         db.execSQL(ChatsContract.DROP_TABLE);
         db.execSQL(ContactsContract.DROP_TABLE);
         db.execSQL(MessagesContract.DROP_TABLE);

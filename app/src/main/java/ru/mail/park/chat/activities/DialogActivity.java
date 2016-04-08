@@ -2,7 +2,6 @@ package ru.mail.park.chat.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -109,11 +108,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
             @Override
             public void onClick(View v) {
                 String cid = chatID;
-                try {
-                    messages.sendMessage(cid, inputMessage.getText().toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                messages.sendMessage(cid, inputMessage.getText().toString());
             }
         });
 
@@ -137,7 +132,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         setEmojiconFragment(false);
     }
 
-    public void addMessage(@NonNull Message message) {
+    private void addMessage(@NonNull Message message) {
         for (int position = 0; position < receivedMessageList.size(); position++) {
             if (message.compareTo(receivedMessageList.get(position)) < 0) {
                 receivedMessageList.add(position, message);
@@ -150,7 +145,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         messagesAdapter.notifyItemInserted(receivedMessageList.size());
     }
 
-    public void removeMessage(@NonNull String messageID) {
+    private void removeMessage(@NonNull String messageID) {
         for (int position = 0; position < receivedMessageList.size(); position++) {
             Message message = receivedMessageList.get(position);
             if (message.getMid() != null && message.getMid().equals(messageID)) {

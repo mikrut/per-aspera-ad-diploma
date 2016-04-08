@@ -24,8 +24,8 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
     private TextView  userTitle;
-    public static final int REQUEST_IMAGE_CAPTURE = 1;
-    public static final int GET_FROM_GALLERY = 3;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int GET_FROM_GALLERY = 3;
 
     private EditText userLogin;
     private EditText userEmail;

@@ -8,15 +8,14 @@ import java.io.IOException;
 
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.api.Auth;
-import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by 1запуск BeCompact on 27.03.2016.
  */
 public class LogoutTask extends AsyncTask<String, Void, Boolean> {
-    private IAuthLogout listener;
+    private final IAuthLogout listener;
     private Auth auth;
-    private Context context;
+    private final Context context;
 
     public LogoutTask(Context context, IAuthLogout listener) {
         this.context = context;

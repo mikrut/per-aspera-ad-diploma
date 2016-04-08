@@ -14,9 +14,12 @@ import ru.mail.park.chat.database.ChatsContract;
  * Created by Михаил on 06.03.2016.
  */
 public class Chat {
-    @NonNull String cid;
-    @NonNull String name;
-    @Nullable String description;
+    @NonNull
+    private String cid;
+    @NonNull
+    private String name;
+    @Nullable
+    private String description;
 
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
@@ -37,7 +40,7 @@ public class Chat {
         return cid;
     }
 
-    public void setCid(@NonNull String cid) {
+    private void setCid(@NonNull String cid) {
         this.cid = cid;
     }
 
@@ -46,7 +49,7 @@ public class Chat {
         return name;
     }
 
-    public void setName(@NonNull String name) {
+    private void setName(@NonNull String name) {
         this.name = name;
     }
 
@@ -55,7 +58,7 @@ public class Chat {
         return description;
     }
 
-    public void setDescription(@Nullable String description) {
+    private void setDescription(@Nullable String description) {
         this.description = description;
     }
 

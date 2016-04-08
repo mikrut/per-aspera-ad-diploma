@@ -33,7 +33,7 @@
                     android:id="@+id/register_login"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Login"
+                    android:hint="@string/hint_login"
                     android:inputType="textNoSuggestions"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -48,7 +48,7 @@
                     android:id="@+id/register_first_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="First name"
+                    android:hint="@string/hint_first_name"
                     android:inputType="textNoSuggestions"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -64,7 +64,7 @@
                     android:id="@+id/register_last_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Last Name"
+                    android:hint="@string/hint_last_name"
                     android:inputType="textNoSuggestions"
                     android:maxLines="1"
                     android:singleLine="true" />

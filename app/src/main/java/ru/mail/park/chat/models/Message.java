@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -29,9 +28,9 @@ public class Message implements Comparable<Message> {
     private @NonNull String uid;
     private @Nullable Calendar date;
 
-    public Message(@NonNull String messageBody,
-                   @NonNull String chatID,
-                   @NonNull String userID) {
+    private Message(@NonNull String messageBody,
+                    @NonNull String chatID,
+                    @NonNull String userID) {
         this.messageBody = messageBody;
         cid = chatID;
         uid = userID;
@@ -81,23 +80,23 @@ public class Message implements Comparable<Message> {
         return mid;
     }
 
-    public void setMid(@NonNull String mid) {
+    private void setMid(@NonNull String mid) {
         this.mid = mid;
     }
 
     @Nullable
-    public Calendar getDate() {
+    private Calendar getDate() {
         return date;
     }
 
-    public void setDate(@Nullable String dateString) throws ParseException {
+    private void setDate(@Nullable String dateString) throws ParseException {
         java.util.Date date = MessengerDBHelper.iso8601.parse(dateString);
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         setDate(calendar);
     }
 
-    public void setDate(@Nullable Calendar date) {
+    private void setDate(@Nullable Calendar date) {
         this.date = date;
     }
 

@@ -30,11 +30,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="title"
+                tools:text="title"
                 android:id="@+id/user_title"
                 android:paddingTop="30dp"
                 android:paddingLeft="10dp"
                 android:paddingStart="10dp"
+                android:paddingRight="10dp"
+                android:paddingEnd="10dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:layout_toRightOf="@+id/user_picture"
                 android:layout_toEndOf="@+id/user_picture"
@@ -42,10 +44,11 @@
 
             <ImageButton
                 android:id="@+id/user_camera_shot"
-                android:contentDescription="Make photo"
+                android:contentDescription="@string/description_make_photo"
                 android:layout_width="48dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:layout_height="48dp"
                 android:layout_below="@id/user_title"
                 android:layout_alignStart="@+id/user_title"
@@ -56,13 +59,15 @@
 
             <ImageButton
                 android:id="@+id/user_upload_picture"
-                android:contentDescription="Upload photo"
+                android:contentDescription="@string/description_upload_photo"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_below="@id/user_title"
                 android:layout_toRightOf="@id/user_camera_shot"
+                android:layout_toEndOf="@id/user_camera_shot"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_folder_black_48dp"
                 android:tint="@color/textColorPrimary"/>
@@ -81,26 +86,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Login"
+                android:text="@string/hint_login"
                 android:id="@+id/login_helper" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Voloshin"
+                android:hint="@string/hint_login"
+                tools:text="Voloshin"
                 android:id="@+id/user_login"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="E-Mail"
+                android:text="@string/hint_email"
                 android:id="@+id/email_helper" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="d.voloshin@corp.mail.ru"
+                tools:text="d.voloshin@corp.mail.ru"
                 android:id="@+id/user_email"
                 android:inputType="textWebEmailAddress" />
 
@@ -108,13 +114,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Phone"
+                android:text="@string/hint_phone"
                 android:id="@+id/phone_helper" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="8-800-555-35-35"
+                tools:text="8-800-555-35-35"
                 android:id="@+id/user_phone"
                 android:inputType="phone" />
 
@@ -122,14 +128,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="First Name"
+                android:text="@string/hint_first_name"
                 android:id="@+id/first_name_helper" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:text="Dmitry"
+                tools:text="Dmitry"
                 android:ems="10"
                 android:id="@+id/first_name" />
 
@@ -137,14 +143,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Last Name"
+                android:text="@string/hint_last_name"
                 android:id="@+id/last_name_helper" />
 
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:text="Voloshin"
+                tools:text="Voloshin"
                 android:ems="10"
                 android:id="@+id/last_name" />
         </LinearLayout>

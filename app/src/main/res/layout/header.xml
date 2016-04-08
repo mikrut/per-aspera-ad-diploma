@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="178dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/sidemenu_topbg"
     android:orientation="vertical"
     android:weightSum="1">
@@ -21,8 +22,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:textColor="#ffffff"
-            android:text="Akash Bangad"
+            tools:text="Akash Bangad"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -32,8 +34,9 @@
             android:layout_height="wrap_content"
             android:textColor="#ffffff"
             android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="5dp"
-            android:text="akash.bangad93@gmail.com"
+            tools:text="akash.bangad93@gmail.com"
             android:textSize="14sp"
             android:textStyle="normal" />
     </LinearLayout>
@@ -44,6 +47,7 @@
         android:layout_height="70dp"
         android:src="@android:color/white"
         android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="38dp"
         android:id="@+id/userPicture"
         app:civ_border_width="2dp"

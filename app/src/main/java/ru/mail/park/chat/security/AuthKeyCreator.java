@@ -13,13 +13,11 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyAgreement;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.DHPublicKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -73,18 +70,18 @@ public class AuthKeyCreator {
     }
 
     @NonNull
-    byte[] getSerializedPQClientResponse(int p, int q, Nonce nonce, Nonce serverNonce, Nonce newNonce) {
+    private byte[] getSerializedPQClientResponse(int p, int q, Nonce nonce, Nonce serverNonce, Nonce newNonce) {
         return null;
     }
 
-    private ServerProxy serverProxy;
+    private final ServerProxy serverProxy;
 
     class ServerDHParams {
-        Nonce nonce;
-        Nonce serverNonce;
-        BigInteger g;
-        BigInteger gA;
-        BigInteger dhPrime;
+        final Nonce nonce;
+        final Nonce serverNonce;
+        final BigInteger g;
+        final BigInteger gA;
+        final BigInteger dhPrime;
 
         public ServerDHParams(byte[] decryptedAnswer,
                               Nonce nonce,

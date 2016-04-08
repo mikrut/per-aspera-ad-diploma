@@ -5,10 +5,8 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -22,11 +20,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import java.util.List;
 
-import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
@@ -38,7 +34,7 @@ import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
-    protected FloatingActionButton fab;
+    private FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
@@ -58,7 +54,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 R.string.open,
                 R.string.close
         );
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -203,7 +199,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         Log.d("[TechMail]", "calling onLogoutFail");
     }
 
-    LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
@@ -224,7 +220,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 }
             };
 
-    SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+    private final SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
             getLoaderManager().restartLoader(0, null, messagesLoaderListener);

@@ -19,10 +19,10 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 12.03.2016.
  */
 public class ContactSearchAdapter extends AContactAdapter {
-    List<Contact> contactList;
+    private final List<Contact> contactList;
 
     public static class ContactSearchHolder extends ContactHolder {
-        protected ImageButton addFriendImage;
+        final ImageButton addFriendImage;
 
         public ContactSearchHolder(final View itemView) {
             super(itemView);

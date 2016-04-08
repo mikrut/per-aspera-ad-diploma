@@ -19,7 +19,7 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 12.03.2016.
  */
 public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    protected static final int CONTACT = 1;
+    static final int CONTACT = 1;
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -53,12 +53,12 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     public static class ContactHolder extends RecyclerView.ViewHolder {
-        protected ImageView contactImage;
-        protected TextView contactName;
-        protected TextView contactLastSeen;
+        final ImageView contactImage;
+        final TextView contactName;
+        final TextView contactLastSeen;
 
-        protected String uid;
-        protected Contact contact;
+        String uid;
+        Contact contact;
 
         public ContactHolder(View itemView) {
             super(itemView);

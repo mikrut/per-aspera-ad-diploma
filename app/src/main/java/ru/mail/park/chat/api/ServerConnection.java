@@ -1,7 +1,6 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -33,22 +32,22 @@ import ru.mail.park.chat.database.PreferenceConstants;
 
 // FIXME: don't trust everyone!
 // TODO: check security
-public class ServerConnection {
-    HttpURLConnection httpURLConnection;
-    Context context;
-    String parameters = null;
+class ServerConnection {
+    private HttpURLConnection httpURLConnection;
+    private final Context context;
+    private String parameters = null;
 
     public ServerConnection(Context context, String url) throws IOException {
         this(context, new URL(url));
     }
 
-    public ServerConnection(Context context, URL url) throws IOException {
+    private ServerConnection(Context context, URL url) throws IOException {
         this.context = context;
         setUrl(url);
     }
 
-    protected TrustManager getTrustManager() {
-        TrustManager tm = new X509TrustManager() {
+    private TrustManager getTrustManager() {
+        return new X509TrustManager() {
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
             }
 
@@ -59,14 +58,13 @@ public class ServerConnection {
                 return null;
             }
         };
-        return tm;
     }
 
     public void setUrl(String url) throws IOException {
         setUrl(new URL(url));
     }
 
-    public void setUrl(URL url) throws IOException {
+    private void setUrl(URL url) throws IOException {
         boolean torStart = OrbotHelper.requestStartTor(context);
 
         try {

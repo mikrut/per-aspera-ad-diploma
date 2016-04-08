@@ -21,8 +21,8 @@ import ru.mail.park.chat.models.Contact;
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity extends ContactsActivity {
-    EditText choosenContactsList;
-    TreeSet<Contact> choosenContacts;
+    private EditText choosenContactsList;
+    private TreeSet<Contact> choosenContacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
