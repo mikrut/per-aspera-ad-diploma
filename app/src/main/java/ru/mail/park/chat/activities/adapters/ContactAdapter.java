@@ -43,12 +43,12 @@ public class ContactAdapter extends AContactAdapter {
         itemCount = contactList.size();
 
         if (contactList.size() > 0) {
-            Character lastChar = contactList.get(0).getLogin().charAt(0);
+            Character lastChar = contactList.get(0).getContactTitle().charAt(0);
             List<Contact> currentGroup = new LinkedList<>();
             contactGroups.put(lastChar, currentGroup);
 
             for (Contact contact : contactList) {
-                Character currentChar = contact.getLogin().charAt(0);
+                Character currentChar = contact.getContactTitle().charAt(0);
                 if (!lastChar.equals(currentChar)) {
                     lastChar = currentChar;
                     currentGroup = new LinkedList<>();
