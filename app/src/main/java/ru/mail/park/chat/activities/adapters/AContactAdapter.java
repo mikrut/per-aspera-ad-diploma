@@ -13,6 +13,7 @@ import java.util.Calendar;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.UserProfileActivity;
+import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -32,7 +33,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
-        contactHolder.setContactName(contact.getContactTitle());
+        contactHolder.setTitle(contact.getContactTitle());
         contactHolder.setUid(contact.getUid());
 
         Calendar lastSeen = contact.getLastSeen();
@@ -52,7 +53,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         return CONTACT;
     }
 
-    public static class ContactHolder extends RecyclerView.ViewHolder {
+    public static class ContactHolder extends TitledPicturedViewHolder {
         final ImageView contactImage;
         final TextView contactName;
         final TextView contactLastSeen;
@@ -62,7 +63,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         public ContactHolder(View itemView) {
             super(itemView);
-            contactImage = (ImageView) itemView.findViewById(R.id.contactImage);
+            contactImage = (ImageView) itemView.findViewById(R.id.image);
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
 
@@ -90,7 +91,9 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
             contactImage.setImageBitmap(bitmap);
         }
 
-        public void setContactName(String name) {
+        @Override
+        public void setTitle(String name) {
+            super.setTitle(name);
             contactName.setText(name);
         }
 

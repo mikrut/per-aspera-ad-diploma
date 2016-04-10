@@ -40,7 +40,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         public ViewHolder(View itemView) {
             super(itemView);
             messageText = (TextView) itemView.findViewById(R.id.messageText);
-            contactPicture = (ImageView) itemView.findViewById(R.id.contactPicture);
+            contactPicture = (ImageView) itemView.findViewById(R.id.image);
         }
 
         public void setMessageText(@NonNull String text) {

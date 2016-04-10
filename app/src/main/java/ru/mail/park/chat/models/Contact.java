@@ -49,7 +49,7 @@ public class Contact implements Comparable<Contact> {
         if (contact.has("firstName"))
             setFirstName(contact.getString("firstName"));
         if (contact.has("lastName"))
-            setFirstName(contact.getString("lastName"));
+            setLastName(contact.getString("lastName"));
 
         if (contact.has("last_seen")) {
             java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("last_seen"));

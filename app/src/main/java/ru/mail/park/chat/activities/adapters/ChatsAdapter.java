@@ -12,6 +12,7 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
+import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -41,10 +42,9 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         return chats.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends TitledPicturedViewHolder {
         public final View chatView;
 
-        public final ImageView chatPicture;
         public final TextView chatName;
         public final TextView lastMessageTime;
         public final TextView lastMessageText;
@@ -64,14 +64,19 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 }
             });
 
-            chatPicture = (ImageView) chatView.findViewById(R.id.chatPicture);
             chatName = (TextView) chatView.findViewById(R.id.chatName);
             lastMessageTime = (TextView) chatView.findViewById(R.id.lastMessageTime);
             lastMessageText = (TextView) chatView.findViewById(R.id.lastMessageText);
         }
 
+        @Override
+        public void setTitle(String title) {
+            super.setTitle(title);
+            chatName.setText(title);
+        }
+
         public void initView(Chat chat) {
-            chatName.setText(chat.getName());
+            setTitle(chat.getName());
             // FIXME: take values from DB
             // FIXME: get last message text, not description
             lastMessageText.setText(chat.getDescription());

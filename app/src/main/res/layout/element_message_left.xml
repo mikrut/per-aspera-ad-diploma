@@ -8,17 +8,41 @@
     android:layout_marginStart="5dp"
     android:layout_marginRight="40dp"
     android:layout_marginEnd="40dp"
-    android:gravity="left"
+    android:gravity="left|bottom"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_margin="5dp"
-        android:id="@+id/contactPicture"
-        android:src="@android:color/black"
-        android:layout_gravity="bottom"/>
+    <RelativeLayout
+        android:id="@+id/imageLayout"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/image"
+            tools:src="@color/azure" />
+
+        <TextView
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/imageText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignLeft="@+id/image"
+            android:layout_alignTop="@+id/image"
+            android:layout_alignRight="@+id/image"
+            android:layout_alignBottom="@+id/image"
+            android:layout_margin="1dp"
+            android:gravity="center"
+            tools:text="UN"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
 
     <com.rockerhieu.emojicon.EmojiconTextView
         android:layout_width="wrap_content"
