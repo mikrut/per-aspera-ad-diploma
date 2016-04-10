@@ -16,6 +16,7 @@ import com.neovisionaries.ws.client.WebSocketState;
 
 import java.io.IOException;
 import java.net.Proxy;
+import java.util.List;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
@@ -23,6 +24,7 @@ import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.OwnerProfile;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -133,6 +135,8 @@ public class Messages extends ApiSection {
                                             case "GET":
                                                 dispatchGet(jsonIncome);
                                                 break;
+                                            case "createChats":
+                                                dispatchCreateChats(jsonIncome);
                                         }
                                     }
                                 } catch (JSONException | IOException e) {
@@ -145,6 +149,9 @@ public class Messages extends ApiSection {
                     }
                 })
                 .connectAsynchronously();
+    }
+
+    private void dispatchCreateChats(JSONObject jsonIncome) {
     }
 
     private void dispatchSend(JSONObject income) throws JSONException {
@@ -187,7 +194,7 @@ public class Messages extends ApiSection {
             jsonRequest.put("controller", "Messages");
             jsonRequest.put("method", "send");
             jsonRequest.put("data", data);
-            data.put("accessToken", profile.getAuthToken());
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
             data.put("textMessage", messageBody);
         } catch(JSONException e) {
@@ -208,10 +215,30 @@ public class Messages extends ApiSection {
             jsonRequest.put("controller", "Messages");
             jsonRequest.put("method", "sendFirst");
             jsonRequest.put("data", data);
-            data.put("accessToken", profile.getAuthToken());
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idUser", uid);
             data.put("textMessage", messageBody);
         } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        ws.sendText(jsonRequest.toString());
+    }
+
+    public void createGroupChat(String title, List<String> userIDs) {
+        reconnect();
+        JSONObject jsonRequest = new JSONObject();
+        JSONArray idUsers = new JSONArray();
+
+        try {
+            jsonRequest.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            jsonRequest.put("method", "create");
+            jsonRequest.put("idUsers", idUsers);
+            for (String uid : userIDs) {
+                idUsers.put(uid);
+            }
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
