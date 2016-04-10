@@ -138,7 +138,7 @@ public class Chats extends ApiSection {
                 JSONObject data = result.getJSONObject("data");
                 JSONObject dialog = data.getJSONObject("dialog");
 
-                chat = new Chat(dialog);
+                chat = new Chat(dialog, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -167,7 +167,7 @@ public class Chats extends ApiSection {
                 JSONObject data = result.getJSONObject("data");
                 JSONObject dialog = data.getJSONObject("dialog");
 
-                chat = new Chat(dialog);
+                chat = new Chat(dialog, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -179,10 +179,10 @@ public class Chats extends ApiSection {
         return chat;
     }
 
-    private static List<Chat> chatsFrom(JSONArray chats) throws JSONException {
+    private List<Chat> chatsFrom(JSONArray chats) throws JSONException {
         List<Chat> chatsList = new ArrayList<>(chats.length());
         for (int i = 0; i < chats.length(); i++) {
-            Chat contact = new Chat(chats.getJSONObject(i));
+            Chat contact = new Chat(chats.getJSONObject(i), getContext());
             chatsList.add(contact);
         }
         return chatsList;

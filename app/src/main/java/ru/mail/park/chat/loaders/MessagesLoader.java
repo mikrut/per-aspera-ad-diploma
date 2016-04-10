@@ -21,7 +21,7 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
     List<Message> messages;
     String chatID;
 
-    MessagesLoader(@NonNull Context context, Bundle args) {
+    public MessagesLoader(@NonNull Context context, Bundle args) {
         super(context);
         chatID = args.getString(CID_ARG);
     }

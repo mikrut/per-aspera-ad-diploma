@@ -1,10 +1,12 @@
 package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,10 +29,32 @@ public class Chat {
         description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
     }
 
-    public Chat(JSONObject chat) throws JSONException {
+    private static final int GROUP_TYPE = 1;
+    private static final int INDIVIDUAL_TYPE = 0;
+
+    public Chat(JSONObject chat, Context context) throws JSONException {
+        int type = Integer.valueOf(chat.getString("type"));
+        String uid = new OwnerProfile(context).getUid();
+
         setCid(chat.getString("idRoom"));
-        if (chat.has("name"))
-            setName(chat.getString("name"));
+        switch (type) {
+            case GROUP_TYPE:
+                setName(chat.getString("name"));
+                break;
+            case INDIVIDUAL_TYPE:
+                JSONArray listUser = chat.getJSONArray("listUser");
+                for (int i = 0; i < listUser.length(); i++) {
+                    JSONObject user = listUser.getJSONObject(i);
+                    String currentUID = user.getString("id");
+                    if (!currentUID.equals(uid)) {
+                        String firstName = user.getString("firstName");
+                        String lastName = user.getString("lastName");
+                        setName(firstName + " " + lastName);
+                        break;
+                    }
+                }
+                break;
+        }
         if (chat.has("text"))
             setDescription(chat.getString("text"));
     }

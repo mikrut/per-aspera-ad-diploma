@@ -1,6 +1,8 @@
 package ru.mail.park.chat.activities;
 
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -128,7 +130,7 @@ public class DialogActivity
                 } else {
                     View view = getCurrentFocus();
                     if (view != null) {
-                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
                     isEmojiFragmentShown = true;
@@ -137,6 +139,14 @@ public class DialogActivity
         });
 
         setEmojiconFragment(false);
+        if (chatID != null)
+            onUpdateChatID();
+    }
+
+    private void onUpdateChatID() {
+        Bundle args = new Bundle();
+        args.putString(MessagesLoader.CID_ARG, chatID);
+        getLoaderManager().initLoader(0, args, listener);
     }
 
     private void sendMessage(@NonNull String message) {
@@ -176,6 +186,7 @@ public class DialogActivity
         try {
             if (message.has("idRoom")) {
                 chatID = message.getString("idRoom");
+                onUpdateChatID();
             }
 
             Message incomeMsg = new Message(message, this);
@@ -226,4 +237,25 @@ public class DialogActivity
     public void onEmojiconClicked(Emojicon emojicon) {
         EmojiconsFragment.input(inputMessage, emojicon);
     }
+
+    private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
+        @Override
+        public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
+            return new MessagesLoader(DialogActivity.this, args);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
+            if (data != null) {
+                for (Message message : data) {
+                    addMessage(message);
+                }
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Message>> loader) {
+            // TODO: something
+        }
+    };
 }
