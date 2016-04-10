@@ -53,12 +53,14 @@ public class Chats extends ApiSection {
         List<Message> messagesList = new LinkedList<>();
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
-            final int status = result.getInt("status");
-            if(status == 200) {
-                JSONArray messages = result.getJSONObject("data").getJSONArray("listMessage");
+            int status = 200;
+            if (result.has("status"))
+                status = result.getInt("status");
+            if (status == 200) {
+                JSONArray messages = result.getJSONArray("listMessage");
 
                 for (int i = 0; i < messages.length(); i++) {
-                    Message message = new Message(messages.getJSONObject(i), getContext());
+                    Message message = new Message(messages.getJSONObject(i), getContext(), cid);
                     messagesList.add(message);
                 }
             } else {

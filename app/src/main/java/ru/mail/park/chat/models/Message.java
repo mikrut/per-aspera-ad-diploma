@@ -37,6 +37,10 @@ public class Message implements Comparable<Message> {
     }
 
     public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
+        this(message, context, null);
+    }
+
+    public Message(@NonNull JSONObject message, @NonNull Context context, String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
             uid = String.valueOf(message.getJSONObject("user").getLong("id"));
@@ -47,16 +51,31 @@ public class Message implements Comparable<Message> {
             uid = pref.getString(PreferenceConstants.USER_UID_N, "");
         }
 
-        messageBody = message.getString("textMessage");
-        cid = message.getString("idRoom");
-        this.uid = uid;
+        String messageBodyParamName = null;
 
-        if (message.has("mid")) {
-            setMid(message.getString("mid"));
+        if (message.has("textMessage"))
+            messageBodyParamName = "textMessage";
+        if (message.has("text"))
+            messageBodyParamName = "text";
+        if (messageBodyParamName != null) {
+            messageBody = message.getString(messageBodyParamName);
         }
 
-        if (message.has("dtCreateMessage")) {
-            String dateString = message.getString("dtCreateMessage");
+        if (cid == null)
+            this.cid = message.getString("idRoom");
+        this.uid = uid;
+
+        if (message.has("id")) {
+            setMid(message.getString("id"));
+        }
+
+        String dtCreateParamName = null;
+        if (message.has("dtCreateMessage"))
+            dtCreateParamName = "dtCreateMessage";
+        if (message.has("dtCreate"))
+            dtCreateParamName = "dtCreate";
+        if (dtCreateParamName != null) {
+            String dateString = message.getString(dtCreateParamName);
             try {
                 setDate(dateString);
             } catch (ParseException e) {
