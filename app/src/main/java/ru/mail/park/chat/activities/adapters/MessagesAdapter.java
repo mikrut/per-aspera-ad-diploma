@@ -12,15 +12,12 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.models.Message;
 
 /**
  * Created by Михаил on 27.03.2016.
  */
-
-// To upload/delete images dynamically follow instructions:
-// http://stackoverflow.com/questions/31367599/how-to-update-recyclerview-adapter-data
-// http://stackoverflow.com/questions/28539666/recyclerview-adapter-and-viewholder-update-dynamically
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHolder> {
     private static final int INCOMING_MESSAGE = 0;
     private static final int OUTGOING_MESSAGE = 1;
@@ -33,7 +30,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         this.ownerUID = ownerUID;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends TitledPicturedViewHolder {
         private final TextView messageText;
         private final ImageView contactPicture;
 
@@ -71,7 +68,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.setMessageText(messagesSet.get(position).getMessageBody());
+        Message message = messagesSet.get(position);
+        holder.setMessageText(message.getMessageBody());
+        holder.setTitle(message.getTitle());
     }
 
     @Override
@@ -88,4 +87,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             return INCOMING_MESSAGE;
         }
     }
+
+
 }

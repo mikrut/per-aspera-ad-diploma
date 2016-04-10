@@ -119,19 +119,21 @@ public class Messages extends ApiSection {
                                     if (status != 200)
                                         throw new IOException("Wrong income status: " + String.valueOf(status));
 
-                                    switch (method) {
-                                        case "SEND":
-                                            dispatchSend(jsonIncome);
-                                            break;
-                                        case "newMessage":
-                                            dispatchNewMessage(jsonIncome);
-                                            break;
-                                        case "DELETE":
-                                            dispatchDelete(jsonIncome);
-                                            break;
-                                        case "GET":
-                                            dispatchGet(jsonIncome);
-                                            break;
+                                    if (taskListener != null) {
+                                        switch (method) {
+                                            case "SEND":
+                                                dispatchSend(jsonIncome);
+                                                break;
+                                            case "newMessage":
+                                                dispatchNewMessage(jsonIncome);
+                                                break;
+                                            case "DELETE":
+                                                dispatchDelete(jsonIncome);
+                                                break;
+                                            case "GET":
+                                                dispatchGet(jsonIncome);
+                                                break;
+                                        }
                                     }
                                 } catch (JSONException | IOException e) {
                                     e.printStackTrace();
@@ -246,6 +248,10 @@ public class Messages extends ApiSection {
         }
 
      //   ws.sendText(jsonData.toString());
+    }
+
+    public void disconnect() {
+        ws.disconnect();
     }
 
     private void reconnect() {

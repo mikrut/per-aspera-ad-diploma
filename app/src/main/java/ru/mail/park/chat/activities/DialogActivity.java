@@ -111,7 +111,9 @@ public class DialogActivity
 
             messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
             messagesList.setAdapter(messagesAdapter);
-            messagesList.setLayoutManager(new LinearLayoutManager(this));
+            LinearLayoutManager llm = new LinearLayoutManager(this);
+            llm.setStackFromEnd(true);
+            messagesList.setLayoutManager(llm);
         }
 
         sendMessage.setOnClickListener(new View.OnClickListener() {
@@ -236,6 +238,12 @@ public class DialogActivity
     @Override
     public void onEmojiconClicked(Emojicon emojicon) {
         EmojiconsFragment.input(inputMessage, emojicon);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        messages.disconnect();
     }
 
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {

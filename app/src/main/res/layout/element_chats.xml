@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
     android:paddingTop="7dp"
-    android:paddingBottom="7dp"
     android:paddingLeft="7dp"
     android:paddingRight="7dp"
     android:clickable="true"
@@ -79,4 +78,11 @@
         android:layout_alignBottom="@+id/imageLayout"
         android:gravity="center_vertical" />
 
+
+    <View
+        android:layout_below="@+id/imageLayout"
+        android:layout_width="match_parent"
+        android:layout_marginTop="7dp"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"/>
 </RelativeLayout>

@@ -39,7 +39,12 @@ public class Contact implements Comparable<Contact> {
     Contact() {}
 
     public Contact(JSONObject contact) throws JSONException, ParseException {
-        uid = contact.getString("id");
+        String idParameterName = "";
+        if (contact.has("id"))
+            idParameterName = "id";
+        if (contact.has("idUser"))
+            idParameterName = "idUser";
+        uid = contact.getString(idParameterName);
         login = contact.getString("login");
 
         if (contact.has("email"))

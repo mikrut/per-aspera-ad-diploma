@@ -28,6 +28,8 @@ public class Message implements Comparable<Message> {
     private @NonNull String uid;
     private @Nullable Calendar date;
 
+    private @NonNull String title;
+
     private Message(@NonNull String messageBody,
                     @NonNull String chatID,
                     @NonNull String userID) {
@@ -67,6 +69,13 @@ public class Message implements Comparable<Message> {
 
         if (message.has("id")) {
             setMid(message.getString("id"));
+        }
+
+        try {
+            Contact user = new Contact(message);
+            title = user.getContactTitle();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
         String dtCreateParamName = null;
@@ -144,6 +153,11 @@ public class Message implements Comparable<Message> {
 
     public void setUid(@NonNull String uid) {
         this.uid = uid;
+    }
+
+    @NonNull
+    public String getTitle() {
+        return title;
     }
 
     @Nullable
