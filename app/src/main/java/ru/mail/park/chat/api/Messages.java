@@ -175,7 +175,7 @@ public class Messages extends ApiSection {
 
     }
 
-    public void sendMessage(String cid, String msg_body) {
+    public void sendMessage(String cid, String messageBody) {
         reconnect();
 
         JSONObject jsonRequest = new JSONObject();
@@ -187,7 +187,28 @@ public class Messages extends ApiSection {
             jsonRequest.put("data", data);
             data.put("accessToken", profile.getAuthToken());
             data.put("idRoom", cid);
-            data.put("textMessage", msg_body);
+            data.put("textMessage", messageBody);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        ws.sendText(jsonRequest.toString());
+    }
+
+    public void sendFirstMessage(String uid, String messageBody) {
+        reconnect();
+
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
+
+        try {
+            jsonRequest.put("controller", "Messages");
+            jsonRequest.put("method", "sendFirst");
+            jsonRequest.put("data", data);
+            data.put("accessToken", profile.getAuthToken());
+            data.put("idUser", uid);
+            data.put("textMessage", messageBody);
         } catch(JSONException e) {
             e.printStackTrace();
         }

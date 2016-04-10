@@ -133,6 +133,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
         contact.saveToPreferences(this);
         MessengerDBHelper dbHelper = new MessengerDBHelper(this);
+        dbHelper.dropDatabase();
         dbHelper.onCreate(dbHelper.getWritableDatabase());
 
         Intent intent = new Intent(this, ChatsActivity.class);

@@ -52,7 +52,7 @@ public class Contact implements Comparable<Contact> {
             setFirstName(contact.getString("lastName"));
 
         if (contact.has("last_seen")) {
-            java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
+            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("last_seen"));
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);

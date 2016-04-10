@@ -39,7 +39,7 @@ public class Message implements Comparable<Message> {
     public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
         String uid;
         if (message.has("user")) {
-            uid = String.valueOf(message.getJSONObject("user").getLong("uid"));
+            uid = String.valueOf(message.getJSONObject("user").getLong("id"));
         } else {
             SharedPreferences pref =
                     context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
@@ -90,7 +90,7 @@ public class Message implements Comparable<Message> {
     }
 
     private void setDate(@Nullable String dateString) throws ParseException {
-        java.util.Date date = MessengerDBHelper.iso8601.parse(dateString);
+        java.util.Date date = MessengerDBHelper.currentFormat.parse(dateString);
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         setDate(calendar);
@@ -138,7 +138,7 @@ public class Message implements Comparable<Message> {
 
             String isoDate = null;
             if (getDate() != null) {
-                isoDate = MessengerDBHelper.iso8601.format(getDate().getTime());
+                isoDate = MessengerDBHelper.currentFormat.format(getDate().getTime());
             }
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_DATETIME, isoDate);
             return contentValues;

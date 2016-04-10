@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,15 +32,19 @@ import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
+import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 
 // TODO: emoticons
 // TODO: send message
-public class DialogActivity extends AppCompatActivity implements IMessageReaction,
+public class DialogActivity
+        extends AppCompatActivity
+        implements IMessageReaction,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
+    public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
     private KeyboardDetectingLinearLayout globalLayout;
     private FrameLayout emojicons;
@@ -49,6 +54,8 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     private ImageButton sendMessage;
 
     private String chatID;
+    private String userID;
+
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
     private Messages messages;
@@ -90,6 +97,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         }
 
         chatID = getIntent().getStringExtra(CHAT_ID);
+        userID = getIntent().getStringExtra(USER_ID);
         if (chatID != null) {
             MessagesHelper messagesHelper = new MessagesHelper(this);
             receivedMessageList = messagesHelper.getMessages(chatID);
@@ -107,8 +115,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String cid = chatID;
-                messages.sendMessage(cid, inputMessage.getText().toString());
+                sendMessage(inputMessage.getText().toString());
             }
         });
 
@@ -130,6 +137,14 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         });
 
         setEmojiconFragment(false);
+    }
+
+    private void sendMessage(@NonNull String message) {
+        if (chatID != null) {
+            messages.sendMessage(chatID, message);
+        } else if (userID != null) {
+            messages.sendFirstMessage(userID, message);
+        }
     }
 
     private void addMessage(@NonNull Message message) {
@@ -159,9 +174,13 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     @Override
     public void onIncomeMessage(JSONObject message){
         try {
+            if (message.has("idRoom")) {
+                chatID = message.getString("idRoom");
+            }
+
             Message incomeMsg = new Message(message, this);
             addMessage(incomeMsg);
-        } catch(Exception e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }

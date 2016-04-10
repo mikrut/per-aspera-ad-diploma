@@ -29,8 +29,8 @@ public class Chat {
 
     public Chat(JSONObject chat) throws JSONException {
         setCid(chat.getString("idRoom"));
-        if (chat.has("title"))
-            setName(chat.getString("title"));
+        if (chat.has("name"))
+            setName(chat.getString("name"));
         if (chat.has("text"))
             setDescription(chat.getString("text"));
     }
