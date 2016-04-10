@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="8dp"
-    android:paddingBottom="8dp"
     android:clickable="true"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
@@ -35,5 +34,14 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
         android:id="@+id/rowText" />
+
+    <View
+        android:layout_below="@+id/rowIcon"
+        android:layout_width="match_parent"
+        android:layout_marginTop="7dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"/>
 
 </RelativeLayout>
