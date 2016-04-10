@@ -32,7 +32,7 @@ public class ProfileWebLoader extends AsyncTaskLoader<Contact> {
         Users usersAPI = new Users(getContext());
         Contact user = null;
         try {
-           user = usersAPI.getUser(uid);
+           user = usersAPI.getFullUser(uid);
         } catch (IOException e) {
             e.printStackTrace();
         }
