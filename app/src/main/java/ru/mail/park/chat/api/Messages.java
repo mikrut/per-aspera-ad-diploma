@@ -22,8 +22,10 @@ import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +39,12 @@ public class Messages extends ApiSection {
     private final IMessageReaction taskListener;
     private final Context taskContext;
     private final OwnerProfile profile;
+
+    private enum Method {
+        SEND,
+        CHAT_CREATE
+    };
+    private Method lastUsed = null;
 
     private String getUrl() {
         String server = "http://p30480.lab1.stud.tech-mail.ru/ws/";
@@ -111,7 +119,20 @@ public class Messages extends ApiSection {
                                     } else if (jsonIncome.has("typePushe")) {
                                         method = jsonIncome.getString("typePushe");
                                     } else {
-                                        method = "SEND";
+                                        if (lastUsed != null) {
+                                            switch (lastUsed) {
+                                                case CHAT_CREATE:
+                                                    method = "createChats";
+                                                    break;
+                                                case SEND:
+                                                default:
+                                                    method = "SEND";
+                                                    break;
+                                            }
+                                        } else {
+                                            method = "SEND";
+                                        }
+
                                         // FIXME: restore this throw when backend is fixed
                                         // throw new IOException("No method field in server response");
                                     }
@@ -137,6 +158,7 @@ public class Messages extends ApiSection {
                                                 break;
                                             case "createChats":
                                                 dispatchCreateChats(jsonIncome);
+                                                break;
                                         }
                                     }
                                 } catch (JSONException | IOException e) {
@@ -151,7 +173,9 @@ public class Messages extends ApiSection {
                 .connectAsynchronously();
     }
 
-    private void dispatchCreateChats(JSONObject jsonIncome) {
+    private void dispatchCreateChats(JSONObject jsonIncome) throws JSONException {
+        Chat chat = new Chat(jsonIncome.getJSONObject("data"), getContext());
+        taskListener.onChatCreated(chat);
     }
 
     private void dispatchSend(JSONObject income) throws JSONException {
@@ -189,6 +213,7 @@ public class Messages extends ApiSection {
 
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
+        lastUsed = Method.SEND;
 
         try {
             jsonRequest.put("controller", "Messages");
@@ -208,8 +233,18 @@ public class Messages extends ApiSection {
     public void sendFirstMessage(String uid, String messageBody) {
         reconnect();
 
+        StringBuilder b = new StringBuilder();
+        for (char c : messageBody.toCharArray()) {
+            if (c >= 128)
+                b.append("\\u").append(String.format("%04X", (int) c));
+            else
+                b.append(c);
+        }
+        messageBody = b.toString();
+
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
+        lastUsed = Method.SEND;
 
         try {
             jsonRequest.put("controller", "Messages");
@@ -229,15 +264,21 @@ public class Messages extends ApiSection {
     public void createGroupChat(String title, List<String> userIDs) {
         reconnect();
         JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
         JSONArray idUsers = new JSONArray();
+        lastUsed = Method.CHAT_CREATE;
 
         try {
-            jsonRequest.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            jsonRequest.put("controller", "Chats");
             jsonRequest.put("method", "create");
-            jsonRequest.put("idUsers", idUsers);
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            data.put("nameChat", title);
+            data.put("idUsers", idUsers);
+            jsonRequest.put("data", data);
             for (String uid : userIDs) {
-                idUsers.put(uid);
+                idUsers.put(Integer.valueOf(uid));
             }
+            idUsers.put(Integer.valueOf(profile.getUid()));
         } catch (JSONException e) {
             e.printStackTrace();
         }

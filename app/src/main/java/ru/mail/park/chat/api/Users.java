@@ -79,7 +79,7 @@ public class Users extends ApiSection {
                 JSONArray users = result.getJSONArray("data");
 
                 for (int i = 0; i < users.length(); i++) {
-                    Contact user = new Contact(users.getJSONObject(i));
+                    Contact user = new Contact(users.getJSONObject(i), getContext());
                     contactList.add(user);
                 }
             } else {

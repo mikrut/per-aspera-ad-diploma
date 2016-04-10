@@ -55,12 +55,21 @@
     </LinearLayout>
 
     <EditText
+        android:id="@+id/chatName"
+        android:lines="1"
+        android:inputType="text"
+        android:hint="Chat name"
+        android:layout_below="@+id/findFriends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
         android:id="@+id/choosen_contacts_list"
         android:lines="2"
         android:inputType="none"
         android:focusable="false"
         android:hint="@string/hint_add_contacts_to_dialog"
-        android:layout_below="@+id/findFriends"
+        android:layout_below="@+id/chatName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

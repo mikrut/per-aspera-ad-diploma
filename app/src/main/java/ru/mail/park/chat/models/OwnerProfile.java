@@ -23,7 +23,7 @@ public class OwnerProfile extends Contact {
     private OwnerProfile(Cursor cursor){}
 
     public OwnerProfile(JSONObject owner) throws JSONException, ParseException {
-        super(owner);
+        super(owner, null);
         setAuthToken(owner.getString("accessToken"));
     }
 

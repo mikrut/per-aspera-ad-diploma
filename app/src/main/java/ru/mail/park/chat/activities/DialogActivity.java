@@ -36,6 +36,7 @@ import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 
 // TODO: emoticons
@@ -221,6 +222,11 @@ public class DialogActivity
         MessagesHelper messagesHelper = new MessagesHelper(this);
         messagesHelper.deleteMessages(msg_list.get(0).getCid());
         messagesAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onChatCreated(Chat chat) {
+        // TODO: ???
     }
 
     private void setEmojiconFragment(boolean useSystemDefault) {

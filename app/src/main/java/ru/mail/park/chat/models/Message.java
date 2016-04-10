@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +47,8 @@ public class Message implements Comparable<Message> {
         String uid;
         if (message.has("user")) {
             uid = String.valueOf(message.getJSONObject("user").getLong("id"));
+        } else if (message.has("idUser")) {
+            uid = String.valueOf(message.getInt("idUser"));
         } else {
             SharedPreferences pref =
                     context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
@@ -60,19 +63,21 @@ public class Message implements Comparable<Message> {
         if (message.has("text"))
             messageBodyParamName = "text";
         if (messageBodyParamName != null) {
-            messageBody = message.getString(messageBodyParamName);
+            messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
         }
 
         if (cid == null)
             this.cid = message.getString("idRoom");
         this.uid = uid;
 
-        if (message.has("id")) {
+        if (message.has("idMessage")) {
+            setMid(message.getString("idMessage"));
+        } else if (message.has("id")) {
             setMid(message.getString("id"));
         }
 
         try {
-            Contact user = new Contact(message);
+            Contact user = new Contact(message, context);
             title = user.getContactTitle();
         } catch (ParseException e) {
             e.printStackTrace();
@@ -184,7 +189,9 @@ public class Message implements Comparable<Message> {
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
           if (another.mid != null) {
-            return mid.compareTo(another.mid);
+              int mid1 = Integer.valueOf(mid);
+              int mid2 = Integer.valueOf(another.mid);
+            return mid1 - mid2;
           }
             return 1;
         }

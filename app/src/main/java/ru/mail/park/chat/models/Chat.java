@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,10 +34,18 @@ public class Chat {
     private static final int INDIVIDUAL_TYPE = 0;
 
     public Chat(JSONObject chat, Context context) throws JSONException {
-        int type = Integer.valueOf(chat.getString("type"));
+        int type = 1;
+        if (chat.has("type"))
+            type = Integer.valueOf(chat.getString("type"));
         String uid = new OwnerProfile(context).getUid();
 
-        setCid(chat.getString("idRoom"));
+        String cidParameterName = "idRoom";
+        if (chat.has("id"))
+            cidParameterName = "id";
+        if (chat.has("idRoom"))
+            cidParameterName = "idRoom";
+        setCid(chat.getString(cidParameterName));
+
         switch (type) {
             case GROUP_TYPE:
                 setName(chat.getString("name"));
@@ -55,8 +64,9 @@ public class Chat {
                 }
                 break;
         }
-        if (chat.has("text"))
-            setDescription(chat.getString("text"));
+        if (chat.has("text")) {
+            setDescription(StringEscapeUtils.unescapeJava(chat.getString("text")));
+        }
     }
 
     @NonNull

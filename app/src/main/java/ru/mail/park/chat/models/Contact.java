@@ -1,6 +1,7 @@
 package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,16 +37,25 @@ public class Contact implements Comparable<Contact> {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    Contact() {}
+    Contact(){}
 
-    public Contact(JSONObject contact) throws JSONException, ParseException {
+    public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
         String idParameterName = "";
         if (contact.has("id"))
             idParameterName = "id";
         if (contact.has("idUser"))
             idParameterName = "idUser";
-        uid = contact.getString(idParameterName);
-        login = contact.getString("login");
+        if (idParameterName.equals("")) {
+            OwnerProfile owner = new OwnerProfile(context);
+            uid = owner.getUid();
+            login = owner.getLogin();
+            firstName = owner.getFirstName();
+            lastName = owner.getLastName();
+        } else {
+            uid = contact.getString(idParameterName);
+        }
+        if (contact.has("login"))
+            login = contact.getString("login");
 
         if (contact.has("email"))
             setEmail(contact.getString("email"));

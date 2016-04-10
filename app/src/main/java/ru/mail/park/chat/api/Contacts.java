@@ -51,7 +51,7 @@ public class Contacts extends ApiSection {
                 JSONArray contacts = result.getJSONArray("data");
                 contactsLength = contacts.length();
 
-                contactList = contactsFrom(contacts);
+                contactList = contactsFrom(contacts, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -116,11 +116,11 @@ public class Contacts extends ApiSection {
         public int minIndex;
         public List<Contact> contacts;
 
-        public SearchResult(JSONObject data) throws JSONException, ParseException {
+        public SearchResult(JSONObject data, Context context) throws JSONException, ParseException {
             totalLength = data.getInt("total_length");
             respondedLength = data.getInt("responded_length");
             minIndex = data.getInt("min_index");
-            contacts = contactsFrom(data.getJSONArray("contacts"));
+            contacts = contactsFrom(data.getJSONArray("contacts"), context);
         }
     }
 
@@ -146,7 +146,7 @@ public class Contacts extends ApiSection {
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");
-                searchResult = new SearchResult(data);
+                searchResult = new SearchResult(data, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -159,10 +159,10 @@ public class Contacts extends ApiSection {
     }
 
 
-    private static List<Contact> contactsFrom(JSONArray contacts) throws JSONException, ParseException {
+    private static List<Contact> contactsFrom(JSONArray contacts, Context context) throws JSONException, ParseException {
         List<Contact> contactList = new ArrayList<>(contacts.length());
         for (int i = 0; i < contacts.length(); i++) {
-            Contact contact = new Contact(contacts.getJSONObject(i));
+            Contact contact = new Contact(contacts.getJSONObject(i), context);
             contactList.add(contact);
         }
         return contactList;
