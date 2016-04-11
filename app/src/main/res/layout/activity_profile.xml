@@ -24,7 +24,7 @@
                 app:civ_border_color="#fff"
                 android:id="@+id/user_picture"
                 android:layout_width="128dp"
-                android:layout_height="128dp"
+                android:layout_height="128dp"/>
                 android:src="@drawable/ic_user_picture"/>
 
             <TextView

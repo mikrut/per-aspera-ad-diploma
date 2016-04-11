@@ -1,7 +1,10 @@
 package ru.mail.park.chat.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,6 +34,7 @@ import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
+import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Message;
 
@@ -40,11 +44,12 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
+    private static final int CODE_FILE_SELECTED = 3;
 
     private KeyboardDetectingLinearLayout globalLayout;
     private FrameLayout emojicons;
     private RecyclerView messagesList;
-    private ImageButton insertEmoticon;
+    private ImageButton insertEmoticon, attachFile;
     private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
 
@@ -64,6 +69,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
         messagesList = (RecyclerView) findViewById(R.id.messagesList);
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
+        attachFile = (ImageButton) findViewById(R.id.attachFile);
         inputMessage = (EmojiconEditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
         emojicons = (FrameLayout) findViewById(R.id.emojicons);
@@ -126,6 +132,15 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
                     }
                     isEmojiFragmentShown = true;
                 }
+            }
+        });
+
+        attachFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), FileDialog.class);
+                intent.putExtra(FileDialog.START_PATH, "/sdcard");
+                startActivityForResult(intent, CODE_FILE_SELECTED);
             }
         });
 

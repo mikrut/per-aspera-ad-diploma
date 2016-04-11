@@ -1,8 +1,19 @@
-<resources>
+﻿<resources>
     <string name="app_name">Chat</string>
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
     <string name="title_activity_login">Sign in</string>
+
+    <string name="location">Location</string>
+    <string name="cant_read_folder">folder can\'t be read!</string>
+    <string name="nnew">New</string>
+    <string name="select">Select</string>
+    <string name="file_name">File name:</string>
+    <string name="cancel">Cancel</string>
+    <string name="create">Save</string>
+    <string name="no_data">No Data</string>
+    <color name="gray">#ffff0000</color>
+    <string name="err">Error</string>
 
     <!-- Strings related to login -->
     <string name="prompt_login">Login</string>

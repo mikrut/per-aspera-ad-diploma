@@ -40,6 +40,16 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:tint="@color/textColorPrimary"/>
 
+            <ImageButton
+                android:contentDescription="attach file"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/attachFile"
+                android:src="@drawable/ic_attachment_white_24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:tint="@color/textColorPrimary"/>
+
             <com.rockerhieu.emojicon.EmojiconEditText
                 android:id="@+id/inputMessage"
                 android:layout_marginRight="50dp"
