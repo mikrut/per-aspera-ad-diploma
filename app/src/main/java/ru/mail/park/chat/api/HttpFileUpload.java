@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import android.os.AsyncTask;
 import android.util.Log;
 
 public class HttpFileUpload implements Runnable{
@@ -37,113 +39,120 @@ public class HttpFileUpload implements Runnable{
     }
 
     void Sending(){
-        String iFileName = Title;
-        String lineEnd = "\r\n";
-        String twoHyphens = "--";
-        String boundary = "*****";
-        String Tag="fSnd";
+        String Tag="[TP-diploma]";
 
         Log.d("[TP-diploma]", "sending started");
 
-        try
-        {
-            Log.e(Tag,"Starting Http File Sending to URL");
-
-            // Open a HTTP connection to the URL
-            HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
-            Log.d("[TP-diploma]", "connection opened");
-
-            // Allow Inputs
-            conn.setDoInput(true);
-
-            // Allow Outputs
-            conn.setDoOutput(true);
-            Log.d("[TP-diploma]", "IO has been set");
-
-            // Don't use a cached copy.
-            conn.setUseCaches(false);
-
-            // Use a post method.
-            conn.setRequestMethod("POST");
-
-            conn.setRequestProperty("Connection", "Keep-Alive");
-
-            conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
-            Log.d("[TP-diploma]", "POST settings set");
-
-            DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
-
-            Log.d("[TP-diploma]", "outputstream created");
-
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"accessToken\""+ lineEnd);
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(accessToken);
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-
-            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + iFileName +"\"" + lineEnd);
-            dos.writeBytes(lineEnd);
-
-            Log.e(Tag, "Headers are written");
-            Log.d("[TP-diploma]", "Headers are written");
-
-            // create a buffer of maximum size
-            int bytesAvailable = fileInputStream.available();
-
-            int maxBufferSize = 1024;
-            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-            byte[ ] buffer = new byte[bufferSize];
-
-            // read file and write it into form...
-            int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
-
-            while (bytesRead > 0)
-            {
-                dos.write(buffer, 0, bufferSize);
-                bytesAvailable = fileInputStream.available();
-                bufferSize = Math.min(bytesAvailable,maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0,bufferSize);
-            }
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            Log.d("[TP-diploma]", "data is written");
-            // close streams
-            fileInputStream.close();
-
-            Log.d("[TP-diploma]", "fileInputStream closed");
-
-            dos.flush();
-
-            Log.e(Tag,"File Sent, Response: "+String.valueOf(conn.getResponseCode()));
-
-            InputStream is = conn.getInputStream();
-
-            // retrieve the response from server
-            int ch;
-
-            StringBuffer b =new StringBuffer();
-            while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
-            String s=b.toString();
-            Log.i("Response",s);
-            Log.d("[TP-diploma]", s);
-            dos.close();
-        }
-        catch (MalformedURLException ex)
-        {
-            Log.e(Tag, "URL error: " + ex.getMessage(), ex);
-            Log.d("[TP-diploma]", "URL error: " + ex.getMessage());
-        }
-
-        catch (IOException ioe)
-        {
-            Log.e(Tag, "IO error: " + ioe.getMessage(), ioe);
-            Log.d("[TP-diploma]", "IO error: " + ioe.getMessage());
-        }
+       new HttpUploadTask().execute();
     }
 
     @Override
     public void run() {
         // TODO Auto-generated method stub
+    }
+
+    class HttpUploadTask extends AsyncTask<Void,Void,Void>
+    {
+        protected void onPreExecute() {
+            //display progress dialog.
+
+        }
+
+        protected Void doInBackground(Void... params) {
+            try {
+                String iFileName = Title;
+                String lineEnd = "\r\n";
+                String twoHyphens = "--";
+                String boundary = "*****";
+                String Tag = "[TP-diploma]";
+
+                // Open a HTTP connection to the URL
+                HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
+                Log.d("[TP-diploma]", "connection opened");
+
+                // Allow Inputs
+                conn.setDoInput(true);
+
+                // Allow Outputs
+                conn.setDoOutput(true);
+                Log.d("[TP-diploma]", "IO has been set");
+
+                // Don't use a cached copy.
+                conn.setUseCaches(false);
+
+                // Use a post method.
+                conn.setRequestMethod("POST");
+
+                conn.setRequestProperty("Connection", "Keep-Alive");
+
+                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                Log.d("[TP-diploma]", "POST settings set");
+
+                DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+
+                Log.d("[TP-diploma]", "outputstream created");
+
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"accessToken\""+ lineEnd);
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(accessToken);
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+
+                dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + iFileName +"\"" + lineEnd);
+                dos.writeBytes(lineEnd);
+
+                Log.e(Tag, "Headers are written");
+                Log.d("[TP-diploma]", "Headers are written");
+
+                // create a buffer of maximum size
+                int bytesAvailable = fileInputStream.available();
+
+                int maxBufferSize = 1024;
+                int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                byte[ ] buffer = new byte[bufferSize];
+
+                // read file and write it into form...
+                int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0)
+                {
+                    dos.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available();
+                    bufferSize = Math.min(bytesAvailable,maxBufferSize);
+                    bytesRead = fileInputStream.read(buffer, 0,bufferSize);
+                }
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                Log.d("[TP-diploma]", "data is written");
+                // close streams
+                fileInputStream.close();
+
+                Log.d("[TP-diploma]", "fileInputStream closed");
+
+                dos.flush();
+
+                Log.e("[TP-diploma]","File Sent, Response: "+String.valueOf(conn.getResponseCode()));
+
+                InputStream is = conn.getInputStream();
+
+                // retrieve the response from server
+                int ch;
+
+                StringBuffer b =new StringBuffer();
+                while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
+                String s=b.toString();
+
+                Log.d("[TP-diploma]", s);
+                dos.close();
+            }catch(Exception e) {
+                return null;
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            // dismiss progress dialog and update ui
+        }
     }
 }
