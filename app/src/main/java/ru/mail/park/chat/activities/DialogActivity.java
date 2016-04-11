@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
@@ -25,15 +27,20 @@ import com.rockerhieu.emojicon.emoji.Emojicon;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
+import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
@@ -52,6 +59,7 @@ public class DialogActivity
         EmojiconsFragment.OnEmojiconBackspaceClickedListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
+    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
     private KeyboardDetectingLinearLayout globalLayout;
@@ -63,6 +71,7 @@ public class DialogActivity
 
     private String chatID;
     private String userID;
+    private String accessToken;
 
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
@@ -115,6 +124,7 @@ public class DialogActivity
             SharedPreferences sharedPreferences =
                     getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
             String ownerID = sharedPreferences.getString(PreferenceConstants.USER_UID_N, null);
+            accessToken = sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
 
             messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
             messagesList.setAdapter(messagesAdapter);
@@ -267,6 +277,25 @@ public class DialogActivity
     protected void onPause() {
         super.onPause();
         messages.disconnect();
+    }
+
+    public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+            FileInputStream fstrm = null;
+            HttpFileUpload hfu = null;
+
+            if (requestCode == CODE_FILE_SELECTED) {
+                Log.d("[TP-diploma]", "sending file started");
+                try {
+                    fstrm = new FileInputStream(filePath);
+                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
+                    hfu.Send_Now(fstrm);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
