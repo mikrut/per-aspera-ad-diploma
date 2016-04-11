@@ -152,6 +152,8 @@ public class DialogActivity
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), FileDialog.class);
                 intent.putExtra(FileDialog.START_PATH, "/sdcard");
+                intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
+
                 startActivityForResult(intent, CODE_FILE_SELECTED);
             }
         });

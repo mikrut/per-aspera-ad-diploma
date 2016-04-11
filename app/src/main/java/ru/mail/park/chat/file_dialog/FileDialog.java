@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import ru.mail.park.chat.R;
 
+
 /**
  * Activity para escolha de arquivos/diretorios.
  * 
