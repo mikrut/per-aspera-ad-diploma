@@ -197,6 +197,8 @@ public class DialogActivity
                 receivedMessageList.add(position, message);
                 messagesAdapter.notifyItemInserted(position);
                 return;
+            } else if (message.compareTo(receivedMessageList.get(position)) == 0) {
+                return;
             }
         }
 
