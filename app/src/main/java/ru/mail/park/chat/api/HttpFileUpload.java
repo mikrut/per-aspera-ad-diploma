@@ -16,43 +16,49 @@ public class HttpFileUpload implements Runnable{
     URL connectURL;
     String responseString;
     String Title;
-    String Description;
+    String accessToken;
     byte[ ] dataToServer;
     FileInputStream fileInputStream = null;
 
-    HttpFileUpload(String urlString, String vTitle, String vDesc){
+    public HttpFileUpload(String urlString, String vTitle, String accessToken){
         try{
             connectURL = new URL(urlString);
             Title= vTitle;
-            Description = vDesc;
+            this.accessToken = accessToken;
         }catch(Exception ex){
             Log.i("HttpFileUpload","URL Malformatted");
         }
     }
 
-    void Send_Now(FileInputStream fStream){
+    public void Send_Now(FileInputStream fStream){
         fileInputStream = fStream;
+        Log.d("[TP-diploma]", "send now");
         Sending();
     }
 
     void Sending(){
-        String iFileName = "ovicam_temp_vid.mp4";
+        String iFileName = Title;
         String lineEnd = "\r\n";
         String twoHyphens = "--";
         String boundary = "*****";
         String Tag="fSnd";
+
+        Log.d("[TP-diploma]", "sending started");
+
         try
         {
             Log.e(Tag,"Starting Http File Sending to URL");
 
             // Open a HTTP connection to the URL
             HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
+            Log.d("[TP-diploma]", "connection opened");
 
             // Allow Inputs
             conn.setDoInput(true);
 
             // Allow Outputs
             conn.setDoOutput(true);
+            Log.d("[TP-diploma]", "IO has been set");
 
             // Don't use a cached copy.
             conn.setUseCaches(false);
@@ -63,26 +69,24 @@ public class HttpFileUpload implements Runnable{
             conn.setRequestProperty("Connection", "Keep-Alive");
 
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+            Log.d("[TP-diploma]", "POST settings set");
 
             DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
 
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"title\""+ lineEnd);
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(Title);
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            Log.d("[TP-diploma]", "outputstream created");
 
-            dos.writeBytes("Content-Disposition: form-data; name=\"description\""+ lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"accessToken\""+ lineEnd);
             dos.writeBytes(lineEnd);
-            dos.writeBytes(Description);
+            dos.writeBytes(accessToken);
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + lineEnd);
 
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + iFileName +"\"" + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + iFileName +"\"" + lineEnd);
             dos.writeBytes(lineEnd);
 
-            Log.e(Tag,"Headers are written");
+            Log.e(Tag, "Headers are written");
+            Log.d("[TP-diploma]", "Headers are written");
 
             // create a buffer of maximum size
             int bytesAvailable = fileInputStream.available();
@@ -103,9 +107,11 @@ public class HttpFileUpload implements Runnable{
             }
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
+            Log.d("[TP-diploma]", "data is written");
             // close streams
             fileInputStream.close();
+
+            Log.d("[TP-diploma]", "fileInputStream closed");
 
             dos.flush();
 
@@ -120,16 +126,19 @@ public class HttpFileUpload implements Runnable{
             while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
             String s=b.toString();
             Log.i("Response",s);
+            Log.d("[TP-diploma]", s);
             dos.close();
         }
         catch (MalformedURLException ex)
         {
             Log.e(Tag, "URL error: " + ex.getMessage(), ex);
+            Log.d("[TP-diploma]", "URL error: " + ex.getMessage());
         }
 
         catch (IOException ioe)
         {
             Log.e(Tag, "IO error: " + ioe.getMessage(), ioe);
+            Log.d("[TP-diploma]", "IO error: " + ioe.getMessage());
         }
     }
 
