@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
@@ -31,6 +32,7 @@ public class Contact implements Comparable<Contact> {
     private @Nullable String phone;
     private @Nullable String firstName;
     private @Nullable String lastName;
+    private @Nullable String img;
     private @Nullable Calendar lastSeen;
 
     private boolean online = false;
@@ -40,6 +42,7 @@ public class Contact implements Comparable<Contact> {
     Contact(){}
 
     public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
+        Log.d("[TP-diploma]", contact.toString());
         String idParameterName = "";
         if (contact.has("id"))
             idParameterName = "id";
@@ -51,6 +54,7 @@ public class Contact implements Comparable<Contact> {
             login = owner.getLogin();
             firstName = owner.getFirstName();
             lastName = owner.getLastName();
+            img = owner.getImg();
         } else {
             uid = contact.getString(idParameterName);
         }
@@ -75,6 +79,11 @@ public class Contact implements Comparable<Contact> {
 
         if (contact.has("online")) {
             setOnline(contact.getBoolean("online"));
+        }
+
+        if(contact.has("img")) {
+            Log.d("[TP-diploma]", "has img");
+            setImg(contact.getString("img"));
         }
     }
 
@@ -169,6 +178,15 @@ public class Contact implements Comparable<Contact> {
         if (TextUtils.equals(lastName, ""))
             lastName = null;
         this.lastName = lastName;
+    }
+
+    public void setImg(String img) {
+        Log.d("[TP-diploma]", "set img");
+        this.img = img;
+    }
+
+    public String getImg() {
+        return img;
     }
 
     @NonNull

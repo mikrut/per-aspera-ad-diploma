@@ -44,6 +44,7 @@ public class Users extends ApiSection {
 
         Contact user = null;
         try {
+            Log.d("[TP-diploma]", "call getFullUser");
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
             if (status == 200) {
