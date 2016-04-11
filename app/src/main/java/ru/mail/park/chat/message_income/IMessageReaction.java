@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 
 /**
@@ -14,4 +15,5 @@ public interface IMessageReaction {
     void onActionSendMessage(JSONObject message);
     void onActionDeleteMessage(int mid);
     void onGetHistoryMessages(ArrayList<Message> msg_list);
+    void onChatCreated(Chat chat);
 }

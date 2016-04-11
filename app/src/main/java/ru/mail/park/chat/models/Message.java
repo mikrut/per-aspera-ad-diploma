@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +29,8 @@ public class Message implements Comparable<Message> {
     private @NonNull String uid;
     private @Nullable Calendar date;
 
+    private @NonNull String title;
+
     private Message(@NonNull String messageBody,
                     @NonNull String chatID,
                     @NonNull String userID) {
@@ -37,9 +40,15 @@ public class Message implements Comparable<Message> {
     }
 
     public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
+        this(message, context, null);
+    }
+
+    public Message(@NonNull JSONObject message, @NonNull Context context, String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
-            uid = String.valueOf(message.getJSONObject("user").getLong("uid"));
+            uid = String.valueOf(message.getJSONObject("user").getLong("id"));
+        } else if (message.has("idUser")) {
+            uid = String.valueOf(message.getInt("idUser"));
         } else {
             SharedPreferences pref =
                     context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
@@ -47,16 +56,40 @@ public class Message implements Comparable<Message> {
             uid = pref.getString(PreferenceConstants.USER_UID_N, "");
         }
 
-        messageBody = message.getString("textMessage");
-        cid = message.getString("idRoom");
-        this.uid = uid;
+        String messageBodyParamName = null;
 
-        if (message.has("mid")) {
-            setMid(message.getString("mid"));
+        if (message.has("textMessage"))
+            messageBodyParamName = "textMessage";
+        if (message.has("text"))
+            messageBodyParamName = "text";
+        if (messageBodyParamName != null) {
+            messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
         }
 
-        if (message.has("dtCreateMessage")) {
-            String dateString = message.getString("dtCreateMessage");
+        if (cid == null)
+            this.cid = message.getString("idRoom");
+        this.uid = uid;
+
+        if (message.has("idMessage")) {
+            setMid(message.getString("idMessage"));
+        } else if (message.has("id")) {
+            setMid(message.getString("id"));
+        }
+
+        try {
+            Contact user = new Contact(message, context);
+            title = user.getContactTitle();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        String dtCreateParamName = null;
+        if (message.has("dtCreateMessage"))
+            dtCreateParamName = "dtCreateMessage";
+        if (message.has("dtCreate"))
+            dtCreateParamName = "dtCreate";
+        if (dtCreateParamName != null) {
+            String dateString = message.getString(dtCreateParamName);
             try {
                 setDate(dateString);
             } catch (ParseException e) {
@@ -90,7 +123,7 @@ public class Message implements Comparable<Message> {
     }
 
     private void setDate(@Nullable String dateString) throws ParseException {
-        java.util.Date date = MessengerDBHelper.iso8601.parse(dateString);
+        java.util.Date date = MessengerDBHelper.currentFormat.parse(dateString);
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         setDate(calendar);
@@ -127,6 +160,11 @@ public class Message implements Comparable<Message> {
         this.uid = uid;
     }
 
+    @NonNull
+    public String getTitle() {
+        return title;
+    }
+
     @Nullable
     public ContentValues getContentValues() {
         if (getMid() != null) {
@@ -138,7 +176,7 @@ public class Message implements Comparable<Message> {
 
             String isoDate = null;
             if (getDate() != null) {
-                isoDate = MessengerDBHelper.iso8601.format(getDate().getTime());
+                isoDate = MessengerDBHelper.currentFormat.format(getDate().getTime());
             }
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_DATETIME, isoDate);
             return contentValues;
@@ -151,7 +189,9 @@ public class Message implements Comparable<Message> {
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
           if (another.mid != null) {
-            return mid.compareTo(another.mid);
+              int mid1 = Integer.valueOf(mid);
+              int mid2 = Integer.valueOf(another.mid);
+            return mid1 - mid2;
           }
             return 1;
         }

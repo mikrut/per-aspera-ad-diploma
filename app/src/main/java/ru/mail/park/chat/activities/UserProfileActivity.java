@@ -106,6 +106,16 @@ public class UserProfileActivity extends AppCompatActivity {
                 new AddContactTask(UserProfileActivity.this).execute(uid);
             }
         });
+
+        userSendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserProfileActivity.this, DialogActivity.class);
+                intent.putExtra(DialogActivity.USER_ID, uid);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @Override

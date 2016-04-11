@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.DialogActivity;
+import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -39,30 +42,47 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         return chats.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends TitledPicturedViewHolder {
         public final View chatView;
 
-        public final ImageView chatPicture;
         public final TextView chatName;
         public final TextView lastMessageTime;
         public final TextView lastMessageText;
 
-        public ViewHolder(View chatView) {
+        private String chatID;
+
+        public ViewHolder(final View chatView) {
             super(chatView);
             this.chatView = chatView;
 
-            chatPicture = (ImageView) chatView.findViewById(R.id.chatPicture);
+            chatView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(chatView.getContext(), DialogActivity.class);
+                    intent.putExtra(DialogActivity.CHAT_ID, chatID);
+                    chatView.getContext().startActivity(intent);
+                }
+            });
+
             chatName = (TextView) chatView.findViewById(R.id.chatName);
             lastMessageTime = (TextView) chatView.findViewById(R.id.lastMessageTime);
             lastMessageText = (TextView) chatView.findViewById(R.id.lastMessageText);
         }
 
+        @Override
+        public void setTitle(String title) {
+            super.setTitle(title);
+            chatName.setText(title);
+        }
+
         public void initView(Chat chat) {
-            chatName.setText(chat.getName());
+            setTitle(chat.getName());
             // FIXME: take values from DB
             // FIXME: get last message text, not description
             lastMessageText.setText(chat.getDescription());
             // TODO: chat pictures
+
+            chatID = chat.getCid();
         }
     }
 }

@@ -18,7 +18,7 @@ import ru.mail.park.chat.database.PreferenceConstants;
  * Created by Михаил on 19.03.2016.
  */
 class ApiSection {
-    private final static String AUTH_TOKEN_PARAMETER_NAME = "accessToken";
+    public final static String AUTH_TOKEN_PARAMETER_NAME = "accessToken";
     // FIXME: use SSL connection
     private final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
@@ -32,10 +32,11 @@ class ApiSection {
     }
 
     String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
-                          @Nullable List<Pair<String, String>> parameters) throws IOException {
+                          @Nullable List<Pair<String, String>> parameters, boolean addToken) throws IOException {
         if (parameters == null)
             parameters = new ArrayList<>(1);
-        parameters.add(new Pair<>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
+        if (addToken)
+            parameters.add(new Pair<>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
 
         if (requestMethod.equals("GET")) {
                 requestURL += "?" + getQuery(parameters);
@@ -49,6 +50,11 @@ class ApiSection {
         }
 
         return serverConnection.getResponse();
+    }
+
+    String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
+                          @Nullable List<Pair<String, String>> parameters) throws IOException {
+        return executeRequest(requestURL, requestMethod, parameters, true);
     }
 
     String executeRequest(@NonNull String requestURL, @NonNull String requestMethod) throws IOException {

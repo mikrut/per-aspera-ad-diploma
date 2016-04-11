@@ -35,6 +35,32 @@ public class Users extends ApiSection {
     }
 
     @Nullable
+    public Contact getFullUser(@NonNull String uid) throws IOException {
+        final String requestURL = "getFullUser";
+        final String requestMethod = "GET";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("idUser", uid));
+
+        Contact user = null;
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            final int status = result.getInt("status");
+            if (status == 200) {
+                JSONObject data = result.getJSONObject("data");
+                user = new Contact(data, getContext());
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException | ParseException e) {
+            throw new IOException("Server error");
+        }
+
+        return user;
+    }
+
+    @Nullable
     public Contact getUser(@NonNull String uid) throws IOException {
         List<Contact> userList = getUsers(uid);
         if (userList.size() > 0) {
@@ -79,7 +105,7 @@ public class Users extends ApiSection {
                 JSONArray users = result.getJSONArray("data");
 
                 for (int i = 0; i < users.length(); i++) {
-                    Contact user = new Contact(users.getJSONObject(i));
+                    Contact user = new Contact(users.getJSONObject(i), getContext());
                     contactList.add(user);
                 }
             } else {

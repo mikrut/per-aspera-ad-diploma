@@ -1,6 +1,7 @@
 package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,11 +37,25 @@ public class Contact implements Comparable<Contact> {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    Contact() {}
+    Contact(){}
 
-    public Contact(JSONObject contact) throws JSONException, ParseException {
-        uid = contact.getString("id");
-        login = contact.getString("login");
+    public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
+        String idParameterName = "";
+        if (contact.has("id"))
+            idParameterName = "id";
+        if (contact.has("idUser"))
+            idParameterName = "idUser";
+        if (idParameterName.equals("")) {
+            OwnerProfile owner = new OwnerProfile(context);
+            uid = owner.getUid();
+            login = owner.getLogin();
+            firstName = owner.getFirstName();
+            lastName = owner.getLastName();
+        } else {
+            uid = contact.getString(idParameterName);
+        }
+        if (contact.has("login"))
+            login = contact.getString("login");
 
         if (contact.has("email"))
             setEmail(contact.getString("email"));
@@ -49,10 +64,10 @@ public class Contact implements Comparable<Contact> {
         if (contact.has("firstName"))
             setFirstName(contact.getString("firstName"));
         if (contact.has("lastName"))
-            setFirstName(contact.getString("lastName"));
+            setLastName(contact.getString("lastName"));
 
         if (contact.has("last_seen")) {
-            java.util.Date dateLastSeen = MessengerDBHelper.iso8601.parse(contact.getString("last_seen"));
+            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("last_seen"));
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);

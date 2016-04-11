@@ -1,7 +1,9 @@
 package ru.mail.park.chat.activities;
 
+import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
@@ -24,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,16 +38,21 @@ import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 
 // TODO: emoticons
 // TODO: send message
-public class DialogActivity extends AppCompatActivity implements IMessageReaction,
+public class DialogActivity
+        extends AppCompatActivity
+        implements IMessageReaction,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
+    public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
     private KeyboardDetectingLinearLayout globalLayout;
     private FrameLayout emojicons;
@@ -54,6 +62,8 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     private ImageButton sendMessage;
 
     private String chatID;
+    private String userID;
+
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
     private Messages messages;
@@ -96,6 +106,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         }
 
         chatID = getIntent().getStringExtra(CHAT_ID);
+        userID = getIntent().getStringExtra(USER_ID);
         if (chatID != null) {
             MessagesHelper messagesHelper = new MessagesHelper(this);
             receivedMessageList = messagesHelper.getMessages(chatID);
@@ -107,14 +118,15 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
 
             messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
             messagesList.setAdapter(messagesAdapter);
-            messagesList.setLayoutManager(new LinearLayoutManager(this));
+            LinearLayoutManager llm = new LinearLayoutManager(this);
+            llm.setStackFromEnd(true);
+            messagesList.setLayoutManager(llm);
         }
 
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String cid = chatID;
-                messages.sendMessage(cid, inputMessage.getText().toString());
+                sendMessage(inputMessage.getText().toString());
             }
         });
 
@@ -127,7 +139,7 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
                 } else {
                     View view = getCurrentFocus();
                     if (view != null) {
-                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
                     isEmojiFragmentShown = true;
@@ -145,6 +157,22 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         });
 
         setEmojiconFragment(false);
+        if (chatID != null)
+            onUpdateChatID();
+    }
+
+    private void onUpdateChatID() {
+        Bundle args = new Bundle();
+        args.putString(MessagesLoader.CID_ARG, chatID);
+        getLoaderManager().initLoader(0, args, listener);
+    }
+
+    private void sendMessage(@NonNull String message) {
+        if (chatID != null) {
+            messages.sendMessage(chatID, message);
+        } else if (userID != null) {
+            messages.sendFirstMessage(userID, message);
+        }
     }
 
     private void addMessage(@NonNull Message message) {
@@ -174,9 +202,14 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     @Override
     public void onIncomeMessage(JSONObject message){
         try {
+            if (message.has("idRoom")) {
+                chatID = message.getString("idRoom");
+                onUpdateChatID();
+            }
+
             Message incomeMsg = new Message(message, this);
             addMessage(incomeMsg);
-        } catch(Exception e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
@@ -206,6 +239,11 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
         messagesAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void onChatCreated(Chat chat) {
+        // TODO: ???
+    }
+
     private void setEmojiconFragment(boolean useSystemDefault) {
         getSupportFragmentManager()
                 .beginTransaction()
@@ -222,4 +260,31 @@ public class DialogActivity extends AppCompatActivity implements IMessageReactio
     public void onEmojiconClicked(Emojicon emojicon) {
         EmojiconsFragment.input(inputMessage, emojicon);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        messages.disconnect();
+    }
+
+    private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
+        @Override
+        public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
+            return new MessagesLoader(DialogActivity.this, args);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
+            if (data != null) {
+                for (Message message : data) {
+                    addMessage(message);
+                }
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Message>> loader) {
+            // TODO: something
+        }
+    };
 }

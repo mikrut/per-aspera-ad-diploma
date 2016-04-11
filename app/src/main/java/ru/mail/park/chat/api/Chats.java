@@ -12,9 +12,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Message;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -41,9 +43,41 @@ public class Chats extends ApiSection {
     }
 
     @NonNull
+    public List<Message> getMessages(String cid) throws IOException {
+        final String requestURL = "messages";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("idRoom", cid));
+
+        List<Message> messagesList = new LinkedList<>();
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            int status = 200;
+            if (result.has("status"))
+                status = result.getInt("status");
+            if (status == 200) {
+                JSONArray messages = result.getJSONArray("listMessage");
+
+                for (int i = 0; i < messages.length(); i++) {
+                    Message message = new Message(messages.getJSONObject(i), getContext(), cid);
+                    messagesList.add(message);
+                }
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error", e);
+        }
+
+        return messagesList;
+    }
+
+    @NonNull
     public List<Chat> getChats() throws IOException {
         final String requestURL = "list";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Chat> chatsList;
         try {
@@ -106,7 +140,7 @@ public class Chats extends ApiSection {
                 JSONObject data = result.getJSONObject("data");
                 JSONObject dialog = data.getJSONObject("dialog");
 
-                chat = new Chat(dialog);
+                chat = new Chat(dialog, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -135,7 +169,7 @@ public class Chats extends ApiSection {
                 JSONObject data = result.getJSONObject("data");
                 JSONObject dialog = data.getJSONObject("dialog");
 
-                chat = new Chat(dialog);
+                chat = new Chat(dialog, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -147,10 +181,10 @@ public class Chats extends ApiSection {
         return chat;
     }
 
-    private static List<Chat> chatsFrom(JSONArray chats) throws JSONException {
+    private List<Chat> chatsFrom(JSONArray chats) throws JSONException {
         List<Chat> chatsList = new ArrayList<>(chats.length());
         for (int i = 0; i < chats.length(); i++) {
-            Chat contact = new Chat(chats.getJSONObject(i));
+            Chat contact = new Chat(chats.getJSONObject(i), getContext());
             chatsList.add(contact);
         }
         return chatsList;
