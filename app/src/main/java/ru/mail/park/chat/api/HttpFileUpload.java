@@ -14,6 +14,9 @@ import java.net.URL;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class HttpFileUpload implements Runnable{
     URL connectURL;
     String responseString;
@@ -32,18 +35,18 @@ public class HttpFileUpload implements Runnable{
         }
     }
 
-    public void Send_Now(FileInputStream fStream){
+    public void Send_Now(FileInputStream fStream, IUploadListener listener){
         fileInputStream = fStream;
         Log.d("[TP-diploma]", "send now");
-        Sending();
+        Sending(listener);
     }
 
-    void Sending(){
+    void Sending(IUploadListener listener){
         String Tag="[TP-diploma]";
 
         Log.d("[TP-diploma]", "sending started");
 
-       new HttpUploadTask().execute();
+       new HttpUploadTask(listener).execute();
     }
 
     @Override
@@ -51,14 +54,23 @@ public class HttpFileUpload implements Runnable{
         // TODO Auto-generated method stub
     }
 
-    class HttpUploadTask extends AsyncTask<Void,Void,Void>
-    {
-        protected void onPreExecute() {
-            //display progress dialog.
+    public interface IUploadListener {
+        void onUploadComplete(String name);
+    }
 
+    class HttpUploadTask extends AsyncTask<Void,Void,String>
+    {
+        IUploadListener listener;
+
+        public HttpUploadTask(IUploadListener listener) {
+            this.listener = listener;
         }
 
-        protected Void doInBackground(Void... params) {
+        protected void onPreExecute() {
+            //display progress dialog.
+        }
+
+        protected String doInBackground(Void... params) {
             try {
                 String iFileName = Title;
                 String lineEnd = "\r\n";
@@ -143,16 +155,24 @@ public class HttpFileUpload implements Runnable{
                 while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
                 String s=b.toString();
 
-                Log.d("[TP-diploma]", s);
                 dos.close();
-            }catch(Exception e) {
+                Log.d("[TP-diploma]", s);
+                return s;
+            } catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
-            return null;
         }
 
-        protected void onPostExecute(Void result) {
-            // dismiss progress dialog and update ui
+        protected void onPostExecute(String result) {
+            if (result != null && listener != null) {
+                try {
+                    JSONObject object = new JSONObject(result);
+                    listener.onUploadComplete(object.getJSONObject("data").getString("name"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

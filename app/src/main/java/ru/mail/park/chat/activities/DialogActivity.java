@@ -13,11 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
@@ -56,7 +59,8 @@ public class DialogActivity
         extends AppCompatActivity
         implements IMessageReaction,
         EmojiconGridFragment.OnEmojiconClickedListener,
-        EmojiconsFragment.OnEmojiconBackspaceClickedListener {
+        EmojiconsFragment.OnEmojiconBackspaceClickedListener,
+        HttpFileUpload.IUploadListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
@@ -274,6 +278,14 @@ public class DialogActivity
     }
 
     @Override
+    public void onUploadComplete(String name) {
+        TextView linkable = ((TextView) findViewById(R.id.link));
+        linkable.setMovementMethod(LinkMovementMethod.getInstance());
+        linkable.setText(Html.fromHtml("<a href=\"http://p30480.lab1.stud.tech-mail.ru/"+name+"\">"+name+"</a>"));
+        linkable.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         messages.disconnect();
@@ -290,7 +302,7 @@ public class DialogActivity
                 try {
                     fstrm = new FileInputStream(filePath);
                     hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                    hfu.Send_Now(fstrm);
+                    hfu.Send_Now(fstrm, this);
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
