@@ -187,7 +187,7 @@ public class DialogActivity
         }
 
         receivedMessageList.add(receivedMessageList.size(), message);
-        messagesAdapter.notifyItemInserted(receivedMessageList.size());
+        messagesAdapter.notifyItemInserted(receivedMessageList.size() - 1);
     }
 
     private void removeMessage(@NonNull String messageID) {
