@@ -29,6 +29,7 @@ import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -38,6 +39,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
+
+    public static final int CHAT_WEB_LOADER = 0;
+    public static final int CHAT_SEARCH_LOADER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +76,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
 
-        getLoaderManager().initLoader(0, null, messagesLoaderListener);
+        getLoaderManager().initLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
 
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
@@ -111,7 +115,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 startActivity(intent);
             }
         }, null,
-            new View.OnClickListener() {
+           new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.d("[TechMail]", "starting LogoutTask");
@@ -162,6 +166,28 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false);
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+        });
+
         return true;
     }
 
@@ -203,7 +229,15 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
-                    return new ChatWebLoader(ChatsActivity.this);
+                    switch (id) {
+                        case CHAT_SEARCH_LOADER:
+                            ChatSearchLoader searchLoader = new ChatSearchLoader(ChatsActivity.this);
+                            searchLoader.setQueryString(searchView.getQuery().toString());
+                            return searchLoader;
+                        case CHAT_WEB_LOADER:
+                        default:
+                            return new ChatWebLoader(ChatsActivity.this);
+                    }
                 }
 
                 @Override
@@ -216,7 +250,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                 @Override
                 public void onLoaderReset(Loader<List<Chat>> loader) {
-                    // TODO: something...
+                    if (loader instanceof ChatSearchLoader) {
+                        ((ChatSearchLoader) loader).setQueryString(searchView.getQuery().toString());
+                    }
                 }
             };
 

@@ -38,6 +38,24 @@ public class ChatHelper {
 
     // FIXME: ORDER BY last_message_time DESC
     @NonNull
+    private Cursor getChatsCursor(@NonNull String queryString) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String selection = ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE %?%";
+        String[] selectionArgs = { queryString };
+
+        return db.query(
+                ChatsContract.ChatsEntry.TABLE_NAME,
+                ChatsContract.CHAT_PROJECTION,
+                selection,
+                selectionArgs,
+                null, // No GROUP BY
+                null, // No GROUP BY filter
+                null  // No ORDER BY
+        );
+    }
+
+    // FIXME: ORDER BY last_message_time DESC
+    @NonNull
     private Cursor getChatsCursor() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -75,6 +93,16 @@ public class ChatHelper {
     @NonNull
     public List<Chat> getChatsList() {
         Cursor chatsCursor = getChatsCursor();
+        return cursorToList(chatsCursor);
+    }
+
+    @NonNull
+    public List<Chat> getChatsList(@NonNull String queryString) {
+        Cursor chatsCursor = getChatsCursor(queryString);
+        return cursorToList(chatsCursor);
+    }
+
+    private static final List<Chat> cursorToList(Cursor chatsCursor) {
         ArrayList<Chat> chatsList = new ArrayList<>(chatsCursor.getCount());
 
         for(chatsCursor.moveToFirst(); !chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
