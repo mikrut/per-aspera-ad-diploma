@@ -30,7 +30,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         this.ownerUID = ownerUID;
     }
 
-    public class ViewHolder extends TitledPicturedViewHolder {
+    public static class ViewHolder extends TitledPicturedViewHolder {
         private final TextView messageText;
         private final ImageView contactPicture;
 

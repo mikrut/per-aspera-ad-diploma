@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
@@ -61,7 +62,10 @@ public class DialogActivity
 
     private List<Message> receivedMessageList;
     private MessagesAdapter messagesAdapter;
+    private LinearLayoutManager layoutManager;
     private Messages messages;
+
+    private ImageButton buttonDown;
 
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
@@ -112,10 +116,35 @@ public class DialogActivity
 
             messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
             messagesList.setAdapter(messagesAdapter);
-            LinearLayoutManager llm = new LinearLayoutManager(this);
-            llm.setStackFromEnd(true);
-            messagesList.setLayoutManager(llm);
+            layoutManager = new LinearLayoutManager(this);
+            layoutManager.setStackFromEnd(true);
+            messagesList.setLayoutManager(layoutManager);
+
+            messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                }
+
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    boolean atBottom =
+                            (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
+                    if (atBottom) {
+                        buttonDown.setVisibility(View.GONE);
+                    }
+                }
+            });
         }
+
+        buttonDown = (ImageButton) findViewById(R.id.buttonDown);
+        buttonDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                messagesList.scrollToPosition(receivedMessageList.size() - 1);
+            }
+        });
 
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,8 +169,8 @@ public class DialogActivity
                 }
             }
         });
-
         setEmojiconFragment(false);
+
         if (chatID != null)
             onUpdateChatID();
     }
@@ -161,16 +190,28 @@ public class DialogActivity
     }
 
     private void addMessage(@NonNull Message message) {
-        for (int position = 0; position < receivedMessageList.size(); position++) {
+        boolean atBottom =
+                (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
+
+        boolean inserted = false;
+        for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
             if (message.compareTo(receivedMessageList.get(position)) < 0) {
                 receivedMessageList.add(position, message);
                 messagesAdapter.notifyItemInserted(position);
-                return;
+                inserted = true;
             }
         }
 
-        receivedMessageList.add(receivedMessageList.size(), message);
-        messagesAdapter.notifyItemInserted(receivedMessageList.size());
+        if (!inserted) {
+            receivedMessageList.add(message);
+            messagesAdapter.notifyItemInserted(receivedMessageList.size() - 1);
+        }
+
+        if (atBottom) {
+            messagesList.scrollToPosition(receivedMessageList.size() - 1);
+        } else {
+            buttonDown.setVisibility(View.VISIBLE);
+        }
     }
 
     private void removeMessage(@NonNull String messageID) {
@@ -188,8 +229,11 @@ public class DialogActivity
     public void onIncomeMessage(JSONObject message){
         try {
             if (message.has("idRoom")) {
-                chatID = message.getString("idRoom");
-                onUpdateChatID();
+                String newChatID = message.getString("idRoom");
+                if (chatID == null || !chatID.equals(newChatID)) {
+                    chatID = newChatID;
+                    onUpdateChatID();
+                }
             }
 
             Message incomeMsg = new Message(message, this);
@@ -264,6 +308,7 @@ public class DialogActivity
                 for (Message message : data) {
                     addMessage(message);
                 }
+                messagesList.scrollToPosition(receivedMessageList.size() - 1);
             }
         }
 
