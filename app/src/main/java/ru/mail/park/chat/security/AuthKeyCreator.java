@@ -300,20 +300,10 @@ public class AuthKeyCreator {
     }
 
     private Pair<Integer, Integer> decomposePQ(long pq) {
-
-        return decomposePQTrivial(pq);
+        return PQDecomposer.decomposePQ(pq);
     }
 
-    private Pair<Integer, Integer> decomposePQTrivial(long pq) {
-        int i = 2;
-        if (pq % i == 0)
-            return new Pair<>(i, (int) (pq/i));
-        i = 3;
-        while (pq % i != 0) {
-            i += 2;
-        }
-        return new Pair<>(i, (int) (pq/i));
-    }
+
 
     private long generateMessageID() {
         long unixTime = System.currentTimeMillis() / 1000L;

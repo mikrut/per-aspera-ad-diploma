@@ -71,10 +71,10 @@ public class ClientSideCryptoAuthTest extends TestCase {
         @NonNull
         @Override
         public byte[] requestDHParams(long messageID, Nonce nonce, Nonce serverNonce, long p, long q, long publicKeyFingerprint, byte[] encryptedData) {
-            assertNotEquals(p, 1);
-            assertNotEquals(q, 1);
-            assertEquals(p * q, pq);
-            assertEquals(publicKeyFingerprint, rsaPublic.getPublicExponent().longValue());
+            assertNotEquals(1, p);
+            assertNotEquals(1, q);
+            assertEquals(pq, p * q);
+            assertEquals(rsaPublic.getPublicExponent().longValue(), publicKeyFingerprint);
 
             Cipher cipher = null;
             try {
