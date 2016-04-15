@@ -3,9 +3,11 @@ package ru.mail.park.chat.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +42,12 @@ public class ChatHelper {
     @NonNull
     private Cursor getChatsCursor(@NonNull String queryString) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String selection = ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE %?%";
-        String[] selectionArgs = { queryString };
+        String selection = ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE ? ESCAPE '\\'";
+        queryString = queryString.replace("\\", "\\\\");
+        queryString = queryString.replace("%", "\\%");
+        queryString = queryString.replace("_", "\\_");
+        queryString = queryString.replace("[", "\\[");
+        String[] selectionArgs = { "%" + queryString + "%" };
 
         return db.query(
                 ChatsContract.ChatsEntry.TABLE_NAME,
