@@ -41,6 +41,19 @@
             android:textColor="#ffffff" />
     </RelativeLayout>
 
+    <ImageView
+        android:id="@+id/groupIndicatorImageView"
+        android:src="@drawable/ic_group_black_24dp"
+        android:tint="@color/textColorPrimary"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dp"
+        android:layout_toRightOf="@+id/imageLayout"
+        android:layout_toEndOf="@+id/imageLayout"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,8 +64,8 @@
         android:textStyle="bold"
         android:layout_toLeftOf="@+id/lastMessageTime"
         android:layout_toStartOf="@+id/lastMessageTime"
-        android:layout_toRightOf="@+id/imageLayout"
-        android:layout_toEndOf="@+id/imageLayout" />
+        android:layout_toRightOf="@+id/groupIndicatorImageView"
+        android:layout_toEndOf="@+id/groupIndicatorImageView" />
 
     <TextView
         android:layout_width="wrap_content"

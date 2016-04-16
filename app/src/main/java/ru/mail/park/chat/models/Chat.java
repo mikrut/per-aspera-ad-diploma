@@ -24,17 +24,19 @@ public class Chat {
     @Nullable
     private String description;
 
+    private int type;
+
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
         name = cursor.getString(ChatsContract.PROJECTION_NAME_INDEX);
         description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
     }
 
-    private static final int GROUP_TYPE = 1;
-    private static final int INDIVIDUAL_TYPE = 0;
+    public static final int GROUP_TYPE = 1;
+    public static final int INDIVIDUAL_TYPE = 0;
 
     public Chat(JSONObject chat, Context context) throws JSONException {
-        int type = 1;
+        type = GROUP_TYPE;
         if (chat.has("type"))
             type = Integer.valueOf(chat.getString("type"));
         String uid = new OwnerProfile(context).getUid();
@@ -94,6 +96,10 @@ public class Chat {
 
     private void setDescription(@Nullable String description) {
         this.description = description;
+    }
+
+    public int getType() {
+        return type;
     }
 
     @NonNull

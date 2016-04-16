@@ -45,6 +45,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
     public class ViewHolder extends TitledPicturedViewHolder {
         public final View chatView;
 
+        public final ImageView groupIndicatorView;
         public final TextView chatName;
         public final TextView lastMessageTime;
         public final TextView lastMessageText;
@@ -64,6 +65,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 }
             });
 
+            groupIndicatorView = (ImageView) chatView.findViewById(R.id.groupIndicatorImageView);
             chatName = (TextView) chatView.findViewById(R.id.chatName);
             lastMessageTime = (TextView) chatView.findViewById(R.id.lastMessageTime);
             lastMessageText = (TextView) chatView.findViewById(R.id.lastMessageText);
@@ -81,7 +83,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             // FIXME: get last message text, not description
             lastMessageText.setText(chat.getDescription());
             // TODO: chat pictures
-
+            switch (chat.getType()) {
+                case Chat.GROUP_TYPE:
+                    groupIndicatorView.setVisibility(View.VISIBLE);
+                    break;
+                case Chat.INDIVIDUAL_TYPE:
+                default:
+                    groupIndicatorView.setVisibility(View.GONE);
+            }
             chatID = chat.getCid();
         }
     }
