@@ -1,23 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingTop="7dp"
-    android:paddingBottom="7dp"
     android:paddingLeft="7dp"
     android:paddingRight="7dp"
     android:clickable="true"
     android:background="?attr/selectableItemBackground">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/chatPicture"
-        android:src="@android:color/black"
+    <RelativeLayout
+        android:id="@+id/imageLayout"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginRight="10dp"/>
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/image"
+            tools:src="@color/azure" />
+
+        <TextView
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/imageText"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignLeft="@+id/image"
+            android:layout_alignTop="@+id/image"
+            android:layout_alignRight="@+id/image"
+            android:layout_alignBottom="@+id/image"
+            android:layout_margin="1dp"
+            android:gravity="center"
+            tools:text="UN"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/groupIndicatorImageView"
+        android:src="@drawable/ic_group_black_24dp"
+        android:tint="@color/textColorPrimary"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="5dp"
+        android:layout_toRightOf="@+id/imageLayout"
+        android:layout_toEndOf="@+id/imageLayout"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -28,8 +63,9 @@
         android:layout_alignParentTop="true"
         android:textStyle="bold"
         android:layout_toLeftOf="@+id/lastMessageTime"
-        android:layout_toRightOf="@+id/chatPicture"
-        android:layout_toEndOf="@+id/chatPicture" />
+        android:layout_toStartOf="@+id/lastMessageTime"
+        android:layout_toRightOf="@+id/groupIndicatorImageView"
+        android:layout_toEndOf="@+id/groupIndicatorImageView" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,17 +77,25 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <TextView
+    <com.rockerhieu.emojicon.EmojiconTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
         android:id="@+id/lastMessageText"
         android:layout_below="@+id/chatName"
-        android:layout_toRightOf="@+id/chatPicture"
+        android:layout_toRightOf="@+id/imageLayout"
+        android:layout_toEndOf="@+id/imageLayout"
         android:layout_alignRight="@+id/lastMessageTime"
         android:layout_alignEnd="@+id/lastMessageTime"
-        android:layout_alignBottom="@+id/chatPicture"
+        android:layout_alignBottom="@+id/imageLayout"
         android:gravity="center_vertical" />
 
+
+    <View
+        android:layout_below="@+id/imageLayout"
+        android:layout_width="match_parent"
+        android:layout_marginTop="7dp"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"/>
 </RelativeLayout>

@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="16dp"
     android:clickable="true"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
@@ -13,17 +11,37 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:id="@+id/rowIcon"
+        android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
+        android:contentDescription="@string/description_menu_action_icon"
+        android:tint="@color/textColorPrimary"
         android:src="@android:drawable/ic_menu_edit"/>
 
     <TextView
+        android:layout_toRightOf="@id/rowIcon"
+        android:layout_toEndOf="@id/rowIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
+        android:layout_centerVertical="true"
         android:paddingLeft="12dp"
-        android:paddingTop="4dp"
+        android:paddingStart="12dp"
+        android:paddingRight="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
+        android:paddingTop="6dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
         android:id="@+id/rowText" />
-</LinearLayout>
+
+    <View
+        android:layout_below="@+id/rowIcon"
+        android:layout_width="match_parent"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"/>
+
+</RelativeLayout>

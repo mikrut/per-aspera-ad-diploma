@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_edit_contact"
-        android:title="Edit"
+        android:title="@string/action_edit_contact"
         android:icon="@drawable/ic_edit_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />

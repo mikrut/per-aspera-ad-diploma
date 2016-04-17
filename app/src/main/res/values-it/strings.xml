@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">"Chiacchierareыаыаы"</string>
+    <string name="action_settings">"Impostazioni"</string>
+    <string name="action_search">"Ricerca"</string>
+    <string name="title_activity_login">"Accedi"</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_login">"Accesso"</string>
+    <string name="prompt_password">"Parola d'ordine"</string>
+    <string name="action_sign_in">"Accedi"</string>
+    <string name="action_sign_up">"Registrati"</string>
+    <string name="action_sign_in_short">"Accedi"</string>
+    <string name="title_activity_register">"Registrazione"</string>
+
+    <string name="action_save_profile">"Salva le modifiche"</string>
+
+    <string name="title_activity_profile">"Profilo"</string>
+
+    <string name="title_activity_user_profile">"Profilo utente"</string>
+
+    <string name="title_activity_contacts">"Contatti"</string>
+
+    <string name="open">"Apri"</string>
+    <string name="close">"Chiudi"</string>
+    <string name="large_text" translatable="false">"
+        \"Il materiale è la metafora. \ N \ n\" \"Una metafora materiale è la teoria unificante di uno spazio razionalizzato ed un sistema di movimento.\" \"Il materiale si fonda in realtà tattile, ispirato dallo studio di carta e inchiostro, eppure\" \"tecnologicamente avanzato e aperto alla fantasia e magia. \ N\" \"Le superfici e bordi del materiale fornire indicazioni visive che sono radicati nella realtà. Il \"\" l'uso di tattile familiare attributi aiuta gli utenti a comprendere rapidamente affordance. Eppure il \"\" flessibilità del materiale crea nuove affordance che sostituiscono quelli del \"fisico\" mondo, senza infrangere le regole della fisica. \ n \"\" i fondamenti della luce, di superficie, e il movimento sono la chiave per il trasporto come gli oggetti si muovono \",\" interagiscono, ed esistono nello spazio e in relazione tra di loro. spettacoli illuminazione realistica \"\" cuciture, divide lo spazio, e indica parti in movimento. \ n \ n \"\" Bold, grafica, intenzionale. \ n \ n \"\" Gli elementi fondamentali del design tipografia di stampa in base, griglie, lo spazio, la scala, colore, \"\" e l'uso di guida immaginario trattamenti visivi. Questi elementi fanno molto di più che piacere ' \"occhio\". Si crea gerarchia di significato, e messa a fuoco. scelte di colore deliberato, da bordo a bordo \"\" immaginario, grande tipografia scala, e lo spazio bianco intenzionale creare un audace e grafica \"interfaccia\" che immergere l'utente nell'esperienza. \ n \"\" l'accento sulla le azioni degli utenti funzionalità di base rende immediatamente evidente e fornisce \"\" waypoint per l'utente. \ n \ n \"\" motion fornisce significato. \ n \ n \"\" aspetti di movimento e rafforza l'utente come il motore primo. le azioni degli utenti primari sono \"\" punti di svolta che avviano il movimento, trasformando l'intero disegno. \ n \"\" Tutto azione si svolge in un unico ambiente. Gli oggetti vengono presentati all'utente senza \"\" rompere la continuità di esperienza ancora come si trasformano e riorganizzare. \ N \"\" Il movimento è significativo e appropriato, che serve a focalizzare l'attenzione e mantenere la continuità. \"\" Il feedback è sottile ma chiaro. Le transizioni sono ef fi ciente ancora coerente. \ N \ n \"\" mondo 3D. \ N \ n \"\" L'ambiente materiale è uno spazio 3D, il che significa che tutti gli oggetti hanno x, y, z \"\" dimensioni. L'asse z è perpendicolarmente allineato al piano del display, con il \"\" asse z positivo estendentesi verso lo spettatore. Ogni foglio di materiale occupa un unico \"\" posizione lungo l'asse z ed ha uno spessore 1DP standard. \ N \"\" Sul web, l'asse z è utilizzato per la stratificazione e non per prospettiva. Il mondo 3D è \"\" emulato manipolando l'asse y. \ N \ n \"\" Luce e ombra. \ N \ n \"\" All'interno dell'ambiente materiale, luci virtuali illuminano la scena. luci principali creano \"\" ombre direzionali, mentre la luce ambiente crea ombre morbide da tutte le angolazioni. \ n \"\" Ombre nell'ambiente materiale sono espressi da queste due fonti di luce. In Android \"\" sviluppo, ombre si verificano quando le sorgenti luminose sono bloccati da fogli di materiale a \"\" varie posizioni lungo l'asse z. Sul web, le ombre sono rappresentate manipolando solo la \"\" asse y. L'esempio seguente mostra la scheda con una altezza di 6DP. \ N \ n \"\" Riposo elevazione. \ N \ n \"\" Tutti gli oggetti materiali, indipendentemente dalle dimensioni, hanno una elevazione di riposo, o di elevazione di default \"\" che non cambia. Se un oggetto cambi di pendenza, si dovrebbe tornare al suo riposo \"\" elevazione al più presto possibile. \ N \ n \"\" elevazioni componenti. \ N \ n \"\" L'elevazione di riposo per un tipo di componente è coerente tra le applicazioni (ad esempio, FAB elevazione \"\" non varia da 6DP in una app per 16dp in un'altra applicazione). \ n \"\" I componenti possono avere diverse altezze di riposo su piattaforme, a seconda della profondità \"\" dell'ambiente (ad esempio, TV ha una profondità maggiore di cellulari o desktop). \ n \ n \"\" di elevazione e di elevazione dinamica offset reattivo. \ n \ n \"\" Alcuni tipi di componenti hanno elevazione reattivo, nel senso che dislivello in risposta \"\" per l'input dell'utente (ad esempio, normale, si è concentrata, e pressato ) o eventi di sistema. Questi elevazione \"\" le modifiche vengono costantemente implementati utilizzando gli offset di elevazione dinamici. \ N \"\" offset elevazione dinamici sono l'elevazione obiettivo che un componente si muove verso, relativa \"\" per stato di riposo del componente. Essi garantiscono che i cambiamenti di quota sono coerenti \"\" attraverso azioni e tipi di componenti. Ad esempio, tutti i componenti che sollevano sulla stampa hanno \"\" lo stesso dislivello rispetto alla loro elevazione di riposo. \ N \"\" Una volta che l'evento di input viene completata o annullata, il componente tornerà al suo riposo \"\" elevazione. \ N \ n \"\" Evitare interferenze elevazione. \ n \ n \"\" I componenti con elevazioni sensibili possono incontrare altri componenti che si muovono tra \"\" le loro quote di riposo e offset di elevazione dinamici. Poiché il materiale non può passare \"\" attraverso altri materiali, componenti evitare interferenze con l'un l'altro qualsiasi numero di modi \",\" sia su una base per componenti o utilizzando l'intero layout app. \ N \"\" A livello di componenti, i componenti possono muoversi o essere rimosso prima che possano causare interferenze. \"\" Per esempio, un pulsante di azione flottante (FAB) può scomparire o spostare fuori dallo schermo prima che un \"utente\" raccoglie una carta, o può muoversi se appare uno snack bar. \ N \"\" A livello di layout, progettare il layout app per ridurre al minimo le opportunità per le interferenze. \"\" Per esempio, posizionare il FAB ad un lato del flusso di una carte in modo che il FAB non interferirà \"\" quando un utente tenta di prendere una delle carte. \ N \ n \"
+    "</string>
+
+    <!-- Owner-related constants -->
+    <string name="anonymous_name">"Anonimo"</string>
+    <string name="no_uid" translatable="false">"no $ uid"</string>
+    <string name="title_activity_settings">"Impostazioni applicazione"</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_security">"Sicurezza"</string>
+
+    <string name="pref_title_paranoid_mode">"Attivare la modalità paranoica"</string>
+    <string name="pref_description_paranoid_mode">"Utilizzare connessioni TOR-solo, la versione cipolla di server. Vedere la Guida per ulteriori informazioni.
+    "</string>
+    <string name="action_save">"Salva"</string>
+    <string name="action_delete">"Cancella"</string>
+    <string name="action_create">"Crea"</string>
+    <string name="action_edit_contact">"Modifica"</string>
+    <string name="description_make_photo">"Fai la foto"</string>
+    <string name="description_upload_photo">"Carica una foto"</string>
+    <string name="description_insert_emoticon">"Inserire emoticon"</string>
+    <string name="hint_input_message">"Messaggio"</string>
+    <string name="hint_login">"Accedi"</string>
+    <string name="hint_first_name">"Nome"</string>
+    <string name="hint_last_name">"Cognome"</string>
+    <string name="find_friends">"Trova amici"</string>
+    <string name="contacts">"Contatti"</string>
+    <string name="description_send_message">"Invia il messaggio"</string>
+    <string name="hint_add_contacts_to_dialog">"Aggiungere contatti al dialogo ..."</string>
+    <string name="option_allow_without_TOR">"Consenti connessione senza TOR"</string>
+    <string name="hint_email">"E-mail"</string>
+    <string name="hint_phone">"Telefono"</string>
+    <string name="add_to_contacts">"Aggiungi a Rubrica"</string>
+    <string name="description_menu_action_icon">"icona di azione del menu"</string>
+    <string name="description_user_picture">"user"</string>
+    <string name="description_application_logo">"Applicazione logo"</string>
+    <string name="title_activity_chats">"lista Chat"</string>
+    <string name="action_show_profile">"Visualizza profilo"</string>
+    <string name="action_group_chats">"chat di gruppo"</string>
+    <string name="action_help">"Aiuto"</string>
+    <string name="action_log_out">"Esci"</string>
+    <string name="title_activity_create_group_dialog">"Crea Dialog Group"</string>
+    <string name="title_activity_dialog">"Dialogo"</string>
+
+</resources>

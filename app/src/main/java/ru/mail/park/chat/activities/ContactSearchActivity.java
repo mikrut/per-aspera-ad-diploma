@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
@@ -67,6 +68,13 @@ public class ContactSearchActivity extends AppCompatActivity {
         searchView.setIconifiedByDefault(false);
         searchView.requestFocus();
 
+        int searchPlateId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_plate", null, null);
+        View searchPlate = searchView.findViewById(searchPlateId);
+        if (searchPlate != null) {
+            searchPlate.setBackgroundResource(R.color.colorPrimary);
+        }
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -105,7 +113,7 @@ public class ContactSearchActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Contact>>() {
                 @Override
                 public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {

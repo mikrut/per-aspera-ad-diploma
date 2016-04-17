@@ -9,6 +9,34 @@
         <item name="android:windowActionBar">true</item>
 
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorPrimaryInverse">@color/textColorPrimaryInverse</item>
+
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
+        <item name="android:textColorSecondaryInverse">@color/textColorSecondaryInverse</item>
+
+        <item name="colorButtonNormal">@color/colorButtonNormal</item>
+
+        <item name="android:textColorHint">@color/textColorSecondary</item>
+        <item name="colorControlNormal">@color/textColorSecondary</item>
+        <item name="colorControlActivated">@color/textColorPrimary</item>
+        <item name="colorControlHighlight">@color/textColorSecondary</item>
+
+        <item name="android:checkboxStyle">@style/Widget.CompoundButton.CheckBox.AppTheme</item>
+
+        <item name="searchViewStyle">@style/SearchViewMyStyle</item>
+    </style>
+
+    <style name="Widget.CompoundButton.CheckBox.AppTheme" parent="android:Widget.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/textColorPrimary</item>
+    </style>
+
+    <style name="SearchViewMyStyle" parent="Widget.AppCompat.SearchView">
+        <item name="submitBackground">@color/colorPrimary</item>
+        <item name="queryBackground">@color/colorPrimary</item>
     </style>
 
     <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">

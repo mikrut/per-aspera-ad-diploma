@@ -13,10 +13,10 @@ import ru.mail.park.chat.models.Chat;
  * Created by Михаил on 06.03.2016.
  */
 // TODO: implement limit, start number etc.
-public class ChatLoader extends AsyncTaskLoader<List<Chat>> {
-    protected List<Chat> chats;
+class ChatLoader extends AsyncTaskLoader<List<Chat>> {
+    List<Chat> chats;
 
-    public ChatLoader(@NonNull Context context) {
+    ChatLoader(@NonNull Context context) {
         super(context);
     }
 

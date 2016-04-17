@@ -14,8 +14,8 @@ import ru.mail.park.chat.models.OwnerProfile;
  * Created by Михаил on 19.03.2016.
  */
 public class LoginTask extends AsyncTask<String, Void, Pair<String, OwnerProfile>> {
-    private IAuthCallbacks listener;
-    private Auth auth;
+    private final IAuthCallbacks listener;
+    private final Auth auth;
 
     public LoginTask(Context context, IAuthCallbacks listener) {
         auth = new Auth(context);

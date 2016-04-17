@@ -23,6 +23,7 @@ import android.widget.Toast;
 import ru.mail.park.chat.activities.tasks.LoginTask;
 import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -93,7 +94,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true));
     }
 
-    TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
+    private final TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
@@ -104,7 +105,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         }
     };
 
-    OnClickListener onSignInListener = new OnClickListener() {
+    private final OnClickListener onSignInListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
             authenticate();
@@ -131,6 +132,9 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         mProgressView.setVisibility(View.GONE);
 
         contact.saveToPreferences(this);
+        MessengerDBHelper dbHelper = new MessengerDBHelper(this);
+        dbHelper.dropDatabase();
+        dbHelper.onCreate(dbHelper.getWritableDatabase());
 
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);

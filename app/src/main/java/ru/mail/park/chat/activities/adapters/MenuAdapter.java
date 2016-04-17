@@ -18,20 +18,20 @@ import ru.mail.park.chat.activities.UserProfileActivity;
  * Created by Михаил on 08.03.2016.
  */
 public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private String[] titles;
-    private int[] icons;
-    private String name;
-    private String email;
-    private int userPicture;
-    private View.OnClickListener[] listeners;
+    private final String[] titles;
+    private final int[] icons;
+    private final String name;
+    private final String email;
+    private final int userPicture;
+    private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
     private static final int ITEM = 1;
 
     public static class HeaderHolder extends RecyclerView.ViewHolder {
-        private TextView userName;
-        private TextView userEmail;
-        private ImageView userPicture;
+        private final TextView userName;
+        private final TextView userEmail;
+        private final ImageView userPicture;
 
         public HeaderHolder(final View headerView) {
             super(headerView);
@@ -62,8 +62,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public static class ItemRowHolder extends RecyclerView.ViewHolder {
-        ImageView rowIcon;
-        TextView rowText;
+        final ImageView rowIcon;
+        final TextView rowText;
 
         public ItemRowHolder(View itemView) {
             super(itemView);

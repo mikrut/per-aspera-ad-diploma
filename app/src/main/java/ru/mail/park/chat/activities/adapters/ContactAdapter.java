@@ -3,7 +3,6 @@ package ru.mail.park.chat.activities.adapters;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,11 +24,11 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 08.03.2016.
  */
 public class ContactAdapter extends AContactAdapter {
-    private Map<Character, List<Contact>> contactGroups;
+    private final Map<Character, List<Contact>> contactGroups;
     private ContactHolder.OnContactClickListener contactClickListener;
     private int itemCount;
 
-    protected static final int LETTER = 0;
+    private static final int LETTER = 0;
 
     public ContactAdapter(@NonNull List<Contact> contactList,
                           @Nullable ContactHolder.OnContactClickListener contactClickListener) {
@@ -43,12 +42,12 @@ public class ContactAdapter extends AContactAdapter {
         itemCount = contactList.size();
 
         if (contactList.size() > 0) {
-            Character lastChar = contactList.get(0).getLogin().charAt(0);
+            Character lastChar = contactList.get(0).getContactTitle().charAt(0);
             List<Contact> currentGroup = new LinkedList<>();
             contactGroups.put(lastChar, currentGroup);
 
             for (Contact contact : contactList) {
-                Character currentChar = contact.getLogin().charAt(0);
+                Character currentChar = contact.getContactTitle().charAt(0);
                 if (!lastChar.equals(currentChar)) {
                     lastChar = currentChar;
                     currentGroup = new LinkedList<>();
@@ -72,13 +71,13 @@ public class ContactAdapter extends AContactAdapter {
         }
     }
 
-    protected RecyclerView.ViewHolder createLetterHolder(ViewGroup parent) {
+    private RecyclerView.ViewHolder createLetterHolder(ViewGroup parent) {
         View letterView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.element_letter, parent, false);
         return new LetterHolder(letterView);
     }
 
-    protected RecyclerView.ViewHolder createContactHolder(ViewGroup parent) {
+    private RecyclerView.ViewHolder createContactHolder(ViewGroup parent) {
         View contactView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.element_contact, parent, false);
         return new ContactHolder(contactView);
@@ -117,7 +116,7 @@ public class ContactAdapter extends AContactAdapter {
         return new Pair<>(key, currentPosition);
     }
 
-    protected char getLetterForPosition(int position) {
+    private char getLetterForPosition(int position) {
         return getKeyForPosition(position).first;
     }
 
@@ -150,7 +149,7 @@ public class ContactAdapter extends AContactAdapter {
     }
 
     public static class LetterHolder extends RecyclerView.ViewHolder {
-        private TextView letter;
+        private final TextView letter;
 
         public LetterHolder(View itemView) {
             super(itemView);

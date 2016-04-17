@@ -100,10 +100,10 @@ public class Auth extends ApiSection {
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(1);
-        parameters.add(new Pair<>("access_token", accessToken));
+        parameters.add(new Pair<>(AUTH_TOKEN_PARAMETER_NAME, accessToken));
 
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters, false));
             final int status = result.getInt("status");
             if(status != 200) {
                 String message = result.getString("message");

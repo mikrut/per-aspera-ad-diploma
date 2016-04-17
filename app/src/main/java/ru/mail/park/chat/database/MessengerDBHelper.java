@@ -12,10 +12,11 @@ import java.util.Locale;
  * Created by Михаил on 06.03.2016.
  */
 public class MessengerDBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 3;
-    public static final String DATABASE_NAME = "Messenger.db";
+    private static final int DATABASE_VERSION = 3;
+    private static final String DATABASE_NAME = "Messenger.db";
 
-    public static final DateFormat iso8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
+    public static final DateFormat currentFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    public static final DateFormat iso8086 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault());
 
     public MessengerDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -31,12 +32,22 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(ChatsContract.DROP_TABLE);
-        db.execSQL(ContactsContract.DROP_TABLE);
-        db.execSQL(MessagesContract.DROP_TABLE);
+        dropDatabase(db);
         onCreate(db);
     }
 
+    public void dropDatabase() {
+        SQLiteDatabase db = getWritableDatabase();
+        dropDatabase(db);
+    }
+
+    private void dropDatabase(SQLiteDatabase db) {
+        db.execSQL(ChatsContract.DROP_TABLE);
+        db.execSQL(ContactsContract.DROP_TABLE);
+        db.execSQL(MessagesContract.DROP_TABLE);
+    }
+
+    @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }

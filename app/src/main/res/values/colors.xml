@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#64b5f6</color>
+    <color name="colorPrimary">#424242</color>
+    <color name="colorPrimaryDark">#212121</color>
+    <color name="colorAccent">#607d8b</color>
+    <color name="colorBackground">#616161</color>
+    <color name="colorDrawerBackground">#616161</color>
+
+    <color name="textColorPrimary">#ffffff</color>
+    <color name="textColorPrimaryInverse">#000000</color>
+
+    <color name="textColorSecondary">#bfffffff</color>
+    <color name="textColorSecondaryInverse">#bf000000</color>
+    <color name="colorButtonNormal">#455a64</color>
+
+    <color name="colorListDivider">#bdbdbd</color>
+
+    <color name="bright_pink">#FF007F</color>
+    <color name="red">#FF0000</color>
+    <color name="orange">#FF7F00</color>
+    <color name="yellow">#FFFF00</color>
+    <color name="chartreuse">#7FFF00</color>
+    <color name="green">#00FF00</color>
+    <color name="spring_green">#00FF7F</color>
+    <color name="cyan">#00FFFF</color>
+    <color name="azure">#007FFF</color>
+    <color name="blue">#0000FF</color>
+    <color name="violet">#7F00FF</color>
+    <color name="magenta">#FF00FF</color>
+    
+    <integer-array name="colorsImageBackground">
+        <item>@color/bright_pink</item>
+        <item>@color/red</item>
+        <item>@color/orange</item>
+        <item>@color/azure</item>
+        <item>@color/blue</item>
+        <item>@color/violet</item>
+        <item>@color/magenta</item>
+    </integer-array>
 </resources>

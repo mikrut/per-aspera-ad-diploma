@@ -24,7 +24,7 @@ public class ContactHelper {
         updateContact(contact, db);
     }
 
-    public void updateContact(@NonNull Contact contact, SQLiteDatabase db) {
+    private void updateContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
         String whereClause = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
         String[] whereArgs = {contact.getUid()};
@@ -36,12 +36,12 @@ public class ContactHelper {
         return saveContact(contact, db);
     }
 
-    public long saveContact(@NonNull Contact contact, SQLiteDatabase db) {
+    private long saveContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
         return db.insert(ContactsContract.ContactsEntry.TABLE_NAME, null, values);
     }
 
-    public long deleteAll(SQLiteDatabase db) {
+    private long deleteAll(SQLiteDatabase db) {
         return db.delete(ContactsContract.ContactsEntry.TABLE_NAME, null, null);
     }
 

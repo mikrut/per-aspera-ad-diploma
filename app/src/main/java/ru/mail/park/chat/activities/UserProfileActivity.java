@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
@@ -26,6 +28,7 @@ public class UserProfileActivity extends AppCompatActivity {
     public static final String UID_EXTRA = UserProfileActivity.class.getCanonicalName() + ".UID_EXTRA";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
+    private final static int WEB_OWN_LOADER = 2;
 
     private String uid;
 
@@ -38,6 +41,9 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView userLogin;
     private TextView userEmail;
     private TextView userPhone;
+    private LinearLayout profileDataLayout;
+
+    private ProgressBar progressBar;
 
     private Contact.Relation relation = null;
 
@@ -47,6 +53,8 @@ public class UserProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile);
 
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+        toolbarLayout.setTitle("Loading...");
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -64,6 +72,9 @@ public class UserProfileActivity extends AppCompatActivity {
         userLogin = (TextView) findViewById(R.id.user_login);
         userEmail = (TextView) findViewById(R.id.user_email);
         userPhone = (TextView) findViewById(R.id.user_phone);
+        profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         OwnerProfile owner = new OwnerProfile(this);
         if (getIntent().hasExtra(UID_EXTRA)) {
@@ -74,6 +85,9 @@ public class UserProfileActivity extends AppCompatActivity {
 
         if (uid.equals(owner.getUid())) {
             setUserData(owner, Contact.Relation.SELF);
+            Bundle args = new Bundle();
+            args.putString(ProfileWebLoader.UID_ARG, uid);
+            getLoaderManager().initLoader(WEB_OWN_LOADER, args, contactsLoaderListener);
         } else {
             ContactHelper contactHelper = new ContactHelper(this);
             Contact profile = contactHelper.getContact(uid);
@@ -90,6 +104,16 @@ public class UserProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 new AddContactTask(UserProfileActivity.this).execute(uid);
+            }
+        });
+
+        userSendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserProfileActivity.this, DialogActivity.class);
+                intent.putExtra(DialogActivity.USER_ID, uid);
+                startActivity(intent);
+                finish();
             }
         });
     }
@@ -136,7 +160,7 @@ public class UserProfileActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void setUserData(Contact user, Contact.Relation relation) {
+    private void setUserData(Contact user, Contact.Relation relation) {
         toolbarLayout.setTitle(user.getContactTitle());
         userLogin.setText(user.getLogin());
 
@@ -173,10 +197,12 @@ public class UserProfileActivity extends AppCompatActivity {
             }
         }
 
+        profileDataLayout.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
         invalidateOptionsMenu();
     }
 
-    LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
+    private final LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<Contact>() {
                 @Override
                 public Loader<Contact> onCreateLoader(int id, Bundle args) {
@@ -187,7 +213,9 @@ public class UserProfileActivity extends AppCompatActivity {
                 public void onLoadFinished(Loader<Contact> loader, Contact data) {
                     Log.d("loader", "received data");
                     if (data != null) {
-                        setUserData(data, Contact.Relation.OTHER);
+                        setUserData(data, (loader.getId() == WEB_OWN_LOADER) ?
+                                Contact.Relation.SELF
+                                : Contact.Relation.OTHER);
                     }
                 }
 

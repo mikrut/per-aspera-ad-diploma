@@ -5,49 +5,64 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.os.AsyncTask;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.SearchView;
-import android.widget.Toast;
+import android.widget.ImageButton;
 
+import com.balysv.materialmenu.MaterialMenuDrawable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
-import ru.mail.park.chat.NetcipherTester;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
-    protected FloatingActionButton fab;
+    private FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
+
+    private MaterialMenuDrawable mToolbarMorphDrawable;
+    private MaterialMenuDrawable mSearchViewMorphDrawable;
+    private Toolbar toolbar;
+
+    public static final int CHAT_WEB_LOADER = 0;
+    public static final int CHAT_SEARCH_LOADER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_drawer);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setupActionBar();
 
         DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(
@@ -57,7 +72,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 R.string.open,
                 R.string.close
         );
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -75,28 +90,21 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
 
-        getLoaderManager().initLoader(0, null, messagesLoaderListener);
+        getLoaderManager().initLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
 
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
 
         String[] titles = {
-                "Edit profile",
-                "Show profile",
-                "Group chats",
-                "Contacts",
-                "Settings",
-                "Help",
-                "Log out"
+                getString(R.string.action_show_profile),
+                getString(R.string.action_group_chats),
+                getString(R.string.contacts),
+                getString(R.string.action_settings),
+                getString(R.string.action_help),
+                getString(R.string.action_log_out)
         };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ChatsActivity.this, ProfileActivity.class);
-                startActivity(intent);
-            }
-        },new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ChatsActivity.this, UserProfileActivity.class);
@@ -121,22 +129,31 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 startActivity(intent);
             }
         }, null,
-            new View.OnClickListener() {
+           new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.d("[TechMail]", "starting LogoutTask");
-                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(new OwnerProfile(ChatsActivity.this).getAuthToken());
+                    OwnerProfile owner = new OwnerProfile(ChatsActivity.this);
+                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(owner.getAuthToken());
+
+                    owner.removeFromPreferences(ChatsActivity.this);
+                    MessengerDBHelper dbHelper = new MessengerDBHelper(ChatsActivity.this);
+                    dbHelper.dropDatabase();
+
+                    Intent intent = new Intent(ChatsActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
             }
         };
         
         int[] pictures = {
-                R.drawable.ic_edit_black_24dp,
                 R.drawable.ic_person_black_48dp,
                 R.drawable.ic_group_black_24dp,
-                R.drawable.ic_group_black_24dp,
+                R.drawable.ic_contacts_black_24dp,
                 R.drawable.ic_settings_black_24dp,
-                R.drawable.ic_help_black_24dp
+                R.drawable.ic_help_black_24dp,
+                R.drawable.ic_lock_black_24dp
             };
         OwnerProfile owner = new OwnerProfile(this);
         RecyclerView.Adapter mAdapter = new MenuAdapter(
@@ -154,19 +171,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         swipeContainer.setOnRefreshListener(refreshListener);
     }
 
-    class Query extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            return NetcipherTester.testNetcipher(ChatsActivity.this);
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            Snackbar.make(fab, s, Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_chats, menu);
@@ -175,6 +179,56 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false);
+
+        int searchPlateId = searchView.getContext().getResources()
+                .getIdentifier("android:id/search_plate", null, null);
+        View searchPlate = searchView.findViewById(searchPlateId);
+        if (searchPlate != null) {
+            searchPlate.setBackgroundResource(R.color.colorPrimary);
+        }
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
+                return true;
+            }
+        });
+
+        MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.action_search),
+            new MenuItemCompat.OnActionExpandListener() {
+                @Override
+                public boolean onMenuItemActionCollapse(MenuItem item) {
+                    mToolbarMorphDrawable.animateIconState(MaterialMenuDrawable
+                            .IconState.BURGER);
+                    mSearchViewMorphDrawable.animateIconState(MaterialMenuDrawable
+                            .IconState.BURGER);
+                    return true;
+                }
+
+                @Override
+                public boolean onMenuItemActionExpand(MenuItem item) {
+                    mToolbarMorphDrawable.animateIconState(MaterialMenuDrawable
+                            .IconState.ARROW);
+                    mSearchViewMorphDrawable.animateIconState(MaterialMenuDrawable
+                            .IconState.ARROW);
+                    return true;
+                }
+            });
 
         return true;
     }
@@ -206,10 +260,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     @Override
     public void onLogoutSuccess() {
         Log.d("[TechMail]", "calling onLogoutSuccess");
-        new OwnerProfile(ChatsActivity.this).removeFromPreferences(ChatsActivity.this);
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
     }
 
     @Override
@@ -217,11 +267,19 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         Log.d("[TechMail]", "calling onLogoutFail");
     }
 
-    LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
-                    return new ChatWebLoader(ChatsActivity.this);
+                    switch (id) {
+                        case CHAT_SEARCH_LOADER:
+                            ChatSearchLoader searchLoader = new ChatSearchLoader(ChatsActivity.this);
+                            searchLoader.setQueryString(searchView.getQuery().toString());
+                            return searchLoader;
+                        case CHAT_WEB_LOADER:
+                        default:
+                            return new ChatWebLoader(ChatsActivity.this);
+                    }
                 }
 
                 @Override
@@ -234,16 +292,57 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                 @Override
                 public void onLoaderReset(Loader<List<Chat>> loader) {
-                    // TODO: something...
+                    if (loader instanceof ChatSearchLoader) {
+                        ((ChatSearchLoader) loader).setQueryString(searchView.getQuery().toString());
+                    }
                 }
             };
 
-    SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+    private final SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
             getLoaderManager().restartLoader(0, null, messagesLoaderListener);
         }
     };
 
+    private void setupActionBar() {
+        int colorPrimary = getResources().getColor(R.color.textColorPrimary);
+        mToolbarMorphDrawable = new MaterialMenuDrawable(this,
+                colorPrimary,
+                MaterialMenuDrawable.Stroke.THIN);
+
+        mToolbarMorphDrawable.setIconState(MaterialMenuDrawable.IconState.BURGER);
+
+        mSearchViewMorphDrawable = new MaterialMenuDrawable(this, colorPrimary,
+                MaterialMenuDrawable.Stroke.THIN);
+
+        mSearchViewMorphDrawable.setIconState(MaterialMenuDrawable.IconState.BURGER);
+        final ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setHomeAsUpIndicator(mToolbarMorphDrawable);
+        }
+
+        try {
+            Method ensureCollapseButtonView = android.support.v7.widget.Toolbar.class
+                    .getDeclaredMethod("ensureCollapseButtonView", null);
+
+            ensureCollapseButtonView.setAccessible(true);
+            ensureCollapseButtonView.invoke(toolbar, null);
+
+            Field collapseButtonViewField = android.support.v7.widget.Toolbar.class.
+                    getDeclaredField("mCollapseButtonView");
+
+            collapseButtonViewField.setAccessible(true);
+
+            ImageButton imageButtonCollapse = (ImageButton) collapseButtonViewField
+                    .get(toolbar);
+
+            imageButtonCollapse.setImageDrawable(mSearchViewMorphDrawable);
+        }
+        catch (Exception e) {
+            // Something went wrong, let the app work without morphing the buttons :)
+            e.printStackTrace();
+        }
+    }
 }
 

@@ -40,28 +40,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/imageView"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
+            android:contentDescription="@string/add_to_contacts"
             android:src="@drawable/ic_person_add_black_24dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Find Friends"
+            android:text="@string/find_friends"
             android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_gravity="center_vertical"
             android:id="@+id/textView" />
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/chatName"
+        android:lines="1"
+        android:inputType="text"
+        android:hint="Chat name"
+        android:layout_below="@+id/findFriends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/choosen_contacts_list"
         android:lines="2"
         android:inputType="none"
         android:focusable="false"
-        android:hint="Add contacts to dialog..."
-        android:layout_below="@+id/findFriends"
+        android:hint="@string/hint_add_contacts_to_dialog"
+        android:layout_below="@+id/chatName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -69,7 +77,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Contacts"
+        android:text="@string/contacts"
         android:id="@+id/textView2"
         android:layout_below="@+id/choosen_contacts_list"
         android:layout_alignParentLeft="true"

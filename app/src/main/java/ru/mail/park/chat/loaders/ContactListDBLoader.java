@@ -11,7 +11,7 @@ import ru.mail.park.chat.models.Contact;
 
 public class ContactListDBLoader extends AsyncTaskLoader<List<Contact>> {
     private List<Contact> contacts;
-    private int id;
+    private final int id;
 
     public ContactListDBLoader(@NonNull Context context, int id) {
         super(context);

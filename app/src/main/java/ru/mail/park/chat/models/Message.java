@@ -1,10 +1,13 @@
 package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +17,7 @@ import java.util.GregorianCalendar;
 
 import ru.mail.park.chat.database.MessagesContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
  * Created by Михаил on 26.03.2016.
@@ -25,26 +29,72 @@ public class Message implements Comparable<Message> {
     private @NonNull String uid;
     private @Nullable Calendar date;
 
-    public Message(@NonNull String messageBody,
-                   @NonNull String chatID,
-                   @NonNull String userID) {
+    private @NonNull String title;
+
+    private Message(@NonNull String messageBody,
+                    @NonNull String chatID,
+                    @NonNull String userID) {
         this.messageBody = messageBody;
         cid = chatID;
         uid = userID;
     }
 
-    public Message(@NonNull JSONObject message) throws JSONException, ParseException {
-        this(message.getString("msg_body"),
-                message.getString("cid"),
-                String.valueOf(message.getLong("uid")));
+    public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
+        this(message, context, null);
+    }
 
-        if (message.has("mid")) {
-            setMid(message.getString("mid"));
+    public Message(@NonNull JSONObject message, @NonNull Context context, String cid) throws JSONException {
+        String uid;
+        if (message.has("user")) {
+            uid = String.valueOf(message.getJSONObject("user").getLong("id"));
+        } else if (message.has("idUser")) {
+            uid = String.valueOf(message.getInt("idUser"));
+        } else {
+            SharedPreferences pref =
+                    context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
+                            Context.MODE_PRIVATE);
+            uid = pref.getString(PreferenceConstants.USER_UID_N, "");
         }
 
-        if (message.has("dtCreate")) {
-            String dateString = message.getString("dtCreate");
-            setDate(dateString);
+        String messageBodyParamName = null;
+
+        if (message.has("textMessage"))
+            messageBodyParamName = "textMessage";
+        if (message.has("text"))
+            messageBodyParamName = "text";
+        if (messageBodyParamName != null) {
+            messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
+        }
+
+        if (cid == null)
+            this.cid = message.getString("idRoom");
+        this.uid = uid;
+
+        if (message.has("idMessage")) {
+            setMid(message.getString("idMessage"));
+        } else if (message.has("id")) {
+            setMid(message.getString("id"));
+        }
+
+        try {
+            Contact user = new Contact(message, context);
+            title = user.getContactTitle();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        String dtCreateParamName = null;
+        if (message.has("dtCreateMessage"))
+            dtCreateParamName = "dtCreateMessage";
+        if (message.has("dtCreate"))
+            dtCreateParamName = "dtCreate";
+        if (dtCreateParamName != null) {
+            String dateString = message.getString(dtCreateParamName);
+            try {
+                setDate(dateString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
     
@@ -63,23 +113,23 @@ public class Message implements Comparable<Message> {
         return mid;
     }
 
-    public void setMid(@NonNull String mid) {
+    private void setMid(@NonNull String mid) {
         this.mid = mid;
     }
 
     @Nullable
-    public Calendar getDate() {
+    private Calendar getDate() {
         return date;
     }
 
-    public void setDate(@Nullable String dateString) throws ParseException {
-        java.util.Date date = MessengerDBHelper.iso8601.parse(dateString);
+    private void setDate(@Nullable String dateString) throws ParseException {
+        java.util.Date date = MessengerDBHelper.currentFormat.parse(dateString);
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(date);
         setDate(calendar);
     }
 
-    public void setDate(@Nullable Calendar date) {
+    private void setDate(@Nullable Calendar date) {
         this.date = date;
     }
 
@@ -110,6 +160,11 @@ public class Message implements Comparable<Message> {
         this.uid = uid;
     }
 
+    @NonNull
+    public String getTitle() {
+        return title;
+    }
+
     @Nullable
     public ContentValues getContentValues() {
         if (getMid() != null) {
@@ -121,7 +176,7 @@ public class Message implements Comparable<Message> {
 
             String isoDate = null;
             if (getDate() != null) {
-                isoDate = MessengerDBHelper.iso8601.format(getDate().getTime());
+                isoDate = MessengerDBHelper.currentFormat.format(getDate().getTime());
             }
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_DATETIME, isoDate);
             return contentValues;
@@ -134,7 +189,9 @@ public class Message implements Comparable<Message> {
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
           if (another.mid != null) {
-            return mid.compareTo(another.mid);
+              int mid1 = Integer.valueOf(mid);
+              int mid2 = Integer.valueOf(another.mid);
+            return mid1 - mid2;
           }
             return 1;
         }

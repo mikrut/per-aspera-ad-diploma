@@ -14,7 +14,7 @@ import ru.mail.park.chat.api.Contacts;
  * Created by Михаил on 27.03.2016.
  */
 public class AddContactTask extends AsyncTask<String, Void, Boolean> {
-    private Context context;
+    private final Context context;
     private String uid;
 
     public AddContactTask(Context context) {

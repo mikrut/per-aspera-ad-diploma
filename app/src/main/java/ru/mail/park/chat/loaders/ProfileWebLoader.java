@@ -17,8 +17,8 @@ public class ProfileWebLoader extends AsyncTaskLoader<Contact> {
     public static final String UID_ARG = "uid";
 
     private Contact profile;
-    private int id;
-    private String uid;
+    private final int id;
+    private final String uid;
 
     public ProfileWebLoader(@NonNull Context context, int id, Bundle args) {
         super(context);
@@ -32,7 +32,7 @@ public class ProfileWebLoader extends AsyncTaskLoader<Contact> {
         Users usersAPI = new Users(getContext());
         Contact user = null;
         try {
-           user = usersAPI.getUser(uid);
+           user = usersAPI.getFullUser(uid);
         } catch (IOException e) {
             e.printStackTrace();
         }

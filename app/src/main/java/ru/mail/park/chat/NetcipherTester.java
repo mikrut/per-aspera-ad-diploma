@@ -24,7 +24,7 @@ import info.guardianproject.netcipher.proxy.OrbotHelper;
 /**
  * Created by Михаил on 26.02.2016.
  */
-public class NetcipherTester {
+class NetcipherTester {
 
     // FIXME: do not trust everyone!
     public static String testNetcipher(Context context) {
@@ -73,7 +73,7 @@ public class NetcipherTester {
         return result;
     }
 
-    public static String getMessageBody(HttpURLConnection connection) {
+    private static String getMessageBody(HttpURLConnection connection) {
         StringBuilder responseBuilder = new StringBuilder();
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
