@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ import ru.mail.park.chat.models.Chat;
  */
 public class ChatHelper {
     private final MessengerDBHelper dbHelper;
+
+    public static final String LOG_TAG = "[TP-diploma]";
 
     public ChatHelper(Context context) {
         dbHelper = new MessengerDBHelper(context);
@@ -88,5 +91,29 @@ public class ChatHelper {
         String selection = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
         String[] selectionArgs = { cid };
         return db.delete(ChatsContract.ChatsEntry.TABLE_NAME, selection, selectionArgs);
+    }
+
+    public void updateChatList(@NonNull List<Chat> chatList) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Log.d(LOG_TAG, "updateChatList");
+
+        db.beginTransaction();
+        try {
+            Log.d(LOG_TAG, "try deleteAll");
+            deleteAll(db);
+            Log.d(LOG_TAG, "try to saveChat for " + chatList.size() + " elements");
+            for (Chat chat: chatList) {
+                saveChat(chat);
+            }
+            Log.d(LOG_TAG, "done");
+            db.setTransactionSuccessful();
+        } finally {
+            Log.d(LOG_TAG, "exception caught");
+            db.endTransaction();
+        }
+    }
+
+    private long deleteAll(SQLiteDatabase db) {
+        return db.delete(ChatsContract.ChatsEntry.TABLE_NAME, null, null);
     }
 }
