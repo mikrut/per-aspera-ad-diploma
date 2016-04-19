@@ -83,22 +83,22 @@ public class UserProfileActivity extends AppCompatActivity {
             uid = owner.getUid();
         }
 
+        int loaderType;
         if (uid.equals(owner.getUid())) {
             setUserData(owner, Contact.Relation.SELF);
-            Bundle args = new Bundle();
-            args.putString(ProfileWebLoader.UID_ARG, uid);
-            getLoaderManager().initLoader(WEB_OWN_LOADER, args, contactsLoaderListener);
+            loaderType = WEB_OWN_LOADER;
         } else {
             ContactHelper contactHelper = new ContactHelper(this);
             Contact profile = contactHelper.getContact(uid);
             if (profile != null) {
                 setUserData(profile, Contact.Relation.FRIEND);
-            } else {
-                Bundle args = new Bundle();
-                args.putString(ProfileWebLoader.UID_ARG, uid);
-                getLoaderManager().initLoader(WEB_LOADER, args, contactsLoaderListener);
             }
+            loaderType = WEB_LOADER;
         }
+
+        Bundle args = new Bundle();
+        args.putString(ProfileWebLoader.UID_ARG, uid);
+        getLoaderManager().initLoader(loaderType, args, contactsLoaderListener);
 
         userAddToContacts.setOnClickListener(new View.OnClickListener() {
             @Override

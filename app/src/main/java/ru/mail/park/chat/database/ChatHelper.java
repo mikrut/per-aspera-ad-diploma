@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -107,7 +108,9 @@ public class ChatHelper {
     @NonNull
     public List<Chat> getChatsList(@NonNull String queryString) {
         Cursor chatsCursor = getChatsCursor(queryString);
-        return cursorToList(chatsCursor);
+        List<Chat> result = cursorToList(chatsCursor);
+        chatsCursor.close();
+        return result;
     }
 
     private static final List<Chat> cursorToList(Cursor chatsCursor) {
@@ -148,6 +151,11 @@ public class ChatHelper {
     }
 
     private long deleteAll(SQLiteDatabase db) {
-        return db.delete(ChatsContract.ChatsEntry.TABLE_NAME, null, null);
+        try {
+            return db.delete(ChatsContract.ChatsEntry.TABLE_NAME, null, null);
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

@@ -37,14 +37,15 @@ public class Users extends ApiSection {
     @Nullable
     public Contact getFullUser(@NonNull String uid) throws IOException {
         final String requestURL = "getFullUser";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
         parameters.add(new Pair<>("idUser", uid));
 
         Contact user = null;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            String j = executeRequest(requestURL, requestMethod, parameters);
+            JSONObject result = new JSONObject(j);
             final int status = result.getInt("status");
             if (status == 200) {
                 JSONObject data = result.getJSONObject("data");
@@ -85,7 +86,7 @@ public class Users extends ApiSection {
     @NonNull
     public List<Contact> search(@NonNull String login) throws IOException {
         final String requestURL = "search";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
         parameters.add(new Pair<>("login", login));
