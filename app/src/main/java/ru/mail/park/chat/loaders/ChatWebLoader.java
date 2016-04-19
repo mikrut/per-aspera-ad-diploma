@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import java.io.IOException;
 import java.util.List;
 
+import ru.mail.park.chat.activities.ChatsActivity;
 import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.models.Chat;
@@ -27,5 +28,10 @@ public class ChatWebLoader extends ChatLoader {
             e.printStackTrace();
         }
         return chats;
+    }
+
+    @Override
+    public int getId() {
+        return ChatsActivity.CHAT_WEB_LOADER;
     }
 }

@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -27,7 +27,23 @@
 
         <item name="android:checkboxStyle">@style/Widget.CompoundButton.CheckBox.AppTheme</item>
 
+        <item name="android:actionBarStyle">@style/AppTheme.ActionBarStyle</item>
+        <item name="actionBarStyle">@style/AppTheme.ActionBarStyle</item>
+        <item name="android:actionMenuTextColor">@color/actionBarTextColor</item>
+        <item name="actionMenuTextColor">@color/actionBarTextColor</item>
+
         <item name="searchViewStyle">@style/SearchViewMyStyle</item>
+    </style>
+
+    <style name="AppTheme.ActionBarStyle" parent="@style/Widget.AppCompat.Light.ActionBar">
+        <item name="android:background">@color/actionBarColor</item>
+        <item name="background">@color/actionBarColor</item>
+        <item name="android:titleTextStyle">@style/AppTheme.ActionBar.TitleTextStyle</item>
+        <item name="titleTextStyle">@style/AppTheme.ActionBar.TitleTextStyle</item>
+    </style>
+
+    <style name="AppTheme.ActionBar.TitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/actionBarTextColor</item>
     </style>
 
     <style name="Widget.CompoundButton.CheckBox.AppTheme" parent="android:Widget.CompoundButton.CheckBox">
@@ -54,5 +70,29 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Login_HintTextAppearence" parent="@android:style/TextAppearance">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="Widget.CompoundButton.CheckBox.AppTheme.LoginActivity" parent="android:Widget.CompoundButton.CheckBox">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="AppTheme.LoginActivity">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textColorHint">#ffffff</item>
+        <item name="android:textColorPrimary">#ffffff</item>
+        <item name="android:textColorPrimaryInverse">#ffffff</item>
+
+        <item name="colorPrimary">#ffffff</item>
+        <item name="colorPrimaryDark">#ffffff</item>
+
+        <item name="colorControlNormal">#ffffff</item>
+        <item name="colorControlActivated">#ffffff</item>
+        <item name="colorControlHighlight">#ffffff</item>
+
+        <item name="android:checkboxStyle">@style/Widget.CompoundButton.CheckBox.AppTheme.LoginActivity</item>
+    </style>
 
 </resources>

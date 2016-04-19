@@ -54,7 +54,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
 
         return user;
@@ -113,7 +113,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
 
         return contactList;
@@ -142,7 +142,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
     }
 

@@ -15,7 +15,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
         android:contentDescription="@string/description_menu_action_icon"
-        android:tint="@color/textColorPrimary"
+        android:tint="@color/menuTextColor"
         android:src="@android:drawable/ic_menu_edit"/>
 
     <TextView
@@ -32,6 +32,7 @@
         android:paddingBottom="6dp"
         android:paddingTop="6dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/menuTextColor"
         android:text="Medium Text"
         android:id="@+id/rowText" />
 

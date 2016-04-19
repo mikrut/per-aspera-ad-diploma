@@ -57,7 +57,7 @@
         android:paddingEnd="8dp"
         android:gravity="start|center_vertical"
         tools:text="Example message text"
-        android:textColor="@color/textColorPrimaryInverse"
+        android:textColor="@color/textColorPrimary"
         android:background="@drawable/msg_in"/>
 
 </LinearLayout>
