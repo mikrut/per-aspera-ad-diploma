@@ -37,6 +37,7 @@ import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
@@ -284,9 +285,14 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                 @Override
                 public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
+                    ChatHelper chatHelper = new ChatHelper(ChatsActivity.this);
+
                     if (data != null) {
-                        chatsList.setAdapter(new ChatsAdapter(data));
+                        chatHelper.updateChatList(data);
+                    } else {
+                        data = chatHelper.getChatsList();
                     }
+                    chatsList.setAdapter(new ChatsAdapter(data));
                     swipeContainer.setRefreshing(false);
                 }
 
