@@ -35,7 +35,11 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
             Log.d("[TP-diploma]", "trying getMessages");
             messages = chats.getMessages(chatID);
             MessagesHelper messagesHelper = new MessagesHelper(getContext());
-            messagesHelper.updateMessageList(messages);
+            if(messages == null) {
+                messages = messagesHelper.getMessages(chatID);
+            } else {
+                messagesHelper.updateMessageList(messages, chatID);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

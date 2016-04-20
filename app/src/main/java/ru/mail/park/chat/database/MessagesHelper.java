@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -24,13 +25,14 @@ public class MessagesHelper {
     public long saveMessage(@NonNull Message message) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = message.getContentValues();
-        return db.insert(MessagesContract.MessagesEntry.TABLE_NAME, null, values);
-    }
-
-    public void updateMessageList(@NonNull List<Message> messageList) {
-        for (int position = 0; position < messageList.size(); position++) {
-            saveMessage(messageList.get(position));
+        long res = 0;
+        try {
+            res = db.insertOrThrow(MessagesContract.MessagesEntry.TABLE_NAME, null, values);
+        } catch (Exception e) {
+            Log.d("[TP-diploma]", e.getMessage());
         }
+
+        return res;
     }
 
     public int deleteMessages(@NonNull String cid) {
@@ -68,5 +70,33 @@ public class MessagesHelper {
 
         messagesCursor.close();
         return messagesList;
+    }
+
+    public void updateMessageList(@NonNull List<Message> messageList, String cid) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        long res;
+        Log.d("[TP-diploma]", "updateMessageList");
+
+        db.beginTransaction();
+        try {
+            Log.d("[TP-diploma]", "try deleteAll");
+            deleteAll(db, cid);
+            Log.d("[TP-diploma]", "try to saveMessage for " + messageList.size() + " elements");
+            for (Message message : messageList) {
+                message.setCid(cid);
+                res = saveMessage(message);
+                Log.d("[TP-diploma]", message.getMessageBody() + " -> " + res);
+            }
+            Log.d("[TP-diploma]", "done");
+            db.setTransactionSuccessful();
+        } catch(Exception e) {
+            Log.d("[TP-diploma]", e.getMessage());
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private long deleteAll(SQLiteDatabase db, String cid) {
+        return db.delete(ChatsContract.ChatsEntry.TABLE_NAME, ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?", new String[] {cid});
     }
 }
