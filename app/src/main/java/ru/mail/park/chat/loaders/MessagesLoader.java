@@ -4,6 +4,7 @@ import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +31,7 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
     public List<Message> loadInBackground() {
         Chats chats = new Chats(getContext());
         try {
+            Log.d("[TP-diploma]", "trying getMessages");
             messages = chats.getMessages(chatID);
         } catch (IOException e) {
             e.printStackTrace();
