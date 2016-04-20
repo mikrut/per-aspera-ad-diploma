@@ -27,6 +27,12 @@ public class MessagesHelper {
         return db.insert(MessagesContract.MessagesEntry.TABLE_NAME, null, values);
     }
 
+    public void updateMessageList(@NonNull List<Message> messageList) {
+        for (int position = 0; position < messageList.size(); position++) {
+            saveMessage(messageList.get(position));
+        }
+    }
+
     public int deleteMessages(@NonNull String cid) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         String selection = MessagesContract.MessagesEntry.COLUMN_NAME_CID + " = ?";

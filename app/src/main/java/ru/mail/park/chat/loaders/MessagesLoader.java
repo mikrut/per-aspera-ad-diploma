@@ -11,6 +11,7 @@ import java.util.List;
 
 import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.database.ChatHelper;
+import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 
@@ -33,6 +34,8 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
         try {
             Log.d("[TP-diploma]", "trying getMessages");
             messages = chats.getMessages(chatID);
+            MessagesHelper messagesHelper = new MessagesHelper(getContext());
+            messagesHelper.updateMessageList(messages);
         } catch (IOException e) {
             e.printStackTrace();
         }
