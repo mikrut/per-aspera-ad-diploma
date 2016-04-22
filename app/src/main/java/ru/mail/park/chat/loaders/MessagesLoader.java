@@ -4,12 +4,14 @@ import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.List;
 
 import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.database.ChatHelper;
+import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 
@@ -30,7 +32,14 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
     public List<Message> loadInBackground() {
         Chats chats = new Chats(getContext());
         try {
+            Log.d("[TP-diploma]", "trying getMessages");
             messages = chats.getMessages(chatID);
+            MessagesHelper messagesHelper = new MessagesHelper(getContext());
+            if(messages == null) {
+                messages = messagesHelper.getMessages(chatID);
+            } else {
+                messagesHelper.updateMessageList(messages, chatID);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -3,6 +3,7 @@ package ru.mail.park.chat.api;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONArray;
@@ -47,12 +48,15 @@ public class Chats extends ApiSection {
         final String requestURL = "messages";
         final String requestMethod = "POST";
 
+        Log.d("[TP-diploma]", "inside getMessages");
+
         List<Pair<String, String>> parameters = new ArrayList<>(2);
         parameters.add(new Pair<>("idRoom", cid));
 
         List<Message> messagesList = new LinkedList<>();
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            Log.d("[TP-diploma]", result.toString());
             int status = 200;
             if (result.has("status"))
                 status = result.getInt("status");

@@ -203,8 +203,10 @@ public class DialogActivity
 
         setEmojiconFragment(false);
 
-        if (chatID != null)
+        if (chatID != null) {
+            Log.d("[TP-diploma]", "calling onUpdateChatID");
             onUpdateChatID();
+        }
     }
 
     private void onUpdateChatID() {
@@ -358,17 +360,21 @@ public class DialogActivity
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
+            Log.d("[TP-diploma]", "creating MessagesListener");
             return new MessagesLoader(DialogActivity.this, args);
         }
 
         @Override
         public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
             if (data != null) {
+                Log.d("[TP-diploma]", "messages count: " + data.size());
                 for (Message message : data) {
                     addMessage(message);
                 }
                 messagesList.scrollToPosition(receivedMessageList.size() - 1);
             }
+            else
+                Log.d("[TP-diploma]", "empty list");
         }
 
         @Override
