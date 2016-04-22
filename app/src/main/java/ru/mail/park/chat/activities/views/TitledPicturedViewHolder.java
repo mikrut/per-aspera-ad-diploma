@@ -25,7 +25,7 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setTitle(String title) {
-    /*    if (!bitmapIsSet) {
+        if (!bitmapIsSet) {
             image.setImageBitmap(null);
             int[] backgroundColors = image.getContext().getResources().getIntArray(R.array.colorsImageBackground);
             int colorIndex = (title.hashCode() % backgroundColors.length + backgroundColors.length) % backgroundColors.length;
@@ -39,9 +39,9 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
             if (title.contains(" ") && title.indexOf(' ') + 1 < title.length())
                 secondLetter = title.charAt(title.indexOf(' ') + 1);
             imageText.setText(new StringBuilder().append(firstLetter).append(secondLetter).toString());
-        } else {*/
+        } else {
             imageText.setVisibility(View.GONE);
-    //    }
+        }
     }
 
     public void setImage(Bitmap imageBitmap) {
