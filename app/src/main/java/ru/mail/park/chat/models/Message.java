@@ -77,7 +77,11 @@ public class Message implements Comparable<Message> {
         }
 
         try {
-            Contact user = new Contact(message, context);
+            JSONObject userJSON = message;
+            if (message.has("user")) {
+                userJSON = message.getJSONObject("user");
+            }
+            Contact user = new Contact(userJSON, context);
             title = user.getContactTitle();
         } catch (ParseException e) {
             e.printStackTrace();

@@ -299,7 +299,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                         chatHelper.updateChatList(data);
                     }
 
-                    chatsList.setAdapter(new ChatsAdapter(data));
+                    if (data != null) {
+                        chatsList.setAdapter(new ChatsAdapter(data));
+                    }
                     swipeContainer.setRefreshing(false);
                 }
 

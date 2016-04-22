@@ -183,7 +183,7 @@ public class Messages extends ApiSection {
 
         String message = data.getString("textMessage");
         String cid = data.getString("idMessage");
-        String creationDate = data.getString("dtCreateMessage");
+        String creationDate = data.getString("dtCreate");
 
         taskListener.onActionSendMessage(data);
     }
