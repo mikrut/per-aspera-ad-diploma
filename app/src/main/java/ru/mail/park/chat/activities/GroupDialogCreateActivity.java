@@ -2,8 +2,13 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import org.json.JSONObject;
@@ -26,7 +31,7 @@ import ru.mail.park.chat.models.Message;
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity
-        extends ContactsActivity
+        extends AppCompatActivity
         implements IMessageReaction, ContactsFragment.OnPickEventListener {
     private EditText chosenContactsList;
 
@@ -37,6 +42,7 @@ public class GroupDialogCreateActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_group_dialog_create);
 
         try {
             messages = new Messages(this, this);
@@ -44,8 +50,29 @@ public class GroupDialogCreateActivity
             e.printStackTrace();
         }
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
         chosenContactsList = (EditText) findViewById(R.id.choosen_contacts_list);
         groupChat = (EditText) findViewById(R.id.chatName);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        ContactsFragment fragment = new ContactsFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(ContactsFragment.IS_MULTICHOICE, true);
+        fragment.setArguments(args);
+        fragmentTransaction.add(R.id.contacts_fragment_container, fragment);
+
+        fragmentTransaction.commit();
 
         uids = new ArrayList<>();
     }

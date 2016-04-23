@@ -41,7 +41,7 @@ public class ContactsFragment extends Fragment {
     private final static int WEB_LOADER = 1;
 
     private boolean multichoice = false;
-    private TreeSet<Contact> chosenContacts;
+    private TreeSet<Contact> chosenContacts = new TreeSet<>();
 
     public interface OnPickEventListener {
         void onContactSetChanged(TreeSet<Contact> chosenContacts);
@@ -83,6 +83,7 @@ public class ContactsFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof OnPickEventListener) {
             onPickEventListener = (OnPickEventListener) context;
+            onPickEventListener.onContactSetChanged(chosenContacts);
         }
     }
 
@@ -151,4 +152,11 @@ public class ContactsFragment extends Fragment {
                     // TODO: something...
                 }
             };
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(IS_MULTICHOICE, multichoice);
+        outState.putSerializable(PICKED_CONTACTS, chosenContacts);
+    }
 }
