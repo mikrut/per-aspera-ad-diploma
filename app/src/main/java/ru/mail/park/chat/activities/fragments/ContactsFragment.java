@@ -70,10 +70,10 @@ public class ContactsFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        contactsView = (RecyclerView) getActivity().findViewById(R.id.contactsView);
-        contactsView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        contactsView = (RecyclerView) view.findViewById(R.id.contactsView);
+        contactsView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        swipeRefreshLayout = (SwipeRefreshLayout) getActivity().findViewById(R.id.swipe_container);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

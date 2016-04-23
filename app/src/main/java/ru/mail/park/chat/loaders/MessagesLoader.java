@@ -20,13 +20,17 @@ import ru.mail.park.chat.models.Message;
  * Created by mikrut on 10.04.16.
  */
 public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
-    public static final String CID_ARG = MessagesLoader.class.getCanonicalName() + "CID_ARG";
+    public static final String CID_ARG = MessagesLoader.class.getCanonicalName() + ".CID_ARG";
+    public static final String UID_ARG = MessagesLoader.class.getCanonicalName() + ".UID_ARG";
+
     List<Message> messages;
     String chatID;
+    String userID;
 
     public MessagesLoader(@NonNull Context context, Bundle args) {
         super(context);
         chatID = args.getString(CID_ARG);
+        userID = args.getString(UID_ARG);
     }
 
     @Override

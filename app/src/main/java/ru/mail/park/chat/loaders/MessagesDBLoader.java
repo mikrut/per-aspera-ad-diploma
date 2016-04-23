@@ -20,8 +20,15 @@ public class MessagesDBLoader extends MessagesLoader {
 
     @Override
     public List<Message> loadInBackground() {
-        MessagesHelper messagesHelper = new MessagesHelper(getContext());
-        return messagesHelper.getMessages(getChatID());
+        if (chatID != null) {
+            MessagesHelper messagesHelper = new MessagesHelper(getContext());
+            return messagesHelper.getMessages(chatID);
+        } else if (userID != null) {
+            // TODO: upload by uid from db
+            return null;
+        } else {
+            return null;
+        }
     }
 
     @Override

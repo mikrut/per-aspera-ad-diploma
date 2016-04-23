@@ -59,6 +59,10 @@
             android:label="@string/title_activity_create_group_dialog"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity
+            android:name=".activities.DialogCreateActivity"
+            android:label="Create dialog"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
             android:name=".activities.ContactSearchActivity"
             android:label="@string/title_activity_contacts"
             android:theme="@style/AppTheme.NoActionBar" />

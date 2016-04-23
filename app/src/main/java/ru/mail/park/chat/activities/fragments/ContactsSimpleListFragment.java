@@ -47,7 +47,7 @@ public class ContactsSimpleListFragment extends Fragment {
             contacts.add(currentContact);
         }
 
-        contactsView = (RecyclerView) getActivity().findViewById(R.id.contactsView);
+        contactsView = (RecyclerView) view.findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(getContext()));
         ContactSearchAdapter contactSearchAdapter = new ContactSearchAdapter(contacts);
         contactSearchAdapter.setAddible(false);

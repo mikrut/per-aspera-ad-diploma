@@ -53,6 +53,7 @@ import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 // TODO: emoticons
 // TODO: send message
@@ -127,36 +128,34 @@ public class DialogActivity
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         userID = getIntent().getStringExtra(USER_ID);
-        if (chatID != null) {
-            SharedPreferences sharedPreferences =
-                    getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
-            String ownerID = sharedPreferences.getString(PreferenceConstants.USER_UID_N, null);
-            accessToken = sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
 
-            receivedMessageList = new ArrayList<>();
-            messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
-            messagesList.setAdapter(messagesAdapter);
-            layoutManager = new LinearLayoutManager(this);
-            layoutManager.setStackFromEnd(true);
-            messagesList.setLayoutManager(layoutManager);
+        OwnerProfile ownerProfile = new OwnerProfile(this);
+        String ownerID = ownerProfile.getUid();
+        accessToken = ownerProfile.getAuthToken();
 
-            messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    super.onScrollStateChanged(recyclerView, newState);
+        receivedMessageList = new ArrayList<>();
+        messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
+        messagesList.setAdapter(messagesAdapter);
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        messagesList.setLayoutManager(layoutManager);
+
+       messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                boolean atBottom =
+                        (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
+                if (atBottom) {
+                    buttonDown.setVisibility(View.GONE);
                 }
-
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    boolean atBottom =
-                            (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
-                    if (atBottom) {
-                        buttonDown.setVisibility(View.GONE);
-                    }
-                }
-            });
-        }
+            }
+        });
 
         buttonDown = (ImageButton) findViewById(R.id.buttonDown);
         buttonDown.setOnClickListener(new View.OnClickListener() {
@@ -212,6 +211,7 @@ public class DialogActivity
     private void onUpdateChatID() {
         Bundle args = new Bundle();
         args.putString(MessagesLoader.CID_ARG, chatID);
+        args.putString(MessagesLoader.UID_ARG, userID);
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 

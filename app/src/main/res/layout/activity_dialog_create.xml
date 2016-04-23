@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    tools:context="ru.mail.park.chat.activities.ContactsActivity">
+    tools:context="ru.mail.park.chat.activities.DialogCreateActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -23,29 +23,22 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <EditText
-        android:id="@+id/chatName"
-        android:lines="1"
-        android:inputType="text"
-        android:hint="Chat name"
-        android:visibility="gone"
-        tools:visibility="visible"
+    <TextView
+        android:id="@+id/new_group_dialog"
+        android:text="New Group"
+        android:drawableStart="@drawable/ic_group_black_24dp"
+        android:drawableLeft="@drawable/ic_group_black_24dp"
+        android:drawablePadding="10dp"
+        android:padding="10dp"
+        android:background="?attr/selectableItemBackground"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <EditText
-        android:id="@+id/choosen_contacts_list"
-        android:lines="2"
-        android:inputType="none"
-        android:focusable="false"
-        android:hint="@string/hint_add_contacts_to_dialog"
+    <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
+        android:id="@+id/contacts_fragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:id="@+id/contacts_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        tools:layout="@layout/fragment_contacts" />
 
 </LinearLayout>

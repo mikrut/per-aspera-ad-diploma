@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context="ru.mail.park.chat.activities.ContactsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:id="@+id/app_bar"
         android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -25,9 +25,6 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/app_bar"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:padding="10dp"
         android:id="@+id/findFriends"
         android:background="?attr/selectableItemBackground"
@@ -54,9 +51,8 @@
 
     <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
         android:id="@+id/contacts_fragment"
-        android:layout_below="@+id/findFriends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:layout="@layout/fragment_contacts" />
 
-</RelativeLayout>
+</LinearLayout>
