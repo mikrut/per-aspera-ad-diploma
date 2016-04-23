@@ -52,37 +52,11 @@
             android:id="@+id/textView" />
     </LinearLayout>
 
-    <TextView
+    <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
+        android:id="@+id/contacts_fragment"
+        android:layout_below="@+id/findFriends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/contacts"
-        android:id="@+id/textView2"
-        android:layout_below="@+id/findFriends"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/findFriends"
-        android:layout_alignEnd="@+id/findFriends"
-        android:background="#e0e0e0"
-        android:clickable="false"
-        android:padding="10dp"
-        android:textColor="#616161" />
-
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/textView2"
-        android:layout_alignLeft="@+id/textView2"
-        android:layout_alignStart="@+id/textView2"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" >
-
-        <android.support.v7.widget.RecyclerView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/contactsView"
-            tools:listitem="@layout/element_contact"/>
-
-    </android.support.v4.widget.SwipeRefreshLayout>
+        tools:layout="@layout/fragment_contacts" />
 
 </RelativeLayout>

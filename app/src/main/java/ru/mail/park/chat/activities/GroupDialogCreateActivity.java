@@ -2,10 +2,8 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 
 import org.json.JSONObject;
@@ -17,8 +15,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.adapters.AContactAdapter;
-import ru.mail.park.chat.activities.adapters.ContactAdapter;
+import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
@@ -28,12 +25,14 @@ import ru.mail.park.chat.models.Message;
 /**
  * Created by mikrut on 01.04.16.
  */
-public class GroupDialogCreateActivity extends ContactsActivity implements IMessageReaction {
-    private EditText choosenContactsList;
-    private TreeSet<Contact> choosenContacts;
+public class GroupDialogCreateActivity
+        extends ContactsActivity
+        implements IMessageReaction, ContactsFragment.OnPickEventListener {
+    private EditText chosenContactsList;
 
     private Messages messages;
     private EditText groupChat;
+    private List<String> uids;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,44 +43,30 @@ public class GroupDialogCreateActivity extends ContactsActivity implements IMess
         } catch (IOException e) {
             e.printStackTrace();
         }
-        choosenContacts = new TreeSet<>();
 
-        choosenContactsList = (EditText) findViewById(R.id.choosen_contacts_list);
+        chosenContactsList = (EditText) findViewById(R.id.choosen_contacts_list);
         groupChat = (EditText) findViewById(R.id.chatName);
+
+        uids = new ArrayList<>();
     }
 
     @Override
-    protected void onSetContentView() {
-        setContentView(R.layout.activity_group_dialog_create);
-    }
-
-    @Override
-    protected AContactAdapter onCreateContactAdapter(@NonNull List<Contact> data) {
-        return new ContactAdapter(data, new AContactAdapter.ContactHolder.OnContactClickListener() {
-            @Override
-            public void onContactClick(View contactView, AContactAdapter.ContactHolder viewHolder) {
-                Contact contact = viewHolder.getContact();
-                if (choosenContacts.contains(contact)) {
-                    choosenContacts.remove(contact);
-                } else {
-                    choosenContacts.add(contact);
-                }
-                rebuildContactsList();
-            }
-        });
-    }
-
-    private void rebuildContactsList() {
+    public void onContactSetChanged(TreeSet<Contact> chosenContacts) {
         StringBuilder builder = new StringBuilder();
-        Iterator<Contact> contactIterator = choosenContacts.iterator();
-        for (int i = 0; i < choosenContacts.size(); i++) {
+        Iterator<Contact> contactIterator = chosenContacts.iterator();
+        for (int i = 0; i < chosenContacts.size(); i++) {
             Contact currentContact = contactIterator.next();
             builder.append(currentContact.getContactTitle());
-            if (i != choosenContacts.size() - 1) {
+            if (i != chosenContacts.size() - 1) {
                 builder.append(", ");
             }
         }
-        choosenContactsList.setText(builder.toString());
+        chosenContactsList.setText(builder.toString());
+
+        uids.clear();
+        for (Contact contact : chosenContacts) {
+            uids.add(contact.getUid());
+        }
     }
 
     @Override
@@ -102,10 +87,6 @@ public class GroupDialogCreateActivity extends ContactsActivity implements IMess
                     }
                 }
                 if (messages != null) {
-                    List<String> uids = new ArrayList<String>(choosenContacts.size());
-                    for (Contact contact : choosenContacts) {
-                        uids.add(contact.getUid());
-                    }
                     messages.createGroupChat(groupChat.getText().toString(), uids);
                 }
                 return true;
