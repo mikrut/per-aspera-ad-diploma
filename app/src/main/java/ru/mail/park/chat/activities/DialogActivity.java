@@ -46,9 +46,9 @@ import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.database.MessagesHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
@@ -88,6 +88,9 @@ public class DialogActivity
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
 
+    public static final int MESSAGES_DB_LOADER = 0;
+    public static final int MESSAGES_WEB_LOADER = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,15 +128,12 @@ public class DialogActivity
         chatID = getIntent().getStringExtra(CHAT_ID);
         userID = getIntent().getStringExtra(USER_ID);
         if (chatID != null) {
-            MessagesHelper messagesHelper = new MessagesHelper(this);
-            receivedMessageList = messagesHelper.getMessages(chatID);
-            Collections.sort(receivedMessageList);
-
             SharedPreferences sharedPreferences =
                     getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
             String ownerID = sharedPreferences.getString(PreferenceConstants.USER_UID_N, null);
             accessToken = sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
 
+            receivedMessageList = new ArrayList<>();
             messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
             messagesList.setAdapter(messagesAdapter);
             layoutManager = new LinearLayoutManager(this);
@@ -212,7 +212,7 @@ public class DialogActivity
     private void onUpdateChatID() {
         Bundle args = new Bundle();
         args.putString(MessagesLoader.CID_ARG, chatID);
-        getLoaderManager().initLoader(0, args, listener);
+        getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
     private void sendMessage(@NonNull String message) {
@@ -229,9 +229,14 @@ public class DialogActivity
 
         boolean inserted = false;
         for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
-            if (message.compareTo(receivedMessageList.get(position)) < 0) {
+            int comp = message.compareTo(receivedMessageList.get(position));
+            if (comp < 0) {
                 receivedMessageList.add(position, message);
                 messagesAdapter.notifyItemInserted(position);
+                inserted = true;
+            } else if (comp == 0) {
+                receivedMessageList.set(position, message);
+                messagesAdapter.notifyItemChanged(position);
                 inserted = true;
             }
         }
@@ -270,7 +275,7 @@ public class DialogActivity
                 }
             }
 
-            Message incomeMsg = new Message(message, this);
+            Message incomeMsg = new Message(message, this, chatID);
             addMessage(incomeMsg);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -297,8 +302,6 @@ public class DialogActivity
         receivedMessageList.addAll(msg_list);
         Collections.sort(receivedMessageList);
 
-        MessagesHelper messagesHelper = new MessagesHelper(this);
-        messagesHelper.deleteMessages(msg_list.get(0).getCid());
         messagesAdapter.notifyDataSetChanged();
     }
 
@@ -361,7 +364,13 @@ public class DialogActivity
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
             Log.d("[TP-diploma]", "creating MessagesListener");
-            return new MessagesLoader(DialogActivity.this, args);
+            switch (id) {
+                case MESSAGES_WEB_LOADER:
+                    return new MessagesLoader(DialogActivity.this, args);
+                case MESSAGES_DB_LOADER:
+                default:
+                        return new MessagesDBLoader(DialogActivity.this, args);
+            }
         }
 
         @Override
@@ -372,9 +381,15 @@ public class DialogActivity
                     addMessage(message);
                 }
                 messagesList.scrollToPosition(receivedMessageList.size() - 1);
-            }
-            else
+            } else {
                 Log.d("[TP-diploma]", "empty list");
+            }
+
+            if (loader.getId() == MESSAGES_DB_LOADER) {
+                Bundle args = new Bundle();
+                args.putString(MessagesLoader.CID_ARG, chatID);
+                getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, this);
+            }
         }
 
         @Override

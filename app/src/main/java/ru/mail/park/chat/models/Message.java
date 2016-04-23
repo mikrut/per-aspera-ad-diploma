@@ -25,25 +25,13 @@ import ru.mail.park.chat.database.PreferenceConstants;
 public class Message implements Comparable<Message> {
     private @Nullable String mid;
     private @NonNull String messageBody;
-    private @NonNull String cid;
+    private @Nullable String cid;
     private @NonNull String uid;
     private @Nullable Calendar date;
 
     private @NonNull String title;
 
-    private Message(@NonNull String messageBody,
-                    @NonNull String chatID,
-                    @NonNull String userID) {
-        this.messageBody = messageBody;
-        cid = chatID;
-        uid = userID;
-    }
-
-    public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
-        this(message, context, null);
-    }
-
-    public Message(@NonNull JSONObject message, @NonNull Context context, String cid) throws JSONException {
+    public Message(@NonNull JSONObject message, @NonNull Context context, @Nullable String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
             uid = String.valueOf(message.getJSONObject("user").getLong("id"));
@@ -64,6 +52,8 @@ public class Message implements Comparable<Message> {
             messageBodyParamName = "text";
         if (messageBodyParamName != null) {
             messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
+        } else {
+            throw new JSONException("No textMessage or text parameter is JSON");
         }
 
         if (cid == null)
@@ -85,6 +75,7 @@ public class Message implements Comparable<Message> {
             title = user.getContactTitle();
         } catch (ParseException e) {
             e.printStackTrace();
+            throw new JSONException("Invalid USER field in JSON for message");
         }
 
         String dtCreateParamName = null;
@@ -103,11 +94,12 @@ public class Message implements Comparable<Message> {
     }
     
     public Message(@NonNull Cursor message) throws ParseException {
-        this(message.getString(MessagesContract.PROJECTION_MESSAGE_BODY_INDEX),
-                message.getString(MessagesContract.PROJECTION_CID_INDEX),
-                message.getString(MessagesContract.PROJECTION_UID_INDEX));
+        messageBody = message.getString(MessagesContract.PROJECTION_MESSAGE_BODY_INDEX);
+        cid = message.getString(MessagesContract.PROJECTION_CID_INDEX);
+        uid = message.getString(MessagesContract.PROJECTION_UID_INDEX);
+        title = message.getString(MessagesContract.PROJECTION_TITLE_INDEX);
 
-        setMid(message.getString(MessagesContract.PROJECTION_MID_INDEX));
+        mid = message.getString(MessagesContract.PROJECTION_MID_INDEX);
         String dateString = message.getString(MessagesContract.PROJECTION_DATETIME_INDEX);
         setDate(dateString);
     }
@@ -177,6 +169,7 @@ public class Message implements Comparable<Message> {
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_UID, getUid());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_CID, getCid());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_MESSAGE_BODY, getMessageBody());
+            contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_TITLE, getTitle());
 
             String isoDate = null;
             if (getDate() != null) {

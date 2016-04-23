@@ -9,6 +9,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.List;
 
+import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.database.MessagesHelper;
@@ -65,5 +66,14 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
         super.onReset();
         onStopLoading();
         messages = null;
+    }
+
+    protected String getChatID() {
+        return chatID;
+    }
+
+    @Override
+    public int getId() {
+        return DialogActivity.MESSAGES_WEB_LOADER;
     }
 }
