@@ -28,6 +28,8 @@
         android:lines="1"
         android:inputType="text"
         android:hint="Chat name"
+        android:visibility="gone"
+        tools:visibility="visible"
         android:layout_below="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

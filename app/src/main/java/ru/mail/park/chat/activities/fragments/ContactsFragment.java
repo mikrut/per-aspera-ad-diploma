@@ -45,6 +45,7 @@ public class ContactsFragment extends Fragment {
 
     public interface OnPickEventListener {
         void onContactSetChanged(TreeSet<Contact> chosenContacts);
+        void onContactClicked(Contact contact);
     }
 
     private OnPickEventListener onPickEventListener;
@@ -53,17 +54,20 @@ public class ContactsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            multichoice = savedInstanceState.getBoolean(IS_MULTICHOICE, false);
             Object chosen = savedInstanceState.get(PICKED_CONTACTS);
             if (chosen != null) {
                 chosenContacts = (TreeSet<Contact>) chosen;
             }
         }
+        Bundle args = getArguments();
+        if (args != null) {
+            multichoice = args.getBoolean(IS_MULTICHOICE, false);
+        }
         return inflater.inflate(R.layout.fragment_contacts, container, false);
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
         contactsView = (RecyclerView) getActivity().findViewById(R.id.contactsView);
@@ -109,6 +113,7 @@ public class ContactsFragment extends Fragment {
 
                 if (onPickEventListener != null) {
                     onPickEventListener.onContactSetChanged(chosenContacts);
+                    onPickEventListener.onContactClicked(contact);
                 }
             }
         });
@@ -156,7 +161,10 @@ public class ContactsFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(IS_MULTICHOICE, multichoice);
         outState.putSerializable(PICKED_CONTACTS, chosenContacts);
+    }
+
+    public TreeSet<Contact> getChosenContacts() {
+        return chosenContacts;
     }
 }

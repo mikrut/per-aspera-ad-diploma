@@ -20,6 +20,7 @@ import ru.mail.park.chat.models.Contact;
  */
 public class ContactSearchAdapter extends AContactAdapter {
     private final List<Contact> contactList;
+    private boolean addible = true;
 
     public static class ContactSearchHolder extends ContactHolder {
         final ImageButton addFriendImage;
@@ -36,6 +37,14 @@ public class ContactSearchAdapter extends AContactAdapter {
                 }
             });
         }
+
+        public void setAddible(boolean addible) {
+            if (addible) {
+                addFriendImage.setVisibility(View.VISIBLE);
+            } else {
+                addFriendImage.setVisibility(View.GONE);
+            }
+        }
     }
 
     public ContactSearchAdapter(@NonNull List<Contact> contactList) {
@@ -50,6 +59,13 @@ public class ContactSearchAdapter extends AContactAdapter {
         return new ContactSearchHolder(contactView);
     }
 
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
+        ((ContactSearchHolder) holder).setAddible(addible);
+    }
+
     @Override
     protected Contact getContactForPosition(int position) {
         return contactList.get(position);
@@ -58,5 +74,10 @@ public class ContactSearchAdapter extends AContactAdapter {
     @Override
     public int getItemCount() {
         return contactList.size();
+    }
+
+    public void setAddible(boolean addible) {
+        this.addible = addible;
+        notifyDataSetChanged();
     }
 }
