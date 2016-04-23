@@ -1,31 +1,45 @@
 package ru.mail.park.chat.activities;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
+import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements HttpFileUpload.IUploadListener {
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
     private TextView  userTitle;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
+    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
+    private String accessToken;
 
     private EditText userLogin;
     private EditText userEmail;
@@ -33,10 +47,18 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText lastName;
     private EditText userPhone;
 
+    private Intent takePictureIntent;
+
+    private Uri mImageUri;
+
+    private ProfileActivity thisAct = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        thisAct = this;
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
         imgUploadPicture = (ImageView) findViewById(R.id.user_upload_picture);
@@ -56,11 +78,29 @@ public class ProfileActivity extends AppCompatActivity {
         firstName.setText(ownerProfile.getFirstName());
         lastName.setText(ownerProfile.getLastName());
 
+        accessToken = ownerProfile.getAuthToken();
+
         imgCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                Log.d("[TP-diploma]", "Да ебаный ты нахуй");
+
+                File photo = null;
+                try {
+                    // place where to store camera taken picture
+                    Log.d("[TP-diploma]", "creating tmp file");
+                    photo = thisAct.createTemporaryFile("picture", ".jpg");
+                    photo.delete();
+                } catch (Exception e) {
+                    Log.d("[TP-diploma]", "Can't create file to take picture!");
+                }
+                mImageUri = Uri.fromFile(photo);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mImageUri);
+                //start camera intent
+
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    Log.d("[TP-diploma]", "starting activity");
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
@@ -75,7 +115,69 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    private File createTemporaryFile(String part, String ext) throws Exception
+    {
+        File tempDir= Environment.getExternalStorageDirectory();
+        tempDir=new File(tempDir.getAbsolutePath()+"/.temp/");
+        if(!tempDir.exists())
+        {
+            tempDir.mkdirs();
+        }
+        Log.d("[TP-diploma]", "inside createTemporaryFile");
+        return File.createTempFile(part, ext, tempDir);
+    }
 
+    public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            String filePath = "";//data.getStringExtra(GET_FROM_GALLERY);
+            FileInputStream fstrm = null;
+            HttpFileUpload hfu = null;
+
+            Log.d("[TP-diploma]", "Да ебаный ты нахуй onActivityResult");
+
+
+            if (requestCode == REQUEST_IMAGE_CAPTURE) {
+                if(resultCode == Activity.RESULT_OK) {
+                    Log.d("[TP-diploma]", "sending file started");
+                    try {
+                        filePath = mImageUri.getPath();
+                        fstrm = new FileInputStream(filePath);
+                        hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
+                        hfu.Send_Now(fstrm, this);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else if(requestCode == GET_FROM_GALLERY) {
+                if(resultCode == Activity.RESULT_OK) {
+                    Log.d("[TP-diploma]", "sending file from gallery started");
+
+                    try {
+                        Uri selectedImage = data.getData();
+                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                        Cursor cursor = getContentResolver().query(
+                                selectedImage, filePathColumn, null, null, null);
+                        cursor.moveToFirst();
+
+                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                        filePath = cursor.getString(columnIndex);
+                        cursor.close();
+
+                        fstrm = new FileInputStream(filePath);
+                        Log.d("[TP-diploma]", filePath);
+                    } catch(Exception e) {
+                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
+                    }
+                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
+                    hfu.Send_Now(fstrm, this);
+                }
+            }
+        }
+    }
+
+    public void onUploadComplete(String name) {
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
