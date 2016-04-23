@@ -3,6 +3,9 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +20,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.InputStream;
+
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.database.ContactHelper;
@@ -26,6 +31,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 
 public class UserProfileActivity extends AppCompatActivity {
     public static final String UID_EXTRA = UserProfileActivity.class.getCanonicalName() + ".UID_EXTRA";
+    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
     private final static int WEB_OWN_LOADER = 2;
@@ -80,10 +86,12 @@ public class UserProfileActivity extends AppCompatActivity {
         if (getIntent().hasExtra(UID_EXTRA)) {
             uid = getIntent().getStringExtra(UID_EXTRA);
         } else {
+            Log.d("[TP-diploma]", "call owner.getUid()");
             uid = owner.getUid();
         }
 
         if (uid.equals(owner.getUid())) {
+            Log.d("[TP-diploma]", "call setUserData");
             setUserData(owner, Contact.Relation.SELF);
             Bundle args = new Bundle();
             args.putString(ProfileWebLoader.UID_ARG, uid);
@@ -171,6 +179,12 @@ public class UserProfileActivity extends AppCompatActivity {
             userEmail.setVisibility(View.GONE);
         }
 
+        if(user.getImg() != null){
+            Log.d("[TP-diploma]", "starting task");
+            new DownloadImageTask(userPicture)
+                    .execute(SERVER_URL + user.getImg());
+        }
+
         if (user.getPhone() != null) {
             userPhone.setText(user.getPhone());
             userPhone.setVisibility(View.VISIBLE);
@@ -224,4 +238,30 @@ public class UserProfileActivity extends AppCompatActivity {
                     // TODO: something...
                 }
             };
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            Log.d("[TP-diploma]", "task is working");
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
 }

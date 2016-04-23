@@ -38,6 +38,7 @@ public class OwnerProfile extends Contact {
         setLastName(contact.getLastName());
         setLogin(contact.getLogin());
         setUid(contact.getUid());
+        setImg(contact.getImg());
 
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
