@@ -67,7 +67,7 @@ public class DialogCreateActivity
                                 String input = editText.getText().toString();
                                 Intent intent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
                                 if (!input.equals("")) {
-                                    String address = input.substring(0, input.lastIndexOf(':') - 1);
+                                    String address = input.substring(0, input.lastIndexOf(':'));
                                     int port = Integer.valueOf(input.substring(input.lastIndexOf(':') + 1, input.length()));
                                     intent.putExtra(P2PDialogActivity.HOST_ARG, address);
                                     intent.putExtra(P2PDialogActivity.PORT_ARG, port);

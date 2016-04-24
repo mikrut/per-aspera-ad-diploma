@@ -62,7 +62,7 @@ public class DialogActivity
         HttpFileUpload.IUploadListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
-    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
+    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
     private KeyboardDetectingLinearLayout globalLayout;
@@ -82,7 +82,7 @@ public class DialogActivity
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
-    private IMessageSender messages;
+    protected IMessageSender messages;
 
     private ImageButton buttonDown;
 
@@ -382,7 +382,9 @@ public class DialogActivity
     @Override
     protected void onPause() {
         super.onPause();
-        messages.disconnect();
+        if (messages != null) {
+            messages.disconnect();
+        }
     }
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {

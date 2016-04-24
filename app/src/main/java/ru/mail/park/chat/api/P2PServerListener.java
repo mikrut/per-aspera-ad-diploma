@@ -9,9 +9,17 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
+import info.guardianproject.netcipher.NetCipher;
+import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 
@@ -20,7 +28,6 @@ import ru.mail.park.chat.message_interfaces.IMessageSender;
  */
 public class P2PServerListener extends AsyncTask<Integer,String,Void> implements IMessageSender {
     ServerSocket serverSocket;
-    Socket socket;
     DataInputStream input;
     DataOutputStream output;
 
@@ -41,16 +48,23 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
     public Void doInBackground(Integer... params) {
         try {
             if (destination != null) {
-                socket = new Socket(destination.destinationName, destination.destinationPort);
+                NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
+                URL url = new URL("http", destination.destinationName, destination.destinationPort, "/");
+                HttpURLConnection h = NetCipher.getHttpURLConnection(url);
+
+                input = new DataInputStream(h.getInputStream());
+                output = new DataOutputStream(h.getOutputStream());
+                Log.i("P2P connection", "got a connection");
+                Log.i("P2P connection", destination.destinationName);
             } else {
                 int port = params[0];
                 serverSocket = new ServerSocket(port);
-                socket = serverSocket.accept();
-            }
-            Log.i("P2P Server IP", socket.getInetAddress().getCanonicalHostName());
+                Socket socket = serverSocket.accept();
+                Log.i("P2P Server IP", socket.getInetAddress().getCanonicalHostName());
 
-            input = new DataInputStream(socket.getInputStream());
-            output = new DataOutputStream(socket.getOutputStream());
+                input = new DataInputStream(socket.getInputStream());
+                output = new DataOutputStream(socket.getOutputStream());
+            }
 
             String message;
             while ((message = input.readUTF()) != null) {
@@ -100,12 +114,12 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
     }
 
     public void disconnect() {
-        try {
+        /*try {
             if (socket != null) {
                 socket.close();
             }
         } catch (IOException e){
             Log.e("P2P disconnect", e.getLocalizedMessage());
-        }
+        }*/
     }
 }

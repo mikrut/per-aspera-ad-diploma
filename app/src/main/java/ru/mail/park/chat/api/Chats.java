@@ -61,8 +61,8 @@ public class Chats extends ApiSection {
             if (result.has("status"))
                 status = result.getInt("status");
             if (status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                JSONArray messages = data.getJSONArray("listMessages");
+                // JSONObject data = result.getJSONObject("data");
+                JSONArray messages = result.getJSONArray("data");
 
                 for (int i = 0; i < messages.length(); i++) {
                     Message message = new Message(messages.getJSONObject(i), getContext(), cid);

@@ -12,8 +12,8 @@ public class AttachedFile {
     private String fileID;
 
     public AttachedFile(JSONObject file) throws JSONException {
-        this.fileName = file.getString("name");
-        this.fileID = String.valueOf(file.getInt("id"));
+        this.fileName = file.getString("path");
+        // this.fileID = String.valueOf(file.getInt("id"));
     }
 
     public String getFileName() {

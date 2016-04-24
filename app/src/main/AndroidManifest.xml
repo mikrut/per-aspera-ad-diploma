@@ -77,8 +77,10 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.DialogActivity"
-            android:label="@string/title_activity_dialog">
-        </activity>
+            android:label="@string/title_activity_dialog" />
+        <activity
+            android:name=".activities.P2PDialogActivity"
+            android:label="@string/title_activity_dialog" />
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings"
