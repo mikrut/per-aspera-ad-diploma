@@ -17,6 +17,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ru.mail.park.chat.models.AttachedFile;
+
 public class HttpFileUpload implements Runnable{
     URL connectURL;
     String responseString;
@@ -55,7 +57,7 @@ public class HttpFileUpload implements Runnable{
     }
 
     public interface IUploadListener {
-        void onUploadComplete(String name);
+        void onUploadComplete(AttachedFile file);
     }
 
     class HttpUploadTask extends AsyncTask<Void,Void,String>
@@ -168,7 +170,8 @@ public class HttpFileUpload implements Runnable{
             if (result != null && listener != null) {
                 try {
                     JSONObject object = new JSONObject(result);
-                    listener.onUploadComplete(object.getJSONObject("data").getString("name"));
+                    AttachedFile attachedFile = new AttachedFile(object.getJSONObject("data"));
+                    listener.onUploadComplete(attachedFile);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

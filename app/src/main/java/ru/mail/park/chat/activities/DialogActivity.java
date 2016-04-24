@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
@@ -42,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.adapters.FilesAdapter;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
@@ -51,6 +54,7 @@ import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -74,12 +78,14 @@ public class DialogActivity
     private ImageButton insertEmoticon, attachFile;
     private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
+    private RecyclerView attachments;
 
     private String chatID;
     private String userID;
     private String accessToken;
 
     private List<Message> receivedMessageList;
+    private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
     private Messages messages;
@@ -104,6 +110,14 @@ public class DialogActivity
         inputMessage = (EmojiconEditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
         emojicons = (FrameLayout) findViewById(R.id.emojicons);
+        attachments = (RecyclerView) findViewById(R.id.attachments_recycler_view);
+
+        attachemtsList = new ArrayList<>();
+        FilesAdapter filesAdapter = new FilesAdapter(attachemtsList);
+        attachments.setAdapter(filesAdapter);
+        LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
+        attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        attachments.setLayoutManager(attachmentsManager);
 
         globalLayout.setOnKeyboardEventListener(new KeyboardDetectingLinearLayout.OnKeyboardEventListener() {
             @Override
@@ -193,7 +207,7 @@ public class DialogActivity
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), FileDialog.class);
-                intent.putExtra(FileDialog.START_PATH, "/sdcard");
+                intent.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory());
                 intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 
                 startActivityForResult(intent, CODE_FILE_SELECTED);
@@ -328,11 +342,10 @@ public class DialogActivity
     }
 
     @Override
-    public void onUploadComplete(String name) {
-        TextView linkable = ((TextView) findViewById(R.id.link));
-        linkable.setMovementMethod(LinkMovementMethod.getInstance());
-        linkable.setText(Html.fromHtml("<a href=\"http://p30480.lab1.stud.tech-mail.ru/"+name+"\">"+name+"</a>"));
-        linkable.setVisibility(View.VISIBLE);
+    public void onUploadComplete(AttachedFile file) {
+        attachemtsList.add(file);
+        attachments.getAdapter().notifyItemInserted(attachemtsList.size() - 1);
+        attachments.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -342,6 +355,7 @@ public class DialogActivity
     }
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        Log.d("[TP-diploma]", "preparing to send file");
         if (resultCode == Activity.RESULT_OK) {
             String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
             FileInputStream fstrm = null;
@@ -355,6 +369,7 @@ public class DialogActivity
                     hfu.Send_Now(fstrm, this);
                 } catch(Exception e) {
                     e.printStackTrace();
+                    Toast.makeText(this, "Error opening file", Toast.LENGTH_SHORT).show();
                 }
             }
         }
