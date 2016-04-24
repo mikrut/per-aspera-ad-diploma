@@ -44,11 +44,13 @@ public class Users extends ApiSection {
 
         Contact user = null;
         try {
-            Log.d("[TP-diploma]", "call getFullUser");
+            Log.d("[TP-diploma]", "call getFullUser bitch");
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
+            Log.d("[TP-diploma]", result.toString());
             if (status == 200) {
                 JSONObject data = result.getJSONObject("data");
+                Log.d("[TP-diploma]", "getFullUser result: " + data.toString());
                 user = new Contact(data, getContext());
             } else {
                 String message = result.getString("message");
@@ -130,10 +132,11 @@ public class Users extends ApiSection {
         parameters.add(new Pair<>("phone", profile.getPhone()));
         parameters.add(new Pair<>("firstName", profile.getFirstName()));
         parameters.add(new Pair<>("lastName", profile.getLastName()));
+        parameters.add(new Pair<>("img", profile.getImg()));
 
         try {
             String response = executeRequest(requestURL, requestMethod, parameters);
-            Log.v("response", response);
+            Log.d("[TP-diploma]", response);
             JSONObject result = new JSONObject(response);
             final int status = result.getInt("status");
             if (status == 200) {
@@ -145,6 +148,23 @@ public class Users extends ApiSection {
         } catch (JSONException e) {
             throw new IOException("Server error");
         }
+    }
+
+    public boolean updateProfileLikeAPro(OwnerProfile profile, String accessToken, MultipartProfileUpdater.IUploadListener listener) throws IOException {
+        final String requestURL = "updateProfile";
+        final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("login", profile.getLogin()));
+        parameters.add(new Pair<>("email", profile.getEmail()));
+        parameters.add(new Pair<>("phone", profile.getPhone()));
+        parameters.add(new Pair<>("firstName", profile.getFirstName()));
+        parameters.add(new Pair<>("lastName", profile.getLastName()));
+        parameters.add(new Pair<>("accessToken", accessToken));
+        parameters.add(new Pair<>("img", profile.getImg()));
+
+        MultipartProfileUpdater mpu = new MultipartProfileUpdater(SERVER_URL + requestURL, parameters);
+        return mpu.Send_Now(listener);
     }
 
 }

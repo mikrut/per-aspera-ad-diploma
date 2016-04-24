@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 
 import java.io.IOException;
 
+import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.api.Users;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -28,7 +29,7 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
             publishProgress("Sending data to server");
             Users usersAPI = new Users(alertDialog.getContext());
             try {
-                boolean success = usersAPI.updateProfile(profile);
+                boolean success = usersAPI.updateProfileLikeAPro(profile, profile.getAuthToken(), (MultipartProfileUpdater.IUploadListener)activity);//usersAPI.updateProfile(profile);
                 publishProgress("Saving to local db...");
                 if (success) {
                     profile.saveToPreferences(alertDialog.getContext());

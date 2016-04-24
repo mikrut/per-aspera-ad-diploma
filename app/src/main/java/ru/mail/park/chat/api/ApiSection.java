@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Pair;
 
 import java.io.IOException;
@@ -33,6 +34,8 @@ class ApiSection {
 
     String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
                           @Nullable List<Pair<String, String>> parameters, boolean addToken) throws IOException {
+
+        Log.d("[TP-diploma]", "executing request");
         if (parameters == null)
             parameters = new ArrayList<>(1);
         if (addToken)
@@ -42,12 +45,14 @@ class ApiSection {
                 requestURL += "?" + getQuery(parameters);
         }
 
+        Log.d("[TP-diploma]", "creating serverConnection");
         ServerConnection serverConnection = new ServerConnection(context, getUrlAddition() + requestURL);
         serverConnection.setRequestMethod(requestMethod);
 
         if (!requestMethod.equals("GET")) {
             serverConnection.setParameters(getQuery(parameters));
         }
+        Log.d("[TP-diploma]", "returning getResponse");
 
         return serverConnection.getResponse();
     }

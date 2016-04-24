@@ -29,9 +29,10 @@ import java.io.InputStream;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
 import ru.mail.park.chat.api.HttpFileUpload;
+import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileActivity extends AppCompatActivity implements HttpFileUpload.IUploadListener {
+public class ProfileActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
@@ -40,6 +41,7 @@ public class ProfileActivity extends AppCompatActivity implements HttpFileUpload
     private static final int GET_FROM_GALLERY = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
     private String accessToken;
+    private String selectedFilePath;
 
     private EditText userLogin;
     private EditText userEmail;
@@ -84,7 +86,6 @@ public class ProfileActivity extends AppCompatActivity implements HttpFileUpload
             @Override
             public void onClick(View v) {
                 takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                Log.d("[TP-diploma]", "Да ебаный ты нахуй");
 
                 File photo = null;
                 try {
@@ -133,25 +134,22 @@ public class ProfileActivity extends AppCompatActivity implements HttpFileUpload
             FileInputStream fstrm = null;
             HttpFileUpload hfu = null;
 
-            Log.d("[TP-diploma]", "Да ебаный ты нахуй onActivityResult");
-
+            Log.d("[TP-diploma]", "onActivityResult");
 
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 if(resultCode == Activity.RESULT_OK) {
                     Log.d("[TP-diploma]", "sending file started");
                     try {
-                        filePath = mImageUri.getPath();
-                        fstrm = new FileInputStream(filePath);
+                        selectedFilePath = mImageUri.getPath();
+                        /*fstrm = new FileInputStream(filePath);
                         hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                        hfu.Send_Now(fstrm, this);
+                        hfu.Send_Now(fstrm, this);*/
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             } else if(requestCode == GET_FROM_GALLERY) {
                 if(resultCode == Activity.RESULT_OK) {
-                    Log.d("[TP-diploma]", "sending file from gallery started");
-
                     try {
                         Uri selectedImage = data.getData();
                         String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -164,19 +162,20 @@ public class ProfileActivity extends AppCompatActivity implements HttpFileUpload
                         filePath = cursor.getString(columnIndex);
                         cursor.close();
 
-                        fstrm = new FileInputStream(filePath);
+                        selectedFilePath = filePath;
                         Log.d("[TP-diploma]", filePath);
                     } catch(Exception e) {
                         Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
                     }
-                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                    hfu.Send_Now(fstrm, this);
+/*                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
+                    hfu.Send_Now(fstrm, this);*/
                 }
             }
         }
     }
 
     public void onUploadComplete(String name) {
+        Toast.makeText(this, name, Toast.LENGTH_LONG);
     }
 
     @Override
@@ -220,6 +219,7 @@ public class ProfileActivity extends AppCompatActivity implements HttpFileUpload
         profile.setPhone(userPhone.getText().toString());
         profile.setFirstName(firstName.getText().toString());
         profile.setLastName(lastName.getText().toString());
+        profile.setImg(selectedFilePath);
         return profile;
     }
 

@@ -1,0 +1,182 @@
+package ru.mail.park.chat.api;
+
+import android.os.AsyncTask;
+import android.util.Log;
+import android.util.Pair;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+
+/**
+ * Created by 1запуск BeCompact on 24.04.2016.
+ */
+public class MultipartProfileUpdater {
+    URL connectURL;
+    String responseString;
+    byte[ ] dataToServer;
+    FileInputStream fileInputStream = null;
+    List<Pair<String, String>> parameters;
+
+    public MultipartProfileUpdater(String urlString, List<Pair<String, String>> parameters){
+        try{
+            this.parameters = parameters;
+            connectURL = new URL(urlString);
+        }catch(Exception ex){
+            Log.i("[TP-diploma]", "URL Malformatted");
+        }
+    }
+
+    public boolean Send_Now(IUploadListener listener){
+        Log.d("[TP-diploma]", "send now");
+        return Sending(listener);
+    }
+
+    boolean Sending(IUploadListener listener){
+        Log.d("[TP-diploma]", "sending started");
+        new HttpMultipartUpdateProfileTask(listener).execute();
+        return true;
+    }
+
+
+    public void run() {
+        // TODO Auto-generated method stub
+    }
+
+    public interface IUploadListener {
+        void onUploadComplete(String name);
+    }
+
+    class HttpMultipartUpdateProfileTask extends AsyncTask<Void,Void,String>
+    {
+        IUploadListener listener;
+
+        public HttpMultipartUpdateProfileTask(IUploadListener listener) {
+            this.listener = listener;
+        }
+
+        protected void onPreExecute() {
+            //display progress dialog.
+        }
+
+        protected String doInBackground(Void... params) {
+            try {
+                String lineEnd = "\r\n";
+                String twoHyphens = "--";
+                String boundary = "*****";
+                String Tag = "[TP-diploma]";
+
+                // Open a HTTP connection to the URL
+                HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
+                Log.d(Tag, "connection opened");
+
+                // Allow Inputs
+                conn.setDoInput(true);
+
+                // Allow Outputs
+                conn.setDoOutput(true);
+
+                // Don't use a cached copy.
+                conn.setUseCaches(false);
+
+                // Use a post method.
+                conn.setRequestMethod("POST");
+
+                conn.setRequestProperty("Connection", "Keep-Alive");
+
+                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+                DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+
+                Log.d("[TP-diploma]", "outputstream created");
+
+                for(int i = 0; i < parameters.size(); i++) {
+                    Pair<String, String> p = parameters.get(i);
+
+                    if(!p.first.equals("img")) {
+                        Log.d("[TP-diploma]", "printing " + p.first + " = " + p.second);
+                        dos.writeBytes(twoHyphens + boundary + lineEnd);
+                        dos.writeBytes("Content-Disposition: form-data; name=\"" + p.first + "\""+ lineEnd);
+                        dos.writeBytes(lineEnd);
+                        dos.writeBytes(p.second);
+                        dos.writeBytes(lineEnd);
+                    } else {
+                        Log.d("[TP-diploma]", "printing img = " + p.second);
+                        fileInputStream = new FileInputStream(p.second);
+                        dos.writeBytes(twoHyphens + boundary + lineEnd);
+
+                        dos.writeBytes("Content-Disposition: form-data; name=\"img\";filename=\"" + p.second + "\"" + lineEnd);
+                        dos.writeBytes(lineEnd);
+
+                        // create a buffer of maximum size
+                        int bytesAvailable = fileInputStream.available();
+
+                        int maxBufferSize = 1024;
+                        int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                        byte[ ] buffer = new byte[bufferSize];
+
+                        // read file and write it into form...
+                        int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                        while (bytesRead > 0)
+                        {
+                            dos.write(buffer, 0, bufferSize);
+                            bytesAvailable = fileInputStream.available();
+                            bufferSize = Math.min(bytesAvailable,maxBufferSize);
+                            bytesRead = fileInputStream.read(buffer, 0,bufferSize);
+                        }
+                        dos.writeBytes(lineEnd);
+                        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                        Log.d("[TP-diploma]", "data is written");
+                        // close streams
+                        fileInputStream.close();
+
+                        Log.d("[TP-diploma]", "fileInputStream closed\n\n");
+
+                        Log.d(Tag, dos.toString());
+
+                        Log.d(Tag, "\n\n");
+
+                        dos.flush();
+                    }
+                }
+
+                Log.d("[TP-diploma]","Form Sent, Response: "+String.valueOf(conn.getResponseCode()));
+
+                InputStream is = conn.getInputStream();
+
+                // retrieve the response from server
+                int ch;
+
+                StringBuffer b =new StringBuffer();
+                while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
+                String s=b.toString();
+
+                dos.close();
+                Log.d("[TP-diploma]", s);
+                return s;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String result) {
+            if (result != null && listener != null) {
+                try {
+                    listener.onUploadComplete(result);
+                } catch (Exception
+                        e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
