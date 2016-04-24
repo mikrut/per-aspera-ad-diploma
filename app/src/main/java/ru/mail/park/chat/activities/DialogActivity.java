@@ -2,6 +2,10 @@ package ru.mail.park.chat.activities;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
@@ -10,6 +14,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -281,9 +286,10 @@ public class DialogActivity
     @Override
     public void onIncomeMessage(JSONObject message){
         try {
+            String newChatID = null;
             if (message.has("idRoom")) {
-                String newChatID = message.getString("idRoom");
-                if (chatID == null || !chatID.equals(newChatID)) {
+                newChatID = message.getString("idRoom");
+                if (chatID == null) {
                     chatID = newChatID;
                     onUpdateChatID();
                 }
@@ -291,6 +297,24 @@ public class DialogActivity
 
             Message incomeMsg = new Message(message, this, chatID);
             addMessage(incomeMsg);
+
+            if (newChatID != null && chatID != null && !chatID.equals(newChatID)) {
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+
+                notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
+                        .setContentTitle(incomeMsg.getTitle())
+                        .setContentText(incomeMsg.getMessageBody());
+
+                Intent intent = new Intent(this, DialogActivity.class);
+                intent.putExtra(CHAT_ID, newChatID);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                notificationBuilder.setContentIntent(pendingIntent);
+
+                Notification notification = notificationBuilder.build();
+                notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(0, notification);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
