@@ -32,7 +32,7 @@
             android:visibility="gone"
             tools:visibility="visible"
             android:id="@+id/imageText"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignLeft="@+id/image"
             android:layout_alignTop="@+id/image"
@@ -44,20 +44,33 @@
             android:textColor="#ffffff" />
     </RelativeLayout>
 
-    <com.rockerhieu.emojicon.EmojiconTextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/messageText"
+        android:orientation="vertical"
+        android:background="@drawable/msg_in"
         android:layout_gravity="center_vertical"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
         android:paddingLeft="17dp"
         android:paddingStart="17dp"
         android:paddingRight="8dp"
-        android:paddingEnd="8dp"
-        android:gravity="start|center_vertical"
-        tools:text="Example message text"
-        android:textColor="@color/textColorPrimary"
-        android:background="@drawable/msg_in"/>
+        android:paddingEnd="8dp" >
+
+        <com.rockerhieu.emojicon.EmojiconTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/messageText"
+            android:gravity="start|center_vertical"
+            tools:text="Example message text"
+            android:textColor="@color/textColorPrimary"/>
+
+        <ListView
+            android:id="@+id/attachments_list_view"
+            tools:listitem="@layout/element_file_simple"
+            android:visibility="gone"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </LinearLayout>

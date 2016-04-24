@@ -17,10 +17,10 @@ import ru.mail.park.chat.database.PreferenceConstants;
 /**
  * Created by Михаил on 19.03.2016.
  */
-class ApiSection {
+public class ApiSection {
     public final static String AUTH_TOKEN_PARAMETER_NAME = "accessToken";
     // FIXME: use SSL connection
-    private final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
+    public final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
     private final String AUTH_TOKEN;
     private final Context context;

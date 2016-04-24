@@ -35,4 +35,8 @@ public class AttachedFile {
     public String getFileID() {
         return fileID;
     }
+
+    public String getFilePath() {
+        return filePath;
+    }
 }

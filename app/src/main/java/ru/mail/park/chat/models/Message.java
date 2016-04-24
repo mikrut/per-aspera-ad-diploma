@@ -8,12 +8,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import ru.mail.park.chat.database.MessagesContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
@@ -30,6 +33,8 @@ public class Message implements Comparable<Message> {
     private @Nullable Calendar date;
 
     private @NonNull String title;
+
+    private List<AttachedFile> files = new ArrayList<AttachedFile>();
 
     public Message(@NonNull JSONObject message, @NonNull Context context, @Nullable String cid) throws JSONException {
         String uid;
@@ -89,6 +94,14 @@ public class Message implements Comparable<Message> {
                 setDate(dateString);
             } catch (ParseException e) {
                 e.printStackTrace();
+            }
+        }
+
+        if (message.has("files")) {
+            JSONArray filesArray = message.getJSONArray("files");
+            for (int i = 0; i < filesArray.length(); i++) {
+                AttachedFile file = new AttachedFile(filesArray.getJSONObject(i));
+                files.add(file);
             }
         }
     }
@@ -159,6 +172,10 @@ public class Message implements Comparable<Message> {
     @NonNull
     public String getTitle() {
         return title;
+    }
+
+    public List<AttachedFile> getFiles() {
+        return files;
     }
 
     @Nullable
