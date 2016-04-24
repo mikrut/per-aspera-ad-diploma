@@ -2,7 +2,6 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +23,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsSimpleListFragment;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;

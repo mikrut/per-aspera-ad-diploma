@@ -5,13 +5,9 @@ import android.app.LoaderManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
-import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -19,15 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
@@ -39,14 +31,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
@@ -54,11 +42,11 @@ import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
-import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
@@ -87,13 +75,14 @@ public class DialogActivity
 
     private String chatID;
     private String userID;
+    private String ownerID;
     private String accessToken;
 
     private List<Message> receivedMessageList;
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
-    private Messages messages;
+    private IMessageSender messages;
 
     private ImageButton buttonDown;
 
@@ -108,6 +97,34 @@ public class DialogActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dialog);
 
+        initViews();
+        initAttachments();
+
+        try {
+            messages = getMessageSender();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        chatID = getIntent().getStringExtra(CHAT_ID);
+        userID = getIntent().getStringExtra(USER_ID);
+
+        OwnerProfile ownerProfile = new OwnerProfile(this);
+        ownerID = ownerProfile.getUid();
+        accessToken = ownerProfile.getAuthToken();
+
+        initMessagesList();
+        initActionListeners();
+
+        setEmojiconFragment(false);
+
+        if (chatID != null) {
+            Log.d("[TP-diploma]", "calling onUpdateChatID");
+            onUpdateChatID();
+        }
+    }
+
+    private void initViews() {
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
         messagesList = (RecyclerView) findViewById(R.id.messagesList);
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
@@ -116,13 +133,7 @@ public class DialogActivity
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
         emojicons = (FrameLayout) findViewById(R.id.emojicons);
         attachments = (RecyclerView) findViewById(R.id.attachments_recycler_view);
-
-        attachemtsList = new ArrayList<>();
-        FilesAdapter filesAdapter = new FilesAdapter(attachemtsList);
-        attachments.setAdapter(filesAdapter);
-        LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
-        attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        attachments.setLayoutManager(attachmentsManager);
+        buttonDown = (ImageButton) findViewById(R.id.buttonDown);
 
         globalLayout.setOnKeyboardEventListener(new KeyboardDetectingLinearLayout.OnKeyboardEventListener() {
             @Override
@@ -138,20 +149,18 @@ public class DialogActivity
                 emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
             }
         });
+    }
 
-        try {
-            messages = new Messages(this, this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void initAttachments() {
+        attachemtsList = new ArrayList<>();
+        FilesAdapter filesAdapter = new FilesAdapter(attachemtsList);
+        attachments.setAdapter(filesAdapter);
+        LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
+        attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        attachments.setLayoutManager(attachmentsManager);
+    }
 
-        chatID = getIntent().getStringExtra(CHAT_ID);
-        userID = getIntent().getStringExtra(USER_ID);
-
-        OwnerProfile ownerProfile = new OwnerProfile(this);
-        String ownerID = ownerProfile.getUid();
-        accessToken = ownerProfile.getAuthToken();
-
+    private void initMessagesList() {
         receivedMessageList = new ArrayList<>();
         messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
         messagesList.setAdapter(messagesAdapter);
@@ -159,7 +168,7 @@ public class DialogActivity
         layoutManager.setStackFromEnd(true);
         messagesList.setLayoutManager(layoutManager);
 
-       messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -175,8 +184,9 @@ public class DialogActivity
                 }
             }
         });
+    }
 
-        buttonDown = (ImageButton) findViewById(R.id.buttonDown);
+    private void initActionListeners() {
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -218,13 +228,10 @@ public class DialogActivity
                 startActivityForResult(intent, CODE_FILE_SELECTED);
             }
         });
+    }
 
-        setEmojiconFragment(false);
-
-        if (chatID != null) {
-            Log.d("[TP-diploma]", "calling onUpdateChatID");
-            onUpdateChatID();
-        }
+    protected IMessageSender getMessageSender() throws IOException {
+        return new Messages(this, this);
     }
 
     private void onUpdateChatID() {
