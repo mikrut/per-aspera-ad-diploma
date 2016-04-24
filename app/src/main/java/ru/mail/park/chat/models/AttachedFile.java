@@ -8,11 +8,19 @@ import org.json.JSONObject;
  */
 public class AttachedFile {
     private String fileName;
+    private String filePath;
     private long fileSize; // in bytes
     private String fileID;
 
     public AttachedFile(JSONObject file) throws JSONException {
-        this.fileName = file.getString("path");
+        fileName = file.getString("path");
+        filePath = fileName;
+        if (file.has("id")) {
+            fileID = file.getString("id");
+        }
+        if (file.has("name")) {
+            fileName = file.getString("name");
+        }
         // this.fileID = String.valueOf(file.getInt("id"));
     }
 
