@@ -23,6 +23,7 @@ import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -209,6 +210,10 @@ public class Messages extends ApiSection implements IMessageSender {
     }
 
     public void sendMessage(String cid, String messageBody) {
+        sendMessage(cid, messageBody, null);
+    }
+
+    public void sendMessage(String cid, String messageBody, List<AttachedFile> files) {
         reconnect();
 
         JSONObject jsonRequest = new JSONObject();
@@ -222,6 +227,14 @@ public class Messages extends ApiSection implements IMessageSender {
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
             data.put("textMessage", messageBody);
+
+            if (files != null && files.size() > 0) {
+                JSONArray listIdFile = new JSONArray();
+                for (AttachedFile file : files) {
+                    listIdFile.put(file.getFileID());
+                }
+                data.put("listIdFile", listIdFile);
+            }
         } catch(JSONException e) {
             e.printStackTrace();
         }
@@ -231,6 +244,10 @@ public class Messages extends ApiSection implements IMessageSender {
     }
 
     public void sendFirstMessage(String uid, String messageBody) {
+        sendFirstMessage(uid, messageBody, null);
+    }
+
+    public void sendFirstMessage(String uid, String messageBody, List<AttachedFile> files) {
         reconnect();
 
         StringBuilder b = new StringBuilder();
@@ -253,6 +270,14 @@ public class Messages extends ApiSection implements IMessageSender {
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idUser", uid);
             data.put("textMessage", messageBody);
+
+            if (files != null && files.size() > 0) {
+                JSONArray listIdFile = new JSONArray();
+                for (AttachedFile file : files) {
+                    listIdFile.put(file.getFileID());
+                }
+                data.put("listIdFile", listIdFile);
+            }
         } catch(JSONException e) {
             e.printStackTrace();
         }

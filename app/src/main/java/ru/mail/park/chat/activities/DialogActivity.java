@@ -243,9 +243,9 @@ public class DialogActivity
 
     private void sendMessage(@NonNull String message) {
         if (chatID != null) {
-            messages.sendMessage(chatID, message);
+            messages.sendMessage(chatID, message, attachemtsList);
         } else if (userID != null) {
-            messages.sendFirstMessage(userID, message);
+            messages.sendFirstMessage(userID, message, attachemtsList);
         }
     }
 
@@ -336,6 +336,8 @@ public class DialogActivity
     public void onActionSendMessage(JSONObject msg){
         try {
             onIncomeMessage(msg);
+            attachemtsList.clear();
+            attachments.getAdapter().notifyDataSetChanged();
         } catch(Exception e) {
             e.printStackTrace();
         }

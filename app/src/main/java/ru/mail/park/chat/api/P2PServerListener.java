@@ -15,6 +15,7 @@ import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -22,6 +23,7 @@ import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.models.AttachedFile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -91,6 +93,10 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
         }
     }
 
+    public void sendMessage(String chatID, String message, List<AttachedFile> files) {
+        sendMessage(chatID, message);
+    }
+
     public void sendMessage(String chatID, String message) {
         if (output != null) {
             Log.i("P2P Server OUT message", message);
@@ -100,6 +106,10 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
                 e.printStackTrace();
             }
         }
+    }
+
+    public void sendFirstMessage(String userID, String message, List<AttachedFile> files) {
+        sendFirstMessage(userID, message);
     }
 
     public void sendFirstMessage(String userID, String message) {
