@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -23,7 +24,7 @@ import ru.mail.park.chat.database.MessengerDBHelper;
  */
 
 // TODO: implement drawables
-public class Contact implements Comparable<Contact> {
+public class Contact implements Comparable<Contact>, Serializable {
     private @NonNull String uid;
     private @NonNull String login;
 

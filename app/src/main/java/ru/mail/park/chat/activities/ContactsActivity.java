@@ -15,15 +15,17 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.AContactAdapter;
 import ru.mail.park.chat.activities.adapters.ContactAdapter;
+import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
 import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.models.Contact;
 
-public class ContactsActivity extends AppCompatActivity {
+public class ContactsActivity extends AppCompatActivity implements ContactsFragment.OnPickEventListener {
     private LinearLayout findFriends;
 
     @Override
@@ -43,6 +45,18 @@ public class ContactsActivity extends AppCompatActivity {
 
         findFriends = (LinearLayout) findViewById(R.id.findFriends);
         findFriends.setOnClickListener(findFriendsListener);
+    }
+
+    @Override
+    public void onContactSetChanged(TreeSet<Contact> chosenContacts) {
+
+    }
+
+    @Override
+    public void onContactClicked(Contact contact) {
+        Intent intent = new Intent(this, UserProfileActivity.class);
+        intent.putExtra(UserProfileActivity.UID_EXTRA, contact.getUid());
+        startActivity(intent);
     }
 
     private final View.OnClickListener findFriendsListener = new View.OnClickListener() {
