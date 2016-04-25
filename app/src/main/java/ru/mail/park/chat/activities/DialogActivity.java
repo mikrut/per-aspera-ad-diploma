@@ -241,7 +241,7 @@ public class DialogActivity
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
-    private void sendMessage(@NonNull String message) {
+    protected void sendMessage(@NonNull String message) {
         if (chatID != null) {
             messages.sendMessage(chatID, message, attachemtsList);
         } else if (userID != null) {
