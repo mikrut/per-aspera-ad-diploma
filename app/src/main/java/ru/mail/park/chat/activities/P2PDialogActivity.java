@@ -65,13 +65,13 @@ public class P2PDialogActivity extends DialogActivity {
                     p2PServerListener.start();
                     messages = p2PServerListener;
 
-                    P2PServerListener.DestinationParams destinationParams =
+                   /* P2PServerListener.DestinationParams destinationParams =
                             new P2PServerListener.DestinationParams();
                     destinationParams.destinationName = localHostname;
                     destinationParams.destinationPort = LISTENER_DEFAULT_PORT;
 
                     P2PServerListener p2p = new P2PServerListener(this, this, destinationParams);
-                    p2p.start();
+                    p2p.start(); */
                 }
             }
         } else {
