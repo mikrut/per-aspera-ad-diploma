@@ -7,12 +7,14 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +32,7 @@ public class HttpFileUpload implements Runnable{
     public HttpFileUpload(String urlString, String vTitle, String accessToken){
         try{
             connectURL = new URL(urlString);
-            Title= vTitle;
+            Title= vTitle.substring(vTitle.lastIndexOf('/') + 1);
             this.accessToken = accessToken;
         }catch(Exception ex){
             Log.i("HttpFileUpload","URL Malformatted");
@@ -75,9 +77,10 @@ public class HttpFileUpload implements Runnable{
         protected String doInBackground(Void... params) {
             try {
                 String iFileName = Title;
+                String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(iFileName));
                 String lineEnd = "\r\n";
                 String twoHyphens = "--";
-                String boundary = "*****";
+                String boundary = "===" + System.currentTimeMillis() + "===";
                 String Tag = "[TP-diploma]";
 
                 // Open a HTTP connection to the URL
@@ -98,6 +101,7 @@ public class HttpFileUpload implements Runnable{
                 conn.setRequestMethod("POST");
 
                 conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("Cache-Control", "no-cache");
 
                 conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 Log.d("[TP-diploma]", "POST settings set");
@@ -107,13 +111,15 @@ public class HttpFileUpload implements Runnable{
                 Log.d("[TP-diploma]", "outputstream created");
 
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"accessToken\""+ lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"accessToken\"" + lineEnd);
+                dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
                 dos.writeBytes(lineEnd);
                 dos.writeBytes(accessToken);
                 dos.writeBytes(lineEnd);
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
 
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + iFileName +"\"" + lineEnd);
+                dos.writeBytes("Content-Type: "+mime + lineEnd);
                 Log.v("filename", iFileName);
                 dos.writeBytes(lineEnd);
 
