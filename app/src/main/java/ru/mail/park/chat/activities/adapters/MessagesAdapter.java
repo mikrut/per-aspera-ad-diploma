@@ -1,18 +1,25 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.models.Message;
 
 /**
@@ -33,15 +40,33 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     public static class ViewHolder extends TitledPicturedViewHolder {
         private final TextView messageText;
         private final ImageView contactPicture;
+        private final ListView attachments;
 
         public ViewHolder(View itemView) {
             super(itemView);
             messageText = (TextView) itemView.findViewById(R.id.messageText);
             contactPicture = (ImageView) itemView.findViewById(R.id.image);
+            attachments = (ListView) itemView.findViewById(R.id.attachments_list_view);
         }
 
-        public void setMessageText(@NonNull String text) {
-            messageText.setText(text);
+        public void setMessage(@NonNull final Message message) {
+            setTitle(message.getTitle());
+            messageText.setText(message.getMessageBody());
+            attachments.setAdapter(new FilesSimpleAdapter(itemView.getContext(), message.getFiles()));
+            attachments.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String path = message.getFiles().get(position).getFilePath();
+                    Uri uri = Uri.parse(ApiSection.SERVER_URL + path);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    itemView.getContext().startActivity(intent);
+                }
+            });
+            if (message.getFiles().size() > 0) {
+                attachments.setVisibility(View.VISIBLE);
+            } else {
+                attachments.setVisibility(View.GONE);
+            }
         }
 
         public void setContactPicture(@NonNull Bitmap picture) {
@@ -69,8 +94,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Message message = messagesSet.get(position);
-        holder.setMessageText(message.getMessageBody());
-        holder.setTitle(message.getTitle());
+        holder.setMessage(message);
     }
 
     @Override

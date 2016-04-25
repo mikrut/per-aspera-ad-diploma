@@ -37,15 +37,15 @@ public class Users extends ApiSection {
     @Nullable
     public Contact getFullUser(@NonNull String uid) throws IOException {
         final String requestURL = "getFullUser";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
         parameters.add(new Pair<>("idUser", uid));
 
         Contact user = null;
         try {
-            Log.d("[TP-diploma]", "call getFullUser bitch");
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            String j = executeRequest(requestURL, requestMethod, parameters);
+            JSONObject result = new JSONObject(j);
             final int status = result.getInt("status");
             Log.d("[TP-diploma]", result.toString());
             if (status == 200) {
@@ -57,7 +57,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
 
         return user;
@@ -88,7 +88,7 @@ public class Users extends ApiSection {
     @NonNull
     public List<Contact> search(@NonNull String login) throws IOException {
         final String requestURL = "search";
-        final String requestMethod = "GET";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
         parameters.add(new Pair<>("login", login));
@@ -116,7 +116,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException | ParseException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
 
         return contactList;
@@ -132,7 +132,6 @@ public class Users extends ApiSection {
         parameters.add(new Pair<>("phone", profile.getPhone()));
         parameters.add(new Pair<>("firstName", profile.getFirstName()));
         parameters.add(new Pair<>("lastName", profile.getLastName()));
-        parameters.add(new Pair<>("img", profile.getImg()));
 
         try {
             String response = executeRequest(requestURL, requestMethod, parameters);
@@ -146,7 +145,7 @@ public class Users extends ApiSection {
                 throw new IOException(message);
             }
         } catch (JSONException e) {
-            throw new IOException("Server error");
+            throw new IOException("Server error", e);
         }
     }
 

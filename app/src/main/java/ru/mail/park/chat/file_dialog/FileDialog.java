@@ -176,7 +176,8 @@ public class FileDialog extends ListActivity {
 			}
 		});
 
-		String startPath = getIntent().getStringExtra(START_PATH);
+		File startDir = (File) getIntent().getSerializableExtra(START_PATH);
+		String startPath = startDir.getPath();
 		startPath = startPath != null ? startPath : ROOT;
 		if (canSelectDir) {
 			File file = new File(startPath);

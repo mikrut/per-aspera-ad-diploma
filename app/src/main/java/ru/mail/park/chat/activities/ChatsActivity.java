@@ -5,8 +5,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
@@ -37,7 +35,9 @@ import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.models.Chat;
@@ -55,6 +55,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
     public static final int CHAT_WEB_LOADER = 0;
     public static final int CHAT_SEARCH_LOADER = 1;
+    public static final int CHAT_DB_LOADER = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,18 +80,13 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Query queryer = new Query();
-                // queryer.execute((String[]) null);
-                Intent intent = new Intent(ChatsActivity.this, DialogActivity.class);
-                intent.putExtra(DialogActivity.CHAT_ID, "123");
+                Intent intent = new Intent(ChatsActivity.this, DialogCreateActivity.class);
                 startActivity(intent);
             }
         });
 
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
         chatsList.setLayoutManager(new LinearLayoutManager(this));
-
-        getLoaderManager().initLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
 
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
@@ -172,6 +168,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_chats, menu);
 
@@ -190,13 +192,13 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, chatsLoaderListener);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, messagesLoaderListener);
+                getLoaderManager().restartLoader(CHAT_SEARCH_LOADER, null, chatsLoaderListener);
                 return true;
             }
         });
@@ -204,7 +206,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, messagesLoaderListener);
+                getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
                 return true;
             }
         });
@@ -267,7 +269,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         Log.d("[TechMail]", "calling onLogoutFail");
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Chat>> messagesLoaderListener =
+    private final LoaderManager.LoaderCallbacks<List<Chat>> chatsLoaderListener =
             new LoaderManager.LoaderCallbacks<List<Chat>>() {
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
@@ -277,13 +279,23 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                             searchLoader.setQueryString(searchView.getQuery().toString());
                             return searchLoader;
                         case CHAT_WEB_LOADER:
-                        default:
                             return new ChatWebLoader(ChatsActivity.this);
+                        case CHAT_DB_LOADER:
+                        default:
+                            return new ChatLoader(ChatsActivity.this);
                     }
                 }
 
                 @Override
                 public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
+                    ChatHelper chatHelper = new ChatHelper(ChatsActivity.this);
+
+                    if (loader.getId() == CHAT_DB_LOADER) {
+                        getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, chatsLoaderListener);
+                    } else if (data != null && loader.getId() == CHAT_WEB_LOADER) {
+                        chatHelper.updateChatList(data);
+                    }
+
                     if (data != null) {
                         chatsList.setAdapter(new ChatsAdapter(data));
                     }
@@ -301,12 +313,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private final SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-            getLoaderManager().restartLoader(0, null, messagesLoaderListener);
+            getLoaderManager().restartLoader(0, null, chatsLoaderListener);
         }
     };
 
     private void setupActionBar() {
-        int colorPrimary = getResources().getColor(R.color.textColorPrimary);
+        int colorPrimary = getResources().getColor(R.color.actionBarTextColor);
         mToolbarMorphDrawable = new MaterialMenuDrawable(this,
                 colorPrimary,
                 MaterialMenuDrawable.Stroke.THIN);

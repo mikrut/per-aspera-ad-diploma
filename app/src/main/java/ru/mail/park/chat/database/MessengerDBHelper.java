@@ -12,7 +12,7 @@ import java.util.Locale;
  * Created by Михаил on 06.03.2016.
  */
 public class MessengerDBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "Messenger.db";
 
     public static final DateFormat currentFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());

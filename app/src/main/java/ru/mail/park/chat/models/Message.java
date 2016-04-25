@@ -8,12 +8,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import ru.mail.park.chat.database.MessagesContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
@@ -25,25 +28,15 @@ import ru.mail.park.chat.database.PreferenceConstants;
 public class Message implements Comparable<Message> {
     private @Nullable String mid;
     private @NonNull String messageBody;
-    private @NonNull String cid;
+    private @Nullable String cid;
     private @NonNull String uid;
     private @Nullable Calendar date;
 
     private @NonNull String title;
 
-    private Message(@NonNull String messageBody,
-                    @NonNull String chatID,
-                    @NonNull String userID) {
-        this.messageBody = messageBody;
-        cid = chatID;
-        uid = userID;
-    }
+    private List<AttachedFile> files = new ArrayList<AttachedFile>();
 
-    public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
-        this(message, context, null);
-    }
-
-    public Message(@NonNull JSONObject message, @NonNull Context context, String cid) throws JSONException {
+    public Message(@NonNull JSONObject message, @NonNull Context context, @Nullable String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
             uid = String.valueOf(message.getJSONObject("user").getLong("id"));
@@ -64,6 +57,8 @@ public class Message implements Comparable<Message> {
             messageBodyParamName = "text";
         if (messageBodyParamName != null) {
             messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
+        } else {
+            throw new JSONException("No textMessage or text parameter is JSON");
         }
 
         if (cid == null)
@@ -77,10 +72,15 @@ public class Message implements Comparable<Message> {
         }
 
         try {
-            Contact user = new Contact(message, context);
+            JSONObject userJSON = message;
+            if (message.has("user")) {
+                userJSON = message.getJSONObject("user");
+            }
+            Contact user = new Contact(userJSON, context);
             title = user.getContactTitle();
         } catch (ParseException e) {
             e.printStackTrace();
+            throw new JSONException("Invalid USER field in JSON for message");
         }
 
         String dtCreateParamName = null;
@@ -96,14 +96,23 @@ public class Message implements Comparable<Message> {
                 e.printStackTrace();
             }
         }
+
+        if (message.has("files")) {
+            JSONArray filesArray = message.getJSONArray("files");
+            for (int i = 0; i < filesArray.length(); i++) {
+                AttachedFile file = new AttachedFile(filesArray.getJSONObject(i));
+                files.add(file);
+            }
+        }
     }
     
     public Message(@NonNull Cursor message) throws ParseException {
-        this(message.getString(MessagesContract.PROJECTION_MESSAGE_BODY_INDEX),
-                message.getString(MessagesContract.PROJECTION_CID_INDEX),
-                message.getString(MessagesContract.PROJECTION_UID_INDEX));
+        messageBody = message.getString(MessagesContract.PROJECTION_MESSAGE_BODY_INDEX);
+        cid = message.getString(MessagesContract.PROJECTION_CID_INDEX);
+        uid = message.getString(MessagesContract.PROJECTION_UID_INDEX);
+        title = message.getString(MessagesContract.PROJECTION_TITLE_INDEX);
 
-        setMid(message.getString(MessagesContract.PROJECTION_MID_INDEX));
+        mid = message.getString(MessagesContract.PROJECTION_MID_INDEX);
         String dateString = message.getString(MessagesContract.PROJECTION_DATETIME_INDEX);
         setDate(dateString);
     }
@@ -165,6 +174,10 @@ public class Message implements Comparable<Message> {
         return title;
     }
 
+    public List<AttachedFile> getFiles() {
+        return files;
+    }
+
     @Nullable
     public ContentValues getContentValues() {
         if (getMid() != null) {
@@ -173,6 +186,7 @@ public class Message implements Comparable<Message> {
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_UID, getUid());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_CID, getCid());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_MESSAGE_BODY, getMessageBody());
+            contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_TITLE, getTitle());
 
             String isoDate = null;
             if (getDate() != null) {

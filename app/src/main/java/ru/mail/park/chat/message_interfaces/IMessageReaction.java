@@ -1,4 +1,4 @@
-package ru.mail.park.chat.message_income;
+package ru.mail.park.chat.message_interfaces;
 
 import org.json.JSONObject;
 

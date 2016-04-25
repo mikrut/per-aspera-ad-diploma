@@ -21,11 +21,11 @@ import java.util.List;
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
-import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ import org.json.JSONObject;
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
-public class Messages extends ApiSection {
+public class Messages extends ApiSection implements IMessageSender {
     private static final int TIMEOUT = 5000;
     private WebSocket ws;
     private final IMessageReaction taskListener;
@@ -183,7 +183,7 @@ public class Messages extends ApiSection {
 
         String message = data.getString("textMessage");
         String cid = data.getString("idMessage");
-        String creationDate = data.getString("dtCreateMessage");
+        String creationDate = data.getString("dtCreate");
 
         taskListener.onActionSendMessage(data);
     }

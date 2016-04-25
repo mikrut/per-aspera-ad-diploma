@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:id="@+id/file_icon_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:tint="@color/colorPrimary"
+        android:src="@drawable/ic_insert_drive_file_white_24dp"/>
+
+    <TextView
+        android:id="@+id/file_name_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/file_icon_image_view"
+        android:layout_toEndOf="@+id/file_icon_image_view"
+        android:layout_alignParentTop="true"
+        android:singleLine="true"
+        android:ellipsize="end"
+        tools:text="Some long file name text" />
+
+    <TextView
+        android:id="@+id/file_size_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/file_name_text_view"
+        android:layout_alignStart="@+id/file_name_text_view"
+        android:layout_alignLeft="@+id/file_name_text_view"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/textColorSecondary"
+        tools:text="1024 KB" />
+
+</RelativeLayout>

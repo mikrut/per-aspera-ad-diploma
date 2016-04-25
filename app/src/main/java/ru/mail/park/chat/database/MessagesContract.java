@@ -10,11 +10,12 @@ public abstract class MessagesContract {
 
     static final String CREATE_TABLE =
             "CREATE TABLE " + MessagesEntry.TABLE_NAME + " (" +
-                    MessagesEntry.COLUMN_NAME_MID + " TEXT PRIMARY KEY NOT NULL" + COMMA_SEP +
+                    MessagesEntry.COLUMN_NAME_MID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_CID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_UID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_MESSAGE_BODY + " TEXT NOT NULL" + COMMA_SEP +
-                    MessagesEntry.COLUMN_NAME_DATETIME + " TEXT" +
+                    MessagesEntry.COLUMN_NAME_DATETIME + " TEXT" + COMMA_SEP +
+                    MessagesEntry.COLUMN_NAME_TITLE + " TEXT NOT NULL" +
                     ")";
 
     static final String DROP_TABLE =
@@ -25,7 +26,8 @@ public abstract class MessagesContract {
             MessagesEntry.COLUMN_NAME_CID,
             MessagesEntry.COLUMN_NAME_UID,
             MessagesEntry.COLUMN_NAME_MESSAGE_BODY,
-            MessagesEntry.COLUMN_NAME_DATETIME
+            MessagesEntry.COLUMN_NAME_DATETIME,
+            MessagesEntry.COLUMN_NAME_TITLE
     };
 
     public static final int PROJECTION_MID_INDEX = 0;
@@ -33,6 +35,7 @@ public abstract class MessagesContract {
     public static final int PROJECTION_UID_INDEX = 2;
     public static final int PROJECTION_MESSAGE_BODY_INDEX = 3;
     public static final int PROJECTION_DATETIME_INDEX = 4;
+    public static final int PROJECTION_TITLE_INDEX = 5;
 
     public static abstract class MessagesEntry implements BaseColumns {
         public static final String TABLE_NAME = "messages";
@@ -41,5 +44,6 @@ public abstract class MessagesContract {
         public static final String COLUMN_NAME_UID = "uid";
         public static final String COLUMN_NAME_MESSAGE_BODY = "message_body";
         public static final String COLUMN_NAME_DATETIME = "datetime";
+        public static final String COLUMN_NAME_TITLE = "title";
     }
 }

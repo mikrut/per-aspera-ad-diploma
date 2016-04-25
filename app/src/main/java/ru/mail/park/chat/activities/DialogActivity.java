@@ -2,26 +2,25 @@ package ru.mail.park.chat.activities;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
@@ -32,27 +31,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.adapters.FilesAdapter;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.database.MessagesHelper;
-import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
-import ru.mail.park.chat.message_income.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 // TODO: emoticons
 // TODO: send message
@@ -64,7 +62,7 @@ public class DialogActivity
         HttpFileUpload.IUploadListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
-    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
+    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
     private KeyboardDetectingLinearLayout globalLayout;
@@ -73,26 +71,60 @@ public class DialogActivity
     private ImageButton insertEmoticon, attachFile;
     private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
+    private RecyclerView attachments;
 
     private String chatID;
     private String userID;
+    private String ownerID;
     private String accessToken;
 
     private List<Message> receivedMessageList;
+    private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
-    private Messages messages;
+    protected IMessageSender messages;
 
     private ImageButton buttonDown;
 
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
 
+    public static final int MESSAGES_DB_LOADER = 0;
+    public static final int MESSAGES_WEB_LOADER = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dialog);
 
+        initViews();
+        initAttachments();
+
+        try {
+            messages = getMessageSender();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        chatID = getIntent().getStringExtra(CHAT_ID);
+        userID = getIntent().getStringExtra(USER_ID);
+
+        OwnerProfile ownerProfile = new OwnerProfile(this);
+        ownerID = ownerProfile.getUid();
+        accessToken = ownerProfile.getAuthToken();
+
+        initMessagesList();
+        initActionListeners();
+
+        setEmojiconFragment(false);
+
+        if (chatID != null) {
+            Log.d("[TP-diploma]", "calling onUpdateChatID");
+            onUpdateChatID();
+        }
+    }
+
+    private void initViews() {
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
         messagesList = (RecyclerView) findViewById(R.id.messagesList);
         insertEmoticon = (ImageButton) findViewById(R.id.insertEmoticon);
@@ -100,6 +132,8 @@ public class DialogActivity
         inputMessage = (EmojiconEditText) findViewById(R.id.inputMessage);
         sendMessage = (ImageButton) findViewById(R.id.sendMessage);
         emojicons = (FrameLayout) findViewById(R.id.emojicons);
+        attachments = (RecyclerView) findViewById(R.id.attachments_recycler_view);
+        buttonDown = (ImageButton) findViewById(R.id.buttonDown);
 
         globalLayout.setOnKeyboardEventListener(new KeyboardDetectingLinearLayout.OnKeyboardEventListener() {
             @Override
@@ -115,50 +149,44 @@ public class DialogActivity
                 emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
             }
         });
+    }
 
-        try {
-            messages = new Messages(this, this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void initAttachments() {
+        attachemtsList = new ArrayList<>();
+        FilesAdapter filesAdapter = new FilesAdapter(attachemtsList);
+        attachments.setAdapter(filesAdapter);
+        LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
+        attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        attachments.setLayoutManager(attachmentsManager);
+    }
 
-        chatID = getIntent().getStringExtra(CHAT_ID);
-        userID = getIntent().getStringExtra(USER_ID);
-        if (chatID != null) {
-            MessagesHelper messagesHelper = new MessagesHelper(this);
-            receivedMessageList = messagesHelper.getMessages(chatID);
-            Collections.sort(receivedMessageList);
+    private void initMessagesList() {
+        receivedMessageList = new ArrayList<>();
+        messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
+        messagesList.setAdapter(messagesAdapter);
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        messagesList.setLayoutManager(layoutManager);
 
-            SharedPreferences sharedPreferences =
-                    getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
-            String ownerID = sharedPreferences.getString(PreferenceConstants.USER_UID_N, null);
-            accessToken = sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
+        messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
 
-            messagesAdapter = new MessagesAdapter(receivedMessageList, ownerID);
-            messagesList.setAdapter(messagesAdapter);
-            layoutManager = new LinearLayoutManager(this);
-            layoutManager.setStackFromEnd(true);
-            messagesList.setLayoutManager(layoutManager);
-
-            messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                    super.onScrollStateChanged(recyclerView, newState);
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                boolean atBottom =
+                        (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
+                if (atBottom) {
+                    buttonDown.setVisibility(View.GONE);
                 }
+            }
+        });
+    }
 
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    boolean atBottom =
-                            (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
-                    if (atBottom) {
-                        buttonDown.setVisibility(View.GONE);
-                    }
-                }
-            });
-        }
-
-        buttonDown = (ImageButton) findViewById(R.id.buttonDown);
+    private void initActionListeners() {
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -194,23 +222,23 @@ public class DialogActivity
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), FileDialog.class);
-                intent.putExtra(FileDialog.START_PATH, "/sdcard");
+                intent.putExtra(FileDialog.START_PATH, Environment.getExternalStorageDirectory());
                 intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 
                 startActivityForResult(intent, CODE_FILE_SELECTED);
             }
         });
+    }
 
-        setEmojiconFragment(false);
-
-        if (chatID != null)
-            onUpdateChatID();
+    protected IMessageSender getMessageSender() throws IOException {
+        return new Messages(this, this);
     }
 
     private void onUpdateChatID() {
         Bundle args = new Bundle();
         args.putString(MessagesLoader.CID_ARG, chatID);
-        getLoaderManager().initLoader(0, args, listener);
+        args.putString(MessagesLoader.UID_ARG, userID);
+        getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
     private void sendMessage(@NonNull String message) {
@@ -227,9 +255,14 @@ public class DialogActivity
 
         boolean inserted = false;
         for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
-            if (message.compareTo(receivedMessageList.get(position)) < 0) {
+            int comp = message.compareTo(receivedMessageList.get(position));
+            if (comp < 0) {
                 receivedMessageList.add(position, message);
                 messagesAdapter.notifyItemInserted(position);
+                inserted = true;
+            } else if (comp == 0) {
+                receivedMessageList.set(position, message);
+                messagesAdapter.notifyItemChanged(position);
                 inserted = true;
             }
         }
@@ -260,16 +293,35 @@ public class DialogActivity
     @Override
     public void onIncomeMessage(JSONObject message){
         try {
+            String newChatID = null;
             if (message.has("idRoom")) {
-                String newChatID = message.getString("idRoom");
-                if (chatID == null || !chatID.equals(newChatID)) {
+                newChatID = message.getString("idRoom");
+                if (chatID == null) {
                     chatID = newChatID;
                     onUpdateChatID();
                 }
             }
 
-            Message incomeMsg = new Message(message, this);
+            Message incomeMsg = new Message(message, this, chatID);
             addMessage(incomeMsg);
+
+            if (newChatID != null && chatID != null && !chatID.equals(newChatID)) {
+                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+
+                notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
+                        .setContentTitle(incomeMsg.getTitle())
+                        .setContentText(incomeMsg.getMessageBody());
+
+                Intent intent = new Intent(this, DialogActivity.class);
+                intent.putExtra(CHAT_ID, newChatID);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                notificationBuilder.setContentIntent(pendingIntent);
+
+                Notification notification = notificationBuilder.build();
+                notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.notify(0, notification);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -295,8 +347,6 @@ public class DialogActivity
         receivedMessageList.addAll(msg_list);
         Collections.sort(receivedMessageList);
 
-        MessagesHelper messagesHelper = new MessagesHelper(this);
-        messagesHelper.deleteMessages(msg_list.get(0).getCid());
         messagesAdapter.notifyDataSetChanged();
     }
 
@@ -323,20 +373,22 @@ public class DialogActivity
     }
 
     @Override
-    public void onUploadComplete(String name) {
-        TextView linkable = ((TextView) findViewById(R.id.link));
-        linkable.setMovementMethod(LinkMovementMethod.getInstance());
-        linkable.setText(Html.fromHtml("<a href=\"http://p30480.lab1.stud.tech-mail.ru/"+name+"\">"+name+"</a>"));
-        linkable.setVisibility(View.VISIBLE);
+    public void onUploadComplete(AttachedFile file) {
+        attachemtsList.add(file);
+        attachments.getAdapter().notifyItemInserted(attachemtsList.size() - 1);
+        attachments.setVisibility(View.VISIBLE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        messages.disconnect();
+        if (messages != null) {
+            messages.disconnect();
+        }
     }
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        Log.d("[TP-diploma]", "preparing to send file");
         if (resultCode == Activity.RESULT_OK) {
             String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
             FileInputStream fstrm = null;
@@ -350,6 +402,7 @@ public class DialogActivity
                     hfu.Send_Now(fstrm, this);
                 } catch(Exception e) {
                     e.printStackTrace();
+                    Toast.makeText(this, "Error opening file", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -358,16 +411,32 @@ public class DialogActivity
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
-            return new MessagesLoader(DialogActivity.this, args);
+            Log.d("[TP-diploma]", "creating MessagesListener");
+            switch (id) {
+                case MESSAGES_WEB_LOADER:
+                    return new MessagesLoader(DialogActivity.this, args);
+                case MESSAGES_DB_LOADER:
+                default:
+                        return new MessagesDBLoader(DialogActivity.this, args);
+            }
         }
 
         @Override
         public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
             if (data != null) {
+                Log.d("[TP-diploma]", "messages count: " + data.size());
                 for (Message message : data) {
                     addMessage(message);
                 }
                 messagesList.scrollToPosition(receivedMessageList.size() - 1);
+            } else {
+                Log.d("[TP-diploma]", "empty list");
+            }
+
+            if (loader.getId() == MESSAGES_DB_LOADER) {
+                Bundle args = new Bundle();
+                args.putString(MessagesLoader.CID_ARG, chatID);
+                getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, this);
             }
         }
 
