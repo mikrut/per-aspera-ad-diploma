@@ -61,8 +61,8 @@
     <string name="description_menu_action_icon">"Значок Дія меню"</string>
     <string name="description_user_picture">"Аватар користувача"</string>
     <string name="description_application_logo">"нанесення логотипу"</string>
-    <string name="title_activity_chats">"чат список"</string>
-    <string name="action_show_profile">"Показати профіль"</string>
+    <string name="title_activity_chats">"діалоги"</string>
+    <string name="action_show_profile">"Профіль"</string>
     <string name="action_group_chats">"Група чатів"</string>
     <string name="action_help">"Допомога"</string>
     <string name="action_log_out">"Вийти "</string>

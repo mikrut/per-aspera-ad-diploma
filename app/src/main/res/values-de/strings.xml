@@ -62,7 +62,7 @@
     <string name="description_user_picture">"User-Foto"</string>
     <string name="description_application_logo">"App-Logo"</string>
     <string name="title_activity_chats">"Chat-Liste"</string>
-    <string name="action_show_profile">"Profil anzeigen"</string>
+    <string name="action_show_profile">"Profil"</string>
     <string name="action_group_chats">"Gruppen-Chats"</string>
     <string name="action_help">"Hilfe"</string>
     <string name="action_log_out">"Abmelden"</string>

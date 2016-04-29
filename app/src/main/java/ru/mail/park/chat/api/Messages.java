@@ -220,6 +220,7 @@ public class Messages extends ApiSection implements IMessageSender {
         JSONObject data = new JSONObject();
         lastUsed = Method.SEND;
 
+
         try {
             jsonRequest.put("controller", "Messages");
             jsonRequest.put("method", "send");
@@ -239,8 +240,9 @@ public class Messages extends ApiSection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        Log.d("[TP-diploma]", jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
+        Log.d("[TP-diploma]", ws.getState().toString());
     }
 
     public void sendFirstMessage(String uid, String messageBody) {

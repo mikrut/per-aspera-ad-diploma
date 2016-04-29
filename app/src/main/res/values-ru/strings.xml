@@ -43,12 +43,12 @@
     <string name="title_activity_register">Регистрация</string>
     <string name="title_activity_scrolling"></string>
     <string name="title_activity_settings">Настройки приложения</string>
-    <string name="title_activity_user_profile">Профиль пользователя</string>
-    <string name="title_activity_chats">Список диалогов</string>
+    <string name="title_activity_user_profile">Профиль</string>
+    <string name="title_activity_chats">Диалоги</string>
     <string name="action_group_chats">Групповые чаты</string>
     <string name="action_help">Помощь</string>
     <string name="action_log_out">Выйти</string>
-    <string name="action_show_profile">Показать профиль</string>
+    <string name="action_show_profile">Профиль</string>
     <string name="title_activity_create_group_dialog">Создать групповой диалог</string>
     <string name="title_activity_dialog">Диалог</string>
 </resources>
