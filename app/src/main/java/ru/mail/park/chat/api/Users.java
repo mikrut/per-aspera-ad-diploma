@@ -46,6 +46,7 @@ public class Users extends ApiSection {
         try {
             String j = executeRequest(requestURL, requestMethod, parameters);
             JSONObject result = new JSONObject(j);
+            Log.d("[TP-diploma]", "getFullUser(" + uid + ")" + result.toString());
             final int status = result.getInt("status");
             if (status == 200) {
                 JSONObject data = result.getJSONObject("data");

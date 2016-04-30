@@ -21,6 +21,7 @@ tools:context="ru.mail.park.chat.activities.UserProfileActivity">
         android:fitsSystemWindows="true"
         app:contentScrim="?attr/colorPrimary"
         app:expandedTitleTextAppearance="@style/ExpandedAppBar"
+        app:expandedTitleMarginBottom="50dp"
         app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
 
@@ -48,14 +49,14 @@ tools:context="ru.mail.park.chat.activities.UserProfileActivity">
             android:background="@drawable/scrim_bottom"/>
 
         <TextView
-            android:text="offline"
+            android:text=" "
             android:id="@+id/online_indicator"
             style="@style/OnlineStatusAppBar"
             app:layout_collapseMode="parallax"
             app:layout_collapseParallaxMultiplier="0.8"
             android:layout_width="match_parent"
             android:layout_gravity="bottom"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="30dp"
             android:layout_marginLeft="33dp"
             android:layout_height="18dp" />
 

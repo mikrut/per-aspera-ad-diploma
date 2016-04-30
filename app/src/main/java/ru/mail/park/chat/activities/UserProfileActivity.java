@@ -181,10 +181,14 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
         Calendar lastSeen = user.getLastSeen();
-        if (lastSeen != null) {
-            onlineIndicator.setText(lastSeen.getTime().toGMTString());
-        } else {
-            onlineIndicator.setText(user.isOnline() ? "online" : "offline");
+
+        if(relation != Contact.Relation.SELF) {
+            if (user.isOnline())
+                onlineIndicator.setText("online");
+            else if(lastSeen != null)
+                onlineIndicator.setText(lastSeen.getTime().toGMTString());
+            else
+                onlineIndicator.setText("offline");
         }
 
         if (user.getPhone() != null) {
