@@ -32,6 +32,19 @@ tools:context="ru.mail.park.chat.activities.UserProfileActivity">
             android:contentDescription="@string/description_user_picture"
             android:src="@drawable/ic_user_picture"/>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sheet_text_scrim_height_top"
+            android:background="@drawable/scrim_top"
+            app:layout_collapseMode="pin"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sheet_text_scrim_height_bottom"
+            android:layout_gravity="bottom"
+            android:layout_alignBottom="@+id/user_picture"
+            android:background="@drawable/scrim_bottom"/>
+
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
