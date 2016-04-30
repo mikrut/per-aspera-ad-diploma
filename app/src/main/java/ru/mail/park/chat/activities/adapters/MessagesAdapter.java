@@ -18,6 +18,8 @@ import java.net.URL;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.DialogActivity;
+import ru.mail.park.chat.activities.UserProfileActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.models.Message;
@@ -41,6 +43,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         private final TextView messageText;
         private final ImageView contactPicture;
         private final ListView attachments;
+        private String authorUID;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -51,6 +54,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
         public void setMessage(@NonNull final Message message) {
             setTitle(message.getTitle());
+            authorUID = message.getUid();
             messageText.setText(message.getMessageBody());
             attachments.setAdapter(new FilesSimpleAdapter(itemView.getContext(), message.getFiles()));
             attachments.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -62,6 +66,16 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     itemView.getContext().startActivity(intent);
                 }
             });
+
+            contactPicture.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
+                    intent.putExtra(UserProfileActivity.UID_EXTRA, authorUID);
+                    v.getContext().startActivity(intent);
+                }
+            });
+
             if (message.getFiles().size() > 0) {
                 attachments.setVisibility(View.VISIBLE);
             } else {

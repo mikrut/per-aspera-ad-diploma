@@ -184,6 +184,8 @@ public class DialogActivity
                 }
             }
         });
+
+
     }
 
     private void initActionListeners() {
