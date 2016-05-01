@@ -118,7 +118,7 @@ public class HttpFileUpload implements Runnable{
                 dos.writeBytes(lineEnd);
 
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + iFileName +"\"" + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + iFileName +"\"" + lineEnd);
                 dos.writeBytes("Content-Type: "+mime + lineEnd);
                 Log.v("filename", iFileName);
                 dos.writeBytes(lineEnd);

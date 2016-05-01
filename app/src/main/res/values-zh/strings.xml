@@ -58,8 +58,8 @@
     <string name="description_menu_action_icon">"菜单操作图标"</string>
     <string name="description_user_picture">"用户图片"</string>
     <string name="description_application_logo">"应用程序标识"</string>
-    <string name="title_activity_chats">"聊天列表"</string>
-    <string name="action_show_profile">"展会简介"</string>
+    <string name="title_activity_chats">"對話"</string>
+    <string name="action_show_profile">"輪廓"</string>
     <string name="action_group_chats">"群聊"</string>
     <string name="action_help">"帮助"</string>
     <string name="action_log_out">"注销"</string>

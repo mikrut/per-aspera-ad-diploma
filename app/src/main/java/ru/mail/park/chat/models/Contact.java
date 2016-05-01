@@ -12,6 +12,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -24,7 +25,7 @@ import ru.mail.park.chat.database.MessengerDBHelper;
  */
 
 // TODO: implement drawables
-public class Contact implements Comparable<Contact> {
+public class Contact implements Comparable<Contact>, Serializable {
     private @NonNull String uid;
     private @NonNull String login;
 
@@ -70,8 +71,8 @@ public class Contact implements Comparable<Contact> {
         if (contact.has("lastName"))
             setLastName(contact.getString("lastName"));
 
-        if (contact.has("last_seen")) {
-            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("last_seen"));
+        if (contact.has("lastSeen")) {
+            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("lastSeen"));
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);

@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONException;
@@ -79,6 +80,7 @@ public class Auth extends ApiSection {
         OwnerProfile user;
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            Log.d("[TP-diploma]", "Login task: " + result.toString());
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject data = result.getJSONObject("data");

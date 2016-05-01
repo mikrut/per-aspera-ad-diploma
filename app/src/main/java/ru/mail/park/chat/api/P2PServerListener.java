@@ -1,8 +1,11 @@
 package ru.mail.park.chat.api;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.jivesoftware.smack.proxy.ProxyInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -10,11 +13,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.util.List;
+import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -22,48 +28,63 @@ import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.message_interfaces.Jsonifier;
+import ru.mail.park.chat.models.AttachedFile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
-public class P2PServerListener extends AsyncTask<Integer,String,Void> implements IMessageSender {
+public class P2PServerListener extends Thread implements IMessageSender {
     ServerSocket serverSocket;
     DataInputStream input;
     DataOutputStream output;
 
+    Activity activity;
     IMessageReaction messageListener;
     DestinationParams destination;
+
+    int port = 0;
 
     public static class DestinationParams {
         public String destinationName;
         public int destinationPort;
     }
 
-    public P2PServerListener(IMessageReaction messageListener, DestinationParams destination) {
+    public P2PServerListener(Activity activity, IMessageReaction messageListener, DestinationParams destination) {
+        this.activity = activity;
         this.messageListener = messageListener;
         this.destination = destination;
     }
 
-    @Override
-    public Void doInBackground(Integer... params) {
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void run() {
         try {
             if (destination != null) {
-                NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
-                URL url = new URL("http", destination.destinationName, destination.destinationPort, "/");
-                HttpURLConnection h = NetCipher.getHttpURLConnection(url);
+                final Random rndForTorCircuits = new Random();
+                final String user = rndForTorCircuits.nextInt(100000) + "";
+                final String pass = rndForTorCircuits.nextInt(100000) + "";
+                final int proxyPort = 9050;
+                final String proxyHost = "127.0.0.1";
 
-                input = new DataInputStream(h.getInputStream());
-                output = new DataOutputStream(h.getOutputStream());
+                ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
+                Socket socket = proxyInfo.getSocketFactory().createSocket(destination.destinationName, destination.destinationPort);
+
+                output = new DataOutputStream(socket.getOutputStream());
+                input = new DataInputStream(socket.getInputStream());
                 Log.i("P2P connection", "got a connection");
                 Log.i("P2P connection", destination.destinationName);
             } else {
-                int port = params[0];
                 serverSocket = new ServerSocket(port);
+                Log.i("P2P Server IP", serverSocket.getInetAddress().getCanonicalHostName());
                 Socket socket = serverSocket.accept();
-                Log.i("P2P Server IP", socket.getInetAddress().getCanonicalHostName());
+                Log.i("P2P Socket IP", socket.getInetAddress().getCanonicalHostName());
 
                 input = new DataInputStream(socket.getInputStream());
                 output = new DataOutputStream(socket.getOutputStream());
+                Log.i("P2P server", "connection finished!");
             }
 
             String message;
@@ -79,10 +100,17 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
-    @Override
+    private void publishProgress(final String message) {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onProgressUpdate(message);
+            }
+        });
+    }
+
     protected void onProgressUpdate(String... values) {
         try {
             messageListener.onIncomeMessage(new JSONObject(values[0]));
@@ -91,15 +119,23 @@ public class P2PServerListener extends AsyncTask<Integer,String,Void> implements
         }
     }
 
+    public void sendMessage(String chatID, String message, List<AttachedFile> files) {
+        sendMessage(chatID, message);
+    }
+
     public void sendMessage(String chatID, String message) {
         if (output != null) {
             Log.i("P2P Server OUT message", message);
             try {
-                output.writeUTF(message);
-            } catch (IOException e) {
+                output.writeUTF(Jsonifier.jsonifyForRecieve(message).toString());
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void sendFirstMessage(String userID, String message, List<AttachedFile> files) {
+        sendFirstMessage(userID, message);
     }
 
     public void sendFirstMessage(String userID, String message) {

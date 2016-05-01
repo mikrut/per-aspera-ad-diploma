@@ -62,7 +62,7 @@
     <string name="description_user_picture">"φωτογραφία του χρήστη"</string>
     <string name="description_application_logo">"logo εφαρμογή"</string>
     <string name="title_activity_chats">"συνομιλία λίστα"</string>
-    <string name="action_show_profile">"Εμφάνιση προφίλ"</string>
+    <string name="action_show_profile">"προφίλ"</string>
     <string name="action_group_chats">"συνομιλίες ομάδας"</string>
     <string name="action_help">"Βοήθεια"</string>
     <string name="action_log_out">"Αποσύνδεση"</string>

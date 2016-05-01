@@ -58,8 +58,8 @@
     <string name="description_menu_action_icon">"メニューアクションアイコン"</string>
     <string name="description_user_picture">"ユーザー画像"</string>
     <string name="description_application_logo">"アプリケーションのロゴ"</string>
-    <string name="title_activity_chats">"チャットリスト"</string>
-    <string name="action_show_profile">"ショープロフィール"</string>
+    <string name="title_activity_chats">"対話"</string>
+    <string name="action_show_profile">"プロフィール"</string>
     <string name="action_group_chats">"グループチャット"</string>
     <string name="action_help">"ヘルプ"</string>
     <string name="action_log_out">"ログアウト"</string>

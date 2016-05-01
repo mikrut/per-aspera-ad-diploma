@@ -3,6 +3,8 @@ package ru.mail.park.chat.activities;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.graphics.Typeface;
+import android.support.design.widget.AppBarLayout;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -19,6 +21,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.Calendar;
 
 import java.io.InputStream;
 
@@ -40,6 +44,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private CollapsingToolbarLayout toolbarLayout;
     private Toolbar toolbar;
+    private AppBarLayout appBar;
     private FloatingActionButton userAddToContacts;
     private FloatingActionButton userSendMessage;
 
@@ -47,6 +52,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView userLogin;
     private TextView userEmail;
     private TextView userPhone;
+    private TextView onlineIndicator;
     private LinearLayout profileDataLayout;
 
     private ProgressBar progressBar;
@@ -62,8 +68,10 @@ public class UserProfileActivity extends AppCompatActivity {
         toolbarLayout.setTitle("Loading...");
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        appBar = (AppBarLayout) findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,6 +86,7 @@ public class UserProfileActivity extends AppCompatActivity {
         userLogin = (TextView) findViewById(R.id.user_login);
         userEmail = (TextView) findViewById(R.id.user_email);
         userPhone = (TextView) findViewById(R.id.user_phone);
+        onlineIndicator = (TextView) findViewById(R.id.online_indicator);
         profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -86,13 +95,11 @@ public class UserProfileActivity extends AppCompatActivity {
         if (getIntent().hasExtra(UID_EXTRA)) {
             uid = getIntent().getStringExtra(UID_EXTRA);
         } else {
-            Log.d("[TP-diploma]", "call owner.getUid()");
             uid = owner.getUid();
         }
 
         int loaderType;
         if (uid.equals(owner.getUid())) {
-            Log.d("[TP-diploma]", "call setUserData");
             setUserData(owner, Contact.Relation.SELF);
             loaderType = WEB_OWN_LOADER;
         } else {
@@ -185,6 +192,17 @@ public class UserProfileActivity extends AppCompatActivity {
                     .execute(SERVER_URL + user.getImg());
         }
 
+        Calendar lastSeen = user.getLastSeen();
+
+        if(relation != Contact.Relation.SELF) {
+            if (user.isOnline())
+                onlineIndicator.setText("online");
+            else if(lastSeen != null)
+                onlineIndicator.setText(lastSeen.getTime().toGMTString());
+            else
+                onlineIndicator.setText("offline");
+        }
+
         if (user.getPhone() != null) {
             userPhone.setText(user.getPhone());
             userPhone.setVisibility(View.VISIBLE);
@@ -225,7 +243,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
                 @Override
                 public void onLoadFinished(Loader<Contact> loader, Contact data) {
-                    Log.d("loader", "received data");
                     if (data != null) {
                         setUserData(data, (loader.getId() == WEB_OWN_LOADER) ?
                                 Contact.Relation.SELF

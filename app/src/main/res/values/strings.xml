@@ -159,8 +159,8 @@
     <string name="description_menu_action_icon">Menu action icon</string>
     <string name="description_user_picture">User picture</string>
     <string name="description_application_logo">Application logo</string>
-    <string name="title_activity_chats">Chat list</string>
-    <string name="action_show_profile">Show profile</string>
+    <string name="title_activity_chats">Dialogs</string>
+    <string name="action_show_profile">Profile</string>
     <string name="action_group_chats">Group chats</string>
     <string name="action_help">Help</string>
     <string name="action_log_out">Log out</string>

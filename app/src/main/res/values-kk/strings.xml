@@ -61,8 +61,8 @@
     <string name="description_menu_action_icon">"Мәзір іс-қимыл белгішесі"</string>
     <string name="description_user_picture">"пайдаланушы сурет"</string>
     <string name="description_application_logo">"қолдану логотипі"</string>
-    <string name="title_activity_chats">"Чат тізімі"</string>
-    <string name="action_show_profile">"көрсету профиль"</string>
+    <string name="title_activity_chats">"Диалогтар"</string>
+    <string name="action_show_profile">"Профиль"</string>
     <string name="action_group_chats">"Group чаттар"</string>
     <string name="action_help">"Көмектесіңдер"</string>
     <string name="action_log_out">"Шығу"</string>

@@ -61,7 +61,7 @@ public class Message implements Comparable<Message> {
             throw new JSONException("No textMessage or text parameter is JSON");
         }
 
-        if (cid == null)
+        if (cid == null && message.has("idRoom"))
             this.cid = message.getString("idRoom");
         this.uid = uid;
 

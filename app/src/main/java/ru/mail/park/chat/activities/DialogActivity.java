@@ -11,11 +11,15 @@ import android.content.Loader;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
@@ -122,7 +126,46 @@ public class DialogActivity
             Log.d("[TP-diploma]", "calling onUpdateChatID");
             onUpdateChatID();
         }
+
+        ActionBar mActionBar = getSupportActionBar();
+        mActionBar.setDisplayShowHomeEnabled(false);
+        mActionBar.setDisplayShowTitleEnabled(false);
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.actionbar_dialog, null);
+        mCustomView.findViewById(R.id.small_dialog_user_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        mActionBar.setCustomView(mCustomView);
+        mActionBar.setDisplayShowCustomEnabled(true);
     }
+
+/*    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_dialog, menu);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                super.onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }*/
 
     private void initViews() {
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
@@ -184,6 +227,8 @@ public class DialogActivity
                 }
             }
         });
+
+
     }
 
     private void initActionListeners() {
@@ -241,11 +286,11 @@ public class DialogActivity
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
-    private void sendMessage(@NonNull String message) {
+    protected void sendMessage(@NonNull String message) {
         if (chatID != null) {
-            messages.sendMessage(chatID, message);
+            messages.sendMessage(chatID, message, attachemtsList);
         } else if (userID != null) {
-            messages.sendFirstMessage(userID, message);
+            messages.sendFirstMessage(userID, message, attachemtsList);
         }
     }
 
@@ -336,6 +381,8 @@ public class DialogActivity
     public void onActionSendMessage(JSONObject msg){
         try {
             onIncomeMessage(msg);
+            attachemtsList.clear();
+            attachments.getAdapter().notifyDataSetChanged();
         } catch(Exception e) {
             e.printStackTrace();
         }

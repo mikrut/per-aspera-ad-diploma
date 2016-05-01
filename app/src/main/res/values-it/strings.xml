@@ -61,8 +61,8 @@
     <string name="description_menu_action_icon">"icona di azione del menu"</string>
     <string name="description_user_picture">"user"</string>
     <string name="description_application_logo">"Applicazione logo"</string>
-    <string name="title_activity_chats">"lista Chat"</string>
-    <string name="action_show_profile">"Visualizza profilo"</string>
+    <string name="title_activity_chats">"Diálogos"</string>
+    <string name="action_show_profile">"Profilo"</string>
     <string name="action_group_chats">"chat di gruppo"</string>
     <string name="action_help">"Aiuto"</string>
     <string name="action_log_out">"Esci"</string>

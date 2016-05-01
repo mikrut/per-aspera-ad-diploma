@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
@@ -33,8 +34,8 @@ public class P2PDialogActivity extends DialogActivity {
                 destinationParams.destinationName = host;
                 destinationParams.destinationPort = port;
 
-                P2PServerListener p2PServerListener = new P2PServerListener(this, destinationParams);
-                p2PServerListener.execute();
+                P2PServerListener p2PServerListener = new P2PServerListener(this, this, destinationParams);
+                p2PServerListener.start();
                 return p2PServerListener;
             }
         }
@@ -59,13 +60,29 @@ public class P2PDialogActivity extends DialogActivity {
 
                 if (localHostname != null) {
                     Log.i("P2P local hostname", localHostname);
-                    P2PServerListener p2PServerListener = new P2PServerListener(this, null);
-                    p2PServerListener.execute(LISTENER_DEFAULT_PORT);
+                    P2PServerListener p2PServerListener = new P2PServerListener(this, this, null);
+                    p2PServerListener.setPort(LISTENER_DEFAULT_PORT);
+                    p2PServerListener.start();
                     messages = p2PServerListener;
+
+                   /* P2PServerListener.DestinationParams destinationParams =
+                            new P2PServerListener.DestinationParams();
+                    destinationParams.destinationName = localHostname;
+                    destinationParams.destinationPort = LISTENER_DEFAULT_PORT;
+
+                    P2PServerListener p2p = new P2PServerListener(this, this, destinationParams);
+                    p2p.start(); */
                 }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, intent);
+        }
+    }
+
+    @Override
+    protected void sendMessage(@NonNull String message) {
+        if (messages != null) {
+            messages.sendMessage(null, message);
         }
     }
 }

@@ -31,6 +31,11 @@
     <color name="blue">#0000FF</color>
     <color name="violet">#7F00FF</color>
     <color name="magenta">#FF00FF</color>
+
+    <color name="translucent_scrim_top">#000000</color>
+    <color name="translucent_scrim_top_center">#888888</color>
+    <color name="translucent_scrim_bottom">#000000</color>
+    <color name="translucent_scrim_bottom_center">#888888</color>
     
     <integer-array name="colorsImageBackground">
         <item>@color/bright_pink</item>
