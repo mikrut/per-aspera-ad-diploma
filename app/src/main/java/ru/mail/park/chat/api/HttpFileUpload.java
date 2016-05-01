@@ -46,11 +46,8 @@ public class HttpFileUpload implements Runnable{
     }
 
     void Sending(IUploadListener listener){
-        String Tag="[TP-diploma]";
-
         Log.d("[TP-diploma]", "sending started");
-
-       new HttpUploadTask(listener).execute();
+        new HttpUploadTask(listener).execute();
     }
 
     @Override
@@ -119,7 +116,7 @@ public class HttpFileUpload implements Runnable{
 
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + iFileName +"\"" + lineEnd);
-                dos.writeBytes("Content-Type: "+mime + lineEnd);
+                dos.writeBytes("Content-Type: " + mime + lineEnd);
                 Log.v("filename", iFileName);
                 dos.writeBytes(lineEnd);
 

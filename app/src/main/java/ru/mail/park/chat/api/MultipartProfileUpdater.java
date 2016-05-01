@@ -3,6 +3,7 @@ package ru.mail.park.chat.api;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -70,7 +71,7 @@ public class MultipartProfileUpdater {
             try {
                 String lineEnd = "\r\n";
                 String twoHyphens = "--";
-                String boundary = "*****";
+                String boundary = "===" + System.currentTimeMillis() + "===";
                 String Tag = "[TP-diploma]";
 
                 // Open a HTTP connection to the URL
@@ -90,6 +91,7 @@ public class MultipartProfileUpdater {
                 conn.setRequestMethod("POST");
 
                 conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("Cache-Control", "no-cache");
 
                 conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 
@@ -99,20 +101,25 @@ public class MultipartProfileUpdater {
 
                 for(int i = 0; i < parameters.size(); i++) {
                     Pair<String, String> p = parameters.get(i);
+                    Log.d("[TP-diploma]", p.first);
 
                     if(!p.first.equals("img")) {
                         Log.d("[TP-diploma]", "printing " + p.first + " = " + p.second);
                         dos.writeBytes(twoHyphens + boundary + lineEnd);
                         dos.writeBytes("Content-Disposition: form-data; name=\"" + p.first + "\""+ lineEnd);
+                        dos.writeBytes("Content-Type: text/plain; charset=UTF-8" + lineEnd);
                         dos.writeBytes(lineEnd);
                         dos.writeBytes(p.second);
                         dos.writeBytes(lineEnd);
                     } else {
                         Log.d("[TP-diploma]", "printing img = " + p.second);
+                        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(p.second));
+
                         fileInputStream = new FileInputStream(p.second);
                         dos.writeBytes(twoHyphens + boundary + lineEnd);
 
-                        dos.writeBytes("Content-Disposition: form-data; name=\"img\";filename=\"" + p.second + "\"" + lineEnd);
+                        dos.writeBytes("Content-Disposition: form-data; name=\"img\"; filename=\"" + p.second.substring(p.second.lastIndexOf('/'), p.second.length()) + "\"" + lineEnd);
+                        dos.writeBytes("Content-Type: " + mime + lineEnd);
                         dos.writeBytes(lineEnd);
 
                         // create a buffer of maximum size
@@ -160,7 +167,7 @@ public class MultipartProfileUpdater {
                 String s=b.toString();
 
                 dos.close();
-                Log.d("[TP-diploma]", s);
+                Log.d("[TP-diploma]", "mpu result: " + s);
                 return s;
             } catch (Exception e) {
                 e.printStackTrace();

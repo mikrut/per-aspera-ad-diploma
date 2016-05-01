@@ -144,6 +144,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                         /*fstrm = new FileInputStream(filePath);
                         hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
                         hfu.Send_Now(fstrm, this);*/
+                        Toast.makeText(ProfileActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -163,7 +164,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                         cursor.close();
 
                         selectedFilePath = filePath;
-                        Log.d("[TP-diploma]", filePath);
+                        Toast.makeText(ProfileActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch(Exception e) {
                         Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
                     }

@@ -151,17 +151,19 @@ public class Users extends ApiSection {
     }
 
     public boolean updateProfileLikeAPro(OwnerProfile profile, String accessToken, MultipartProfileUpdater.IUploadListener listener) throws IOException {
-        final String requestURL = "updateProfile";
+        final String requestURL = "users/update";
         final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
-        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        List<Pair<String, String>> parameters = new ArrayList<>();
         parameters.add(new Pair<>("login", profile.getLogin()));
         parameters.add(new Pair<>("email", profile.getEmail()));
-        parameters.add(new Pair<>("phone", profile.getPhone()));
+//        parameters.add(new Pair<>("phone", profile.getPhone()));
         parameters.add(new Pair<>("firstName", profile.getFirstName()));
         parameters.add(new Pair<>("lastName", profile.getLastName()));
         parameters.add(new Pair<>("accessToken", accessToken));
         parameters.add(new Pair<>("img", profile.getImg()));
+
+        Log.d("[TP-diploma]", "Number of parameters: " + parameters.size());
 
         MultipartProfileUpdater mpu = new MultipartProfileUpdater(SERVER_URL + requestURL, parameters);
         return mpu.Send_Now(listener);
