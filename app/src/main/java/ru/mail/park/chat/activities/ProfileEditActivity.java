@@ -1,13 +1,17 @@
 package ru.mail.park.chat.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +35,7 @@ import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileEditActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
+    private static final int REQUEST_WRITE_STORAGE = 112;
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
@@ -112,6 +117,17 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                 startActivityForResult(uploadPictureIntent, GET_FROM_GALLERY);
             }
         });
+
+
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        boolean hasWPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission || !hasWPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+        }
     }
 
     private File createTemporaryFile(String part, String ext) throws Exception
@@ -237,5 +253,21 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //reload my activity with permission granted or use the features what required the permission
+                } else {
+                    finish();
+                }
+            }
+        }
+
     }
 }

@@ -11,6 +11,8 @@ import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -103,7 +105,7 @@ public class MultipartProfileUpdater {
                     Pair<String, String> p = parameters.get(i);
                     Log.d("[TP-diploma]", p.first);
 
-                    if(!p.first.equals("img")) {
+                    if(!p.first.equals("img") && p.second != null) {
                         Log.d("[TP-diploma]", "printing " + p.first + " = " + p.second);
                         dos.writeBytes(twoHyphens + boundary + lineEnd);
                         dos.writeBytes("Content-Disposition: form-data; name=\"" + p.first + "\""+ lineEnd);
@@ -111,47 +113,51 @@ public class MultipartProfileUpdater {
                         dos.writeBytes(lineEnd);
                         dos.writeBytes(p.second);
                         dos.writeBytes(lineEnd);
-                    } else {
-                        Log.d("[TP-diploma]", "printing img = " + p.second);
-                        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(p.second));
+                    } else if (p.second != null) {
+                        try {
+                            fileInputStream = new FileInputStream(p.second);
 
-                        fileInputStream = new FileInputStream(p.second);
-                        dos.writeBytes(twoHyphens + boundary + lineEnd);
+                            Log.d("[TP-diploma]", "printing img = " + p.second);
+                            String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(p.second));
 
-                        dos.writeBytes("Content-Disposition: form-data; name=\"img\"; filename=\"" + p.second.substring(p.second.lastIndexOf('/'), p.second.length()) + "\"" + lineEnd);
-                        dos.writeBytes("Content-Type: " + mime + lineEnd);
-                        dos.writeBytes(lineEnd);
+                            dos.writeBytes(twoHyphens + boundary + lineEnd);
 
-                        // create a buffer of maximum size
-                        int bytesAvailable = fileInputStream.available();
+                            dos.writeBytes("Content-Disposition: form-data; name=\"img\"; filename=\"" + p.second.substring(p.second.lastIndexOf('/'), p.second.length()) + "\"" + lineEnd);
+                            dos.writeBytes("Content-Type: " + mime + lineEnd);
+                            dos.writeBytes(lineEnd);
 
-                        int maxBufferSize = 1024;
-                        int bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                        byte[ ] buffer = new byte[bufferSize];
+                            // create a buffer of maximum size
+                            int bytesAvailable = fileInputStream.available();
 
-                        // read file and write it into form...
-                        int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                            int maxBufferSize = 1024;
+                            int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                            byte[] buffer = new byte[bufferSize];
 
-                        while (bytesRead > 0)
-                        {
-                            dos.write(buffer, 0, bufferSize);
-                            bytesAvailable = fileInputStream.available();
-                            bufferSize = Math.min(bytesAvailable,maxBufferSize);
-                            bytesRead = fileInputStream.read(buffer, 0,bufferSize);
+                            // read file and write it into form...
+                            int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                            while (bytesRead > 0) {
+                                dos.write(buffer, 0, bufferSize);
+                                bytesAvailable = fileInputStream.available();
+                                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                            }
+                            dos.writeBytes(lineEnd);
+                            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                            Log.d("[TP-diploma]", "data is written");
+                            // close streams
+                            fileInputStream.close();
+
+                            Log.d("[TP-diploma]", "fileInputStream closed\n\n");
+
+                            Log.d(Tag, dos.toString());
+
+                            Log.d(Tag, "\n\n");
+
+                            dos.flush();
+                        } catch (FileNotFoundException e) {
+                            Log.e(MultipartProfileUpdater.class.getSimpleName() + ".doInBackground", e.getLocalizedMessage());
                         }
-                        dos.writeBytes(lineEnd);
-                        dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-                        Log.d("[TP-diploma]", "data is written");
-                        // close streams
-                        fileInputStream.close();
-
-                        Log.d("[TP-diploma]", "fileInputStream closed\n\n");
-
-                        Log.d(Tag, dos.toString());
-
-                        Log.d(Tag, "\n\n");
-
-                        dos.flush();
                     }
                 }
 
@@ -169,7 +175,7 @@ public class MultipartProfileUpdater {
                 dos.close();
                 Log.d("[TP-diploma]", "mpu result: " + s);
                 return s;
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }

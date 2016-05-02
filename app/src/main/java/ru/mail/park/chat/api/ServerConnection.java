@@ -116,14 +116,14 @@ class ServerConnection {
             Log.d("[TP-diploma]", httpURLConnection.getURL().toString());
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
-                Log.w("post", parameters);
-                Log.d("[TP-diploma]", "POST data: " + postData.toString());
+                Log.w(ServerConnection.class.getSimpleName() + ".getResponse", parameters);
 
                 httpURLConnection.setDoOutput(true);
                 httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 httpURLConnection.setRequestProperty("charset", "utf-8");
                 httpURLConnection.setRequestProperty("Content-Length", Integer.toString(postData.length));
-                Log.d("[TP-diploma]", "going to write");
+
+                Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "going to write");
                 OutputStream wr = httpURLConnection.getOutputStream();
                 wr.write(postData);
                 wr.flush();
@@ -131,7 +131,7 @@ class ServerConnection {
             }
 
             BufferedReader rd;
-            Log.d("[TP-diploma]", "Result code: " + Integer.toString(httpURLConnection.getResponseCode()));
+            Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "Result code: " + Integer.toString(httpURLConnection.getResponseCode()));
             if (httpURLConnection.getResponseCode() == 200) {
                rd = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
             } else {
@@ -146,7 +146,7 @@ class ServerConnection {
             e.printStackTrace();
         }
         String reply = responseBuilder.toString();
-        Log.d("[TP-diploma]", "Reply: " + reply);
+        Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "Reply: " + reply);
         Log.v("reply", reply);
         return reply;
     }
