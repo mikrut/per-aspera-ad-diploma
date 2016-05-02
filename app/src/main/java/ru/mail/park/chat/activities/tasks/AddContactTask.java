@@ -7,7 +7,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-import ru.mail.park.chat.activities.UserProfileActivity;
+import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.api.Contacts;
 
 /**
@@ -36,8 +36,8 @@ public class AddContactTask extends AsyncTask<String, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean aBoolean) {
         if (aBoolean) {
-            Intent intent = new Intent(context, UserProfileActivity.class);
-            intent.putExtra(UserProfileActivity.UID_EXTRA, uid);
+            Intent intent = new Intent(context, ProfileViewActivity.class);
+            intent.putExtra(ProfileViewActivity.UID_EXTRA, uid);
             context.startActivity(intent);
         } else {
             Toast.makeText(context, "Failed to add contact", Toast.LENGTH_SHORT).show();

@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.UserProfileActivity;
+import ru.mail.park.chat.activities.ProfileViewActivity;
 
 /**
  * Created by Михаил on 08.03.2016.
@@ -42,7 +42,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             headerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(headerView.getContext(), UserProfileActivity.class);
+                    Intent intent = new Intent(headerView.getContext(), ProfileViewActivity.class);
                     headerView.getContext().startActivity(intent);
                 }
             });

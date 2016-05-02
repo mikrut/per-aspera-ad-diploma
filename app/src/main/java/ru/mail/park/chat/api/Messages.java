@@ -25,6 +25,7 @@ import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
 import org.json.JSONArray;
@@ -186,7 +187,7 @@ public class Messages extends ApiSection implements IMessageSender {
         String cid = data.getString("idMessage");
         String creationDate = data.getString("dtCreate");
 
-        taskListener.onActionSendMessage(data);
+        taskListener.onAcknowledgeSendMessage(data);
     }
 
     private void dispatchNewMessage(JSONObject income) throws JSONException {
@@ -209,17 +210,12 @@ public class Messages extends ApiSection implements IMessageSender {
 
     }
 
-    public void sendMessage(String cid, String messageBody) {
-        sendMessage(cid, messageBody, null);
-    }
-
-    public void sendMessage(String cid, String messageBody, List<AttachedFile> files) {
+    public void sendMessage(String cid, Message message) {
         reconnect();
 
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
         lastUsed = Method.SEND;
-
 
         try {
             jsonRequest.put("controller", "Messages");
@@ -227,8 +223,9 @@ public class Messages extends ApiSection implements IMessageSender {
             jsonRequest.put("data", data);
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
-            data.put("textMessage", messageBody);
+            data.put("textMessage", message.getMessageBody());
 
+            List<AttachedFile> files = message.getFiles();
             if (files != null && files.size() > 0) {
                 JSONArray listIdFile = new JSONArray();
                 for (AttachedFile file : files) {
@@ -245,21 +242,17 @@ public class Messages extends ApiSection implements IMessageSender {
         Log.d("[TP-diploma]", ws.getState().toString());
     }
 
-    public void sendFirstMessage(String uid, String messageBody) {
-        sendFirstMessage(uid, messageBody, null);
-    }
-
-    public void sendFirstMessage(String uid, String messageBody, List<AttachedFile> files) {
+    public void sendFirstMessage(String uid, Message message) {
         reconnect();
 
         StringBuilder b = new StringBuilder();
-        for (char c : messageBody.toCharArray()) {
+        for (char c : message.getMessageBody().toCharArray()) {
             if (c >= 128)
                 b.append("\\u").append(String.format("%04X", (int) c));
             else
                 b.append(c);
         }
-        messageBody = b.toString();
+        String messageBody = b.toString();
 
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
@@ -273,6 +266,7 @@ public class Messages extends ApiSection implements IMessageSender {
             data.put("idUser", uid);
             data.put("textMessage", messageBody);
 
+            List<AttachedFile> files = message.getFiles();
             if (files != null && files.size() > 0) {
                 JSONArray listIdFile = new JSONArray();
                 for (AttachedFile file : files) {

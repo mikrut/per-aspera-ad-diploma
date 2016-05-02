@@ -26,9 +26,9 @@ public class ContactHelper {
 
     private void updateContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
-        String whereClause = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
+        String whereClause = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
         String[] whereArgs = {contact.getUid()};
-        db.update(ChatsContract.ChatsEntry.TABLE_NAME, values, whereClause, whereArgs);
+        db.update(ContactsContract.ContactsEntry.TABLE_NAME, values, whereClause, whereArgs);
     }
 
     public long saveContact(@NonNull Contact contact) {

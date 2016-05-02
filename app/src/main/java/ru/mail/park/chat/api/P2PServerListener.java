@@ -30,6 +30,8 @@ import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.message_interfaces.Jsonifier;
 import ru.mail.park.chat.models.AttachedFile;
+import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -119,31 +121,27 @@ public class P2PServerListener extends Thread implements IMessageSender {
         }
     }
 
-    public void sendMessage(String chatID, String message, List<AttachedFile> files) {
-        sendMessage(chatID, message);
+    public void sendMessage(String chatID, Message message) {
+        Log.i("P2P Server OUT message", message.getMessageBody());
+        send(message);
     }
 
-    public void sendMessage(String chatID, String message) {
+    public void sendFirstMessage(String userID, Message message) {
+        Log.i("P2P Server OUT message", message.getMessageBody());
+        send(message);
+    }
+
+    private void send(Message message) {
         if (output != null) {
-            Log.i("P2P Server OUT message", message);
             try {
-                output.writeUTF(Jsonifier.jsonifyForRecieve(message).toString());
+                OwnerProfile owner = new OwnerProfile(activity);
+                JSONObject msg = Jsonifier.jsonifyForRecieve(message, owner);
+                msg.put("idMessage", String.valueOf(System.currentTimeMillis()));
+                output.writeUTF(msg.toString());
+                if (messageListener != null) {
+                    messageListener.onAcknowledgeSendMessage(msg);
+                }
             } catch (IOException | JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void sendFirstMessage(String userID, String message, List<AttachedFile> files) {
-        sendFirstMessage(userID, message);
-    }
-
-    public void sendFirstMessage(String userID, String message) {
-        if (output != null) {
-            Log.i("P2P Server OUT message", message);
-            try {
-                output.writeUTF(message);
-            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

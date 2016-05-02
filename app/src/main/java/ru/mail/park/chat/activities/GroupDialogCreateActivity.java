@@ -168,7 +168,7 @@ public class GroupDialogCreateActivity
     }
 
     @Override
-    public void onActionSendMessage(JSONObject message) {
+    public void onAcknowledgeSendMessage(JSONObject message) {
 
     }
 

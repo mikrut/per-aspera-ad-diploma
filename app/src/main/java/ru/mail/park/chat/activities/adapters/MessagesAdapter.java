@@ -13,13 +13,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.DialogActivity;
-import ru.mail.park.chat.activities.UserProfileActivity;
+import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.models.Message;
@@ -43,10 +40,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         private final TextView messageText;
         private final ImageView contactPicture;
         private final ListView attachments;
+        public final ImageView clockImageView;
         private String authorUID;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            clockImageView = (ImageView) itemView.findViewById(R.id.clockImageView);
             messageText = (TextView) itemView.findViewById(R.id.messageText);
             contactPicture = (ImageView) itemView.findViewById(R.id.image);
             attachments = (ListView) itemView.findViewById(R.id.attachments_list_view);
@@ -70,11 +69,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             contactPicture.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
-                    intent.putExtra(UserProfileActivity.UID_EXTRA, authorUID);
+                    Intent intent = new Intent(v.getContext(), ProfileViewActivity.class);
+                    intent.putExtra(ProfileViewActivity.UID_EXTRA, authorUID);
                     v.getContext().startActivity(intent);
                 }
             });
+
+            clockImageView.setVisibility(message.isAcknowledged() ? View.GONE : View.VISIBLE);
 
             if (message.getFiles().size() > 0) {
                 attachments.setVisibility(View.VISIBLE);

@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.UserProfileActivity;
+import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.models.Contact;
 
@@ -70,8 +70,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
             setOnContactClickListener(new OnContactClickListener() {
                 @Override
                 public void onContactClick(View v, ContactHolder holder) {
-                    Intent intent = new Intent(v.getContext(), UserProfileActivity.class);
-                    intent.putExtra(UserProfileActivity.UID_EXTRA, uid);
+                    Intent intent = new Intent(v.getContext(), ProfileViewActivity.class);
+                    intent.putExtra(ProfileViewActivity.UID_EXTRA, uid);
                     v.getContext().startActivity(intent);
                 }
             });

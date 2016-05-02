@@ -23,8 +23,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
@@ -32,7 +30,7 @@ import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
+public class ProfileEditActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
@@ -53,7 +51,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
 
     private Uri mImageUri;
 
-    private ProfileActivity thisAct = null;
+    private ProfileEditActivity thisAct = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +139,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                     Log.d("[TP-diploma]", "sending file started");
                     try {
                         selectedFilePath = mImageUri.getPath();
-                        Toast.makeText(ProfileActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileEditActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -161,7 +159,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                         cursor.close();
 
                         selectedFilePath = filePath;
-                        Toast.makeText(ProfileActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileEditActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch(Exception e) {
                         Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
                     }
@@ -178,7 +176,7 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_profile, menu);
+        getMenuInflater().inflate(R.menu.menu_profile_edit, menu);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -200,13 +198,13 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            ProfileActivity.super.onBackPressed();
+                            ProfileEditActivity.super.onBackPressed();
                         }
                     });
             alertBuilder.setNegativeButton(getString(android.R.string.cancel), null);
             alertBuilder.show();
         } else {
-            ProfileActivity.super.onBackPressed();
+            ProfileEditActivity.super.onBackPressed();
         }
     }
 
