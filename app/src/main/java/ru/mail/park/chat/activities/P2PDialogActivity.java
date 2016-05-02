@@ -11,6 +11,7 @@ import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.api.P2PServerListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.models.Message;
 
 /**
  * Created by Михаил on 24.04.2016.
@@ -80,8 +81,9 @@ public class P2PDialogActivity extends DialogActivity {
     }
 
     @Override
-    protected void sendMessage(@NonNull String message) {
+    protected void sendMessage(@NonNull String messageBody) {
         if (messages != null) {
+            Message message = new Message(messageBody, this);
             messages.sendMessage(null, message);
         }
     }

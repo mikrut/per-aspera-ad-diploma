@@ -43,10 +43,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         private final TextView messageText;
         private final ImageView contactPicture;
         private final ListView attachments;
+        public final ImageView clockImageView;
         private String authorUID;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            clockImageView = (ImageView) itemView.findViewById(R.id.clockImageView);
             messageText = (TextView) itemView.findViewById(R.id.messageText);
             contactPicture = (ImageView) itemView.findViewById(R.id.image);
             attachments = (ListView) itemView.findViewById(R.id.attachments_list_view);
@@ -75,6 +77,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     v.getContext().startActivity(intent);
                 }
             });
+
+            clockImageView.setVisibility(message.isAcknowledged() ? View.GONE : View.VISIBLE);
 
             if (message.getFiles().size() > 0) {
                 attachments.setVisibility(View.VISIBLE);

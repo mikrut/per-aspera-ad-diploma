@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.acl.Owner;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,6 +37,13 @@ public class Message implements Comparable<Message> {
 
     private List<AttachedFile> files = new ArrayList<AttachedFile>();
 
+    public Message(String messageBody, Context context) {
+        this.messageBody = messageBody;
+        OwnerProfile owner = new OwnerProfile(context);
+        uid = owner.getUid();
+        title = owner.getContactTitle();
+    }
+
     public Message(@NonNull JSONObject message, @NonNull Context context, @Nullable String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
@@ -43,10 +51,8 @@ public class Message implements Comparable<Message> {
         } else if (message.has("idUser")) {
             uid = String.valueOf(message.getInt("idUser"));
         } else {
-            SharedPreferences pref =
-                    context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME,
-                            Context.MODE_PRIVATE);
-            uid = pref.getString(PreferenceConstants.USER_UID_N, "");
+            OwnerProfile owner = new OwnerProfile(context);
+            uid = owner.getUid();
         }
 
         String messageBodyParamName = null;
@@ -199,16 +205,28 @@ public class Message implements Comparable<Message> {
         }
     }
 
+    public void setFiles(List<AttachedFile> files) {
+        this.files = files;
+    }
+
+    public boolean isAcknowledged() {
+        return mid != null;
+    }
+
     @Override
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
-          if (another.mid != null) {
-              int mid1 = Integer.valueOf(mid);
-              int mid2 = Integer.valueOf(another.mid);
-            return mid1 - mid2;
-          }
+            if (another.mid != null) {
+                int mid1 = Integer.valueOf(mid);
+                int mid2 = Integer.valueOf(another.mid);
+                return mid1 - mid2;
+            } else if (messageBody.equals(another.messageBody)) {
+                return 0;
+            }
             return 1;
+        } else if (messageBody.equals(another.messageBody)) {
+            return 0;
         }
-        return -1;
+        return 1;
     }
 }

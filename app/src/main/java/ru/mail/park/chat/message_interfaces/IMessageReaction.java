@@ -12,7 +12,7 @@ import ru.mail.park.chat.models.Message;
  */
 public interface IMessageReaction {
     void onIncomeMessage(JSONObject message);
-    void onActionSendMessage(JSONObject message);
+    void onAcknowledgeSendMessage(JSONObject message);
     void onActionDeleteMessage(int mid);
     void onGetHistoryMessages(ArrayList<Message> msg_list);
     void onChatCreated(Chat chat);

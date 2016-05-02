@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -286,11 +287,17 @@ public class DialogActivity
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
-    protected void sendMessage(@NonNull String message) {
-        if (chatID != null) {
-            messages.sendMessage(chatID, message, attachemtsList);
-        } else if (userID != null) {
-            messages.sendFirstMessage(userID, message, attachemtsList);
+    protected void sendMessage(@NonNull String messageBody) {
+        if (messageBody != null && !messageBody.equals("")) {
+            Message message = new Message(messageBody, this);
+            message.setFiles(attachemtsList);
+
+            addMessage(message);
+            if (chatID != null) {
+                messages.sendMessage(chatID, message);
+            } else if (userID != null) {
+                messages.sendFirstMessage(userID, message);
+            }
         }
     }
 
@@ -335,8 +342,8 @@ public class DialogActivity
         }
     }
 
-    @Override
-    public void onIncomeMessage(JSONObject message){
+    @Nullable
+    private Message dispatchNewMessage(JSONObject message) {
         try {
             String newChatID = null;
             if (message.has("idRoom")) {
@@ -348,7 +355,6 @@ public class DialogActivity
             }
 
             Message incomeMsg = new Message(message, this, chatID);
-            addMessage(incomeMsg);
 
             if (newChatID != null && chatID != null && !chatID.equals(newChatID)) {
                 NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
@@ -366,10 +372,20 @@ public class DialogActivity
                 notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
                 NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 manager.notify(0, notification);
+            } else {
+                return incomeMsg;
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    public void onIncomeMessage(JSONObject message){
+        Message incomeMsg = dispatchNewMessage(message);
+        if (incomeMsg != null)
+            addMessage(incomeMsg);
     }
 
     @Override
@@ -378,11 +394,15 @@ public class DialogActivity
     }
 
     @Override
-    public void onActionSendMessage(JSONObject msg){
+    public void onAcknowledgeSendMessage(JSONObject msg){
         try {
-            onIncomeMessage(msg);
+            Message incomeMsg = dispatchNewMessage(msg);
+            if (incomeMsg != null)
+                addMessage(incomeMsg);
+
             attachemtsList.clear();
             attachments.getAdapter().notifyDataSetChanged();
+            inputMessage.setText("");
         } catch(Exception e) {
             e.printStackTrace();
         }

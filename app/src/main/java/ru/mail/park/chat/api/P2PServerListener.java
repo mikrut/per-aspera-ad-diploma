@@ -30,6 +30,7 @@ import ru.mail.park.chat.message_interfaces.IMessageReaction;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.message_interfaces.Jsonifier;
 import ru.mail.park.chat.models.AttachedFile;
+import ru.mail.park.chat.models.Message;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -119,30 +120,22 @@ public class P2PServerListener extends Thread implements IMessageSender {
         }
     }
 
-    public void sendMessage(String chatID, String message, List<AttachedFile> files) {
-        sendMessage(chatID, message);
-    }
-
-    public void sendMessage(String chatID, String message) {
+    public void sendMessage(String chatID, Message message) {
         if (output != null) {
-            Log.i("P2P Server OUT message", message);
+            Log.i("P2P Server OUT message", message.getMessageBody());
             try {
-                output.writeUTF(Jsonifier.jsonifyForRecieve(message).toString());
+                output.writeUTF(Jsonifier.jsonifyForRecieve(message.getMessageBody()).toString());
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void sendFirstMessage(String userID, String message, List<AttachedFile> files) {
-        sendFirstMessage(userID, message);
-    }
-
-    public void sendFirstMessage(String userID, String message) {
+    public void sendFirstMessage(String userID, Message message) {
         if (output != null) {
-            Log.i("P2P Server OUT message", message);
+            Log.i("P2P Server OUT message", message.getMessageBody());
             try {
-                output.writeUTF(message);
+                output.writeUTF(message.getMessageBody());
             } catch (IOException e) {
                 e.printStackTrace();
             }
