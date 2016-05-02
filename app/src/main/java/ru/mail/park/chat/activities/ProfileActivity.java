@@ -141,9 +141,6 @@ public class ProfileActivity extends AppCompatActivity implements MultipartProfi
                     Log.d("[TP-diploma]", "sending file started");
                     try {
                         selectedFilePath = mImageUri.getPath();
-                        /*fstrm = new FileInputStream(filePath);
-                        hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                        hfu.Send_Now(fstrm, this);*/
                         Toast.makeText(ProfileActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();

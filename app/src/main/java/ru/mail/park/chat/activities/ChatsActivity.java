@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,6 +27,7 @@ import android.widget.ImageButton;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -142,7 +144,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 }
             }
         };
-        
+
         int[] pictures = {
                 R.drawable.ic_person_black_48dp,
                 R.drawable.ic_group_black_24dp,
@@ -165,6 +167,25 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeContainer.setOnRefreshListener(refreshListener);
+
+        File folder = new File(Environment.getExternalStorageDirectory() + "/torchat");
+        boolean success = false;
+        if (!folder.exists()) {
+            success = folder.mkdir();
+        }
+        if (success) {
+            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars");
+            folder.mkdir();
+
+            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/users");
+            folder.mkdir();
+
+            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/chats");
+            folder.mkdir();
+        } else {
+            // Do something else on failure
+        }
+
     }
 
     @Override

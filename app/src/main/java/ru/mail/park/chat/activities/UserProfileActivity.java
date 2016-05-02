@@ -4,6 +4,8 @@ import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.design.widget.AppBarLayout;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,6 +24,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Calendar;
 
 import java.io.InputStream;
@@ -186,11 +192,8 @@ public class UserProfileActivity extends AppCompatActivity {
             userEmail.setVisibility(View.GONE);
         }
 
-        if(user.getImg() != null){
-            Log.d("[TP-diploma]", "starting task");
-            new DownloadImageTask(userPicture)
-                    .execute(SERVER_URL + user.getImg());
-        }
+        Log.d("[TP-diploma]", "starting get image task");
+        new DownloadImageTask(userPicture).execute(SERVER_URL + user.getImg());
 
         Calendar lastSeen = user.getLastSeen();
 
@@ -278,7 +281,32 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
+            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+            File file = new File(filePath);
+
+            if (result != null) {
+                Log.d("[TP-diploma]", "DownloadImageTask result not null");
+                bmImage.setImageBitmap(result);
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    result.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.d("[TP-diploma]", "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d("[TP-diploma]", "Error accessing file: " + e.getMessage());
+                }
+            } else {
+                Log.d("[TP-diploma]", "DownloadImageTask result NULL");
+                if(file.exists()) {
+                    Log.d("[TP-diploma]", "DownloadImageTask file exists: " + file.getAbsolutePath());
+                    bmImage.setImageURI(Uri.parse(filePath));
+                }
+                else {
+                    Log.d("[TP-diploma]", "DownloadImageTask file do not exist");
+                    bmImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
+                }
+            }
         }
     }
 }
