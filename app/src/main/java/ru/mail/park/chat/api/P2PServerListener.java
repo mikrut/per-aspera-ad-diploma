@@ -31,6 +31,7 @@ import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.message_interfaces.Jsonifier;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
@@ -121,22 +122,26 @@ public class P2PServerListener extends Thread implements IMessageSender {
     }
 
     public void sendMessage(String chatID, Message message) {
-        if (output != null) {
-            Log.i("P2P Server OUT message", message.getMessageBody());
-            try {
-                output.writeUTF(Jsonifier.jsonifyForRecieve(message.getMessageBody()).toString());
-            } catch (IOException | JSONException e) {
-                e.printStackTrace();
-            }
-        }
+        Log.i("P2P Server OUT message", message.getMessageBody());
+        send(message);
     }
 
     public void sendFirstMessage(String userID, Message message) {
+        Log.i("P2P Server OUT message", message.getMessageBody());
+        send(message);
+    }
+
+    private void send(Message message) {
         if (output != null) {
-            Log.i("P2P Server OUT message", message.getMessageBody());
             try {
-                output.writeUTF(message.getMessageBody());
-            } catch (IOException e) {
+                OwnerProfile owner = new OwnerProfile(activity);
+                JSONObject msg = Jsonifier.jsonifyForRecieve(message, owner);
+                msg.put("idMessage", String.valueOf(System.currentTimeMillis()));
+                output.writeUTF(msg.toString());
+                if (messageListener != null) {
+                    messageListener.onAcknowledgeSendMessage(msg);
+                }
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
