@@ -28,6 +28,7 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
         db.execSQL(ChatsContract.CREATE_TABLE);
         db.execSQL(ContactsContract.CREATE_TABLE);
         db.execSQL(MessagesContract.CREATE_TABLE);
+        db.execSQL(MessagesContract.CREATE_FTS_TABLE);
     }
 
     @Override
@@ -45,6 +46,7 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
         db.execSQL(ChatsContract.DROP_TABLE);
         db.execSQL(ContactsContract.DROP_TABLE);
         db.execSQL(MessagesContract.DROP_TABLE);
+        db.execSQL(MessagesContract.DROP_FTS_TABLE);
     }
 
     @Override

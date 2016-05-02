@@ -1,5 +1,6 @@
 package ru.mail.park.chat.database;
 
+import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 
 /**
  * Created by Михаил on 06.03.2016.
@@ -45,22 +47,22 @@ public class ChatHelper {
     @NonNull
     private Cursor getChatsCursor(@NonNull String queryString) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String selection = ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE ? ESCAPE '\\'";
+
         queryString = queryString.replace("\\", "\\\\");
         queryString = queryString.replace("%", "\\%");
         queryString = queryString.replace("_", "\\_");
         queryString = queryString.replace("[", "\\[");
-        String[] selectionArgs = { "%" + queryString + "%" };
 
-        return db.query(
-                ChatsContract.ChatsEntry.TABLE_NAME,
-                ChatsContract.CHAT_PROJECTION,
-                selection,
-                selectionArgs,
-                null, // No GROUP BY
-                null, // No GROUP BY filter
-                null  // No ORDER BY
-        );
+        String[] selectionArgs = { queryString + "*", "%" + queryString + "%" };
+
+        return db.rawQuery("SELECT * FROM " + ChatsContract.ChatsEntry.TABLE_NAME +
+                " WHERE " + ChatsContract.ChatsEntry.COLUMN_NAME_CID + " IN (" +
+                "SELECT " + MessagesContract.MessagesEntry.COLUMN_NAME_CID +
+                " FROM " + MessagesContract.MessagesEntry.TABLE_NAME + " WHERE " + MessagesContract.MessagesEntry._ID + " IN (" +
+                "SELECT docid FROM fts_" + MessagesContract.MessagesEntry.TABLE_NAME + " WHERE fts_" + MessagesContract.MessagesEntry.TABLE_NAME + " MATCH ?" +
+                ")" +
+                ") OR " +
+                ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE ? ESCAPE '\\'", selectionArgs);
     }
 
     // FIXME: ORDER BY last_message_time DESC

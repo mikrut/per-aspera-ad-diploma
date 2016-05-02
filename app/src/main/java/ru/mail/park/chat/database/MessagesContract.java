@@ -10,6 +10,7 @@ public abstract class MessagesContract {
 
     static final String CREATE_TABLE =
             "CREATE TABLE " + MessagesEntry.TABLE_NAME + " (" +
+                    MessagesEntry._ID + " INTEGER PRIMARY KEY" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_MID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_CID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_UID + " TEXT NOT NULL" + COMMA_SEP +
@@ -17,9 +18,15 @@ public abstract class MessagesContract {
                     MessagesEntry.COLUMN_NAME_DATETIME + " TEXT" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_TITLE + " TEXT NOT NULL" +
                     ")";
+    static final String CREATE_FTS_TABLE = "" +
+            "CREATE VIRTUAL TABLE fts_" + MessagesEntry.TABLE_NAME +
+            " USING fts4 (content=\'" + MessagesEntry.TABLE_NAME + "\', " +
+            MessagesEntry.COLUMN_NAME_MESSAGE_BODY + ")";
 
     static final String DROP_TABLE =
             "DROP TABLE IF EXISTS " + MessagesEntry.TABLE_NAME;
+    static final String DROP_FTS_TABLE =
+            "DROP TABLE IF EXISTS fts_" + MessagesEntry.TABLE_NAME;
 
     static final String[] MESSAGE_PROJECTION = {
             MessagesEntry.COLUMN_NAME_MID,
