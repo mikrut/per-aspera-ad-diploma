@@ -29,7 +29,8 @@ public class Chat {
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
         name = cursor.getString(ChatsContract.PROJECTION_NAME_INDEX);
-        description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
+        if (!cursor.isNull(ChatsContract.PROJECTION_DESCRIPTION_INDEX))
+            description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
     }
 
     public static final int GROUP_TYPE = 1;

@@ -1,9 +1,9 @@
 package ru.mail.park.chat.activities;
 
 import android.app.LoaderManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.design.widget.AppBarLayout;
@@ -12,13 +12,16 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -39,8 +42,8 @@ import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class UserProfileActivity extends AppCompatActivity {
-    public static final String UID_EXTRA = UserProfileActivity.class.getCanonicalName() + ".UID_EXTRA";
+public class ProfileViewActivity extends AppCompatActivity {
+    public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
     public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
@@ -63,6 +66,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
 
+    private Contact contact;
     private Contact.Relation relation = null;
 
     @Override
@@ -124,14 +128,14 @@ public class UserProfileActivity extends AppCompatActivity {
         userAddToContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AddContactTask(UserProfileActivity.this).execute(uid);
+                new AddContactTask(ProfileViewActivity.this).execute(uid);
             }
         });
 
         userSendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserProfileActivity.this, DialogActivity.class);
+                Intent intent = new Intent(ProfileViewActivity.this, DialogActivity.class);
                 intent.putExtra(DialogActivity.USER_ID, uid);
                 startActivity(intent);
                 finish();
@@ -142,7 +146,7 @@ public class UserProfileActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        // getMenuInflater().inflate(R.menu.menu_user_profile, menu);
+        // getMenuInflater().inflate(R.menu.menu_profile_view, menu);
         return true;
     }
 
@@ -152,7 +156,7 @@ public class UserProfileActivity extends AppCompatActivity {
         if (relation != null) {
             switch (relation) {
                 case FRIEND:
-                    getMenuInflater().inflate(R.menu.menu_user_profile, menu);
+                    getMenuInflater().inflate(R.menu.menu_profile_view, menu);
                     break;
                 case SELF:
                     getMenuInflater().inflate(R.menu.menu_owner_profile, menu);
@@ -172,16 +176,61 @@ public class UserProfileActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_edit_contact) {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
-            return true;
+        switch (id) {
+            case R.id.action_edit_contact:
+                Intent intent = new Intent(this, ProfileEditActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.action_edit_onion: {
+                View editView = LayoutInflater.from(this)
+                        .inflate(R.layout.dialog_edit_text, null);
+                final EditText editText = (EditText) editView.findViewById(R.id.edittext);
+                if (contact.getOnionAddress() != null)
+                    editText.setText(contact.getOnionAddress().toString());
+                new AlertDialog.Builder(this)
+                        .setTitle("Input onion address")
+                        .setView(editView)
+                        .setPositiveButton(android.R.string.ok,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String onionAddress = editText.getText().toString();
+                                        onionAddress = onionAddress.replaceAll("\\s", "");
+                                        contact.setOnionAddress(onionAddress);
+                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
+                                        contactHelper.updateContact(contact);
+                                    }
+                                }).create().show();
+                return true;
+            }
+            case R.id.action_edit_pubkey: {
+                View editView = LayoutInflater.from(this)
+                        .inflate(R.layout.dialog_edit_text, null);
+                final EditText editText = (EditText) editView.findViewById(R.id.edittext);
+                editText.setText(contact.getPubkeyDigestString());
+                new AlertDialog.Builder(this)
+                        .setTitle("Input public key")
+                        .setView(editView)
+                        .setPositiveButton(android.R.string.ok,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String publicKeyDigest = editText.getText().toString();
+                                        contact.setPubkeyDigest(publicKeyDigest);
+                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
+                                        contactHelper.updateContact(contact);
+                                    }
+                                }).create().show();
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void setUserData(Contact user, Contact.Relation relation) {
+        contact = user;
+
         toolbarLayout.setTitle(user.getContactTitle());
         userLogin.setText(user.getLogin());
 
@@ -241,15 +290,23 @@ public class UserProfileActivity extends AppCompatActivity {
             new LoaderManager.LoaderCallbacks<Contact>() {
                 @Override
                 public Loader<Contact> onCreateLoader(int id, Bundle args) {
-                    return new ProfileWebLoader(UserProfileActivity.this, id, args);
+                    return new ProfileWebLoader(ProfileViewActivity.this, id, args);
                 }
 
                 @Override
                 public void onLoadFinished(Loader<Contact> loader, Contact data) {
                     if (data != null) {
-                        setUserData(data, (loader.getId() == WEB_OWN_LOADER) ?
-                                Contact.Relation.SELF
-                                : Contact.Relation.OTHER);
+                        Contact.Relation relation = Contact.Relation.OTHER;
+                        String ownerUid = (new OwnerProfile(ProfileViewActivity.this)).getUid();
+                        if (data.getUid().equals(ownerUid))
+                            relation = Contact.Relation.SELF;
+                        else {
+                            ContactHelper contactHelper = new ContactHelper(ProfileViewActivity.this);
+                            if (contactHelper.getContact(data.getUid()) != null) {
+                                relation = Contact.Relation.FRIEND;
+                            }
+                        }
+                        setUserData(data, relation);
                     }
                 }
 

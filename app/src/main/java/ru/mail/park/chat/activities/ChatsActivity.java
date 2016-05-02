@@ -105,7 +105,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         View.OnClickListener[] listeners = {new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ChatsActivity.this, UserProfileActivity.class);
+                Intent intent = new Intent(ChatsActivity.this, ProfileViewActivity.class);
                 startActivity(intent);
             }
         }, new View.OnClickListener() {

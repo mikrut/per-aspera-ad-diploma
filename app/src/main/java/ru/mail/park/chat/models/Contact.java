@@ -9,14 +9,25 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.bouncycastle.crypto.digests.SHA3Digest;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.database.ContactsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
 
@@ -33,8 +44,12 @@ public class Contact implements Comparable<Contact>, Serializable {
     private @Nullable String phone;
     private @Nullable String firstName;
     private @Nullable String lastName;
+
     private @Nullable String img;
     private @Nullable Calendar lastSeen;
+
+    private @Nullable byte[] pubkeyDigest;
+    private @Nullable URI onionAddress;
 
     private boolean online = false;
 
@@ -43,7 +58,8 @@ public class Contact implements Comparable<Contact>, Serializable {
     Contact(){}
 
     public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
-        Log.d("[TP-diploma]", contact.toString());
+        Log.d(Contact.class.getSimpleName() + ".new", contact.toString());
+
         String idParameterName = "";
         if (contact.has("id"))
             idParameterName = "id";
@@ -51,14 +67,18 @@ public class Contact implements Comparable<Contact>, Serializable {
             idParameterName = "idUser";
         if (idParameterName.equals("")) {
             OwnerProfile owner = new OwnerProfile(context);
-            uid = owner.getUid();
-            login = owner.getLogin();
-            firstName = owner.getFirstName();
-            lastName = owner.getLastName();
-            img = owner.getImg();
+            init(owner);
         } else {
             uid = contact.getString(idParameterName);
+            if (context != null) {
+                ContactHelper helper = new ContactHelper(context);
+                Contact c = helper.getContact(uid);
+                if (c != null) {
+                    init(c);
+                }
+            }
         }
+
         if (contact.has("login"))
             login = contact.getString("login");
 
@@ -88,14 +108,53 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
     }
 
+    public void init(Contact contact) {
+        uid = contact.getUid();
+        login = contact.getLogin();
+
+        firstName = contact.getFirstName();
+        lastName = contact.getLastName();
+
+        email = contact.getEmail();
+        phone = contact.getPhone();
+
+        img = contact.getImg();
+        if (contact.getLastSeen() != null)
+            lastSeen = (Calendar) contact.getLastSeen().clone();
+
+        if (contact.getPubkeyDigest() != null)
+            pubkeyDigest = contact.getPubkeyDigest().clone();
+        onionAddress = contact.getOnionAddress();
+
+        online = contact.online;
+    }
+
     public Contact(Cursor cursor) {
         uid = cursor.getString(ContactsContract.PROJECTION_UID_INDEX);
         login = cursor.getString(ContactsContract.PROJECTION_LOGIN_INDEX);
 
-        email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
-        phone = cursor.getString(ContactsContract.PROJECTION_PHONE_INDEX);
-        firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
-        lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_EMAIL_INDEX))
+            email = cursor.getString(ContactsContract.PROJECTION_EMAIL_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_PHONE_INDEX))
+            phone = cursor.getString(ContactsContract.PROJECTION_PHONE_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_FIRST_NAME_INDEX))
+            firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_LAST_NAME_INDEX))
+            lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
+
+        if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX)) {
+            pubkeyDigest = cursor.getBlob(ContactsContract.PROJECTION_PUBKEY_INDEX);
+        }
+
+        if (!cursor.isNull(ContactsContract.PROJECTION_ONION_INDEX)) {
+            String onion = cursor.getString(ContactsContract.PROJECTION_ONION_INDEX);
+            try {
+                onionAddress = new URI(onion);
+            } catch (URISyntaxException e) {
+                Log.e(Contact.class.getSimpleName() + ".new", onion);
+                Log.e(Contact.class.getSimpleName() + ".new", String.valueOf(e.getLocalizedMessage()));
+            }
+        }
     }
 
     public boolean isOnline() {
@@ -200,6 +259,11 @@ public class Contact implements Comparable<Contact>, Serializable {
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PHONE, phone);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
+
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PUBKEY,
+                pubkeyDigest != null ? pubkeyDigest : null);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_ONIOIN,
+                onionAddress != null ? onionAddress.toString() : null);
         return contentValues;
     }
 
@@ -214,6 +278,57 @@ public class Contact implements Comparable<Contact>, Serializable {
             return  getLogin();
         }
         return titleBuilder.toString();
+    }
+
+    public void setPubkeyDigest(@Nullable String pubkeyDigest) {
+        if (pubkeyDigest != null) {
+            try {
+                BigInteger value = new BigInteger(pubkeyDigest, 16);
+                this.pubkeyDigest = value.toByteArray();
+            } catch (NumberFormatException e) {
+                Log.e(Contact.class.getSimpleName() + ".setPubkeyDigest", e.getLocalizedMessage());
+            }
+        } else {
+            this.pubkeyDigest = null;
+        }
+    }
+
+    public void setPubkeyDigest(@Nullable byte[] pubkeyDigest) {
+        this.pubkeyDigest = pubkeyDigest;
+    }
+
+    public void setOnionAddress(@Nullable String onionAddress) {
+        if (onionAddress != null) {
+            try {
+                this.onionAddress = new URI(onionAddress);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        } else {
+            this.onionAddress = null;
+        }
+    }
+
+    public void setOnionAddress(@Nullable URI onionAddress) {
+        this.onionAddress = onionAddress;
+    }
+
+    @Nullable
+    public byte[] getPubkeyDigest() {
+        return pubkeyDigest;
+    }
+
+    public String getPubkeyDigestString() {
+        if (pubkeyDigest != null) {
+            BigInteger bigInteger = new BigInteger(pubkeyDigest);
+            return bigInteger.toString(16);
+        }
+        return null;
+    }
+
+    @Nullable
+    public URI getOnionAddress() {
+        return onionAddress;
     }
 
     @Override
