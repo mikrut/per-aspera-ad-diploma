@@ -56,6 +56,7 @@ public class OwnerProfile extends Contact {
         setFirstName(sharedPreferences.getString(PreferenceConstants.USER_FIRST_NAME_N, null));
         setLastName(sharedPreferences.getString(PreferenceConstants.USER_LAST_NAME_N, null));
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
+        setImg(sharedPreferences.getString(PreferenceConstants.USER_IMG_N, null));
     }
 
 
@@ -73,6 +74,7 @@ public class OwnerProfile extends Contact {
         preferenceEditor.putString(PreferenceConstants.USER_FIRST_NAME_N, getFirstName());
         preferenceEditor.putString(PreferenceConstants.USER_LAST_NAME_N, getLastName());
         preferenceEditor.putString(PreferenceConstants.AUTH_TOKEN_N, getAuthToken());
+        preferenceEditor.putString(PreferenceConstants.USER_IMG_N, getImg());
 
         preferenceEditor.apply();
     }

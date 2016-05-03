@@ -26,11 +26,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.Calendar;
 
 import java.io.InputStream;
@@ -44,7 +47,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileViewActivity extends AppCompatActivity {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
-    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
+    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/file/image";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
     private final static int WEB_OWN_LOADER = 2;
@@ -242,7 +245,7 @@ public class ProfileViewActivity extends AppCompatActivity {
         }
 
         Log.d("[TP-diploma]", "starting get image task");
-        new DownloadImageTask(userPicture).execute(SERVER_URL + user.getImg());
+        new DownloadImageTask(userPicture).execute(SERVER_URL + "?path=" + user.getImg());
 
         Calendar lastSeen = user.getLastSeen();
 
@@ -316,20 +319,32 @@ public class ProfileViewActivity extends AppCompatActivity {
                 }
             };
 
+    private Bitmap downloadFile(String path, int height, int width, String token) throws IOException {
+        String requestPath = path + "&height=" + String.valueOf(height) + "&width=" + String.valueOf(width) + "&accessToken=" + token;
+        Log.d("[TP-diploma]", "Requesting image: " + requestPath);
+        InputStream in = new java.net.URL(requestPath).openStream();
+        return BitmapFactory.decodeStream(in);
+    }
+
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
+        int curHeight;
+        int curWidth;
 
         public DownloadImageTask(ImageView bmImage) {
             this.bmImage = bmImage;
+            View parent = (View) bmImage.getParent();
+            curHeight = parent.getHeight();
+            curWidth = parent.getWidth();
         }
 
         protected Bitmap doInBackground(String... urls) {
+            OwnerProfile owp = new OwnerProfile(ProfileViewActivity.this);
             Log.d("[TP-diploma]", "task is working");
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
             try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
+                mIcon11 = downloadFile(urldisplay, curHeight, curWidth, owp.getAuthToken());
             } catch (Exception e) {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();

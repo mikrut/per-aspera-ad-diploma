@@ -13,6 +13,7 @@ public abstract class PreferenceConstants {
     public static final String USER_UID_N   = "user_uid";
     public static final String USER_FIRST_NAME_N   = "user_first_name";
     public static final String USER_LAST_NAME_N   = "user_last_name";
+    public static final String USER_IMG_N = "user_img";
 
     public static final String SECURITY_PARANOID_N = "paranoid_mode_switch";
 

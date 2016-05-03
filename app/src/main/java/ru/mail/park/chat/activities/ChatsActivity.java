@@ -5,6 +5,10 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -24,10 +28,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -37,6 +46,7 @@ import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.ChatLoader;
@@ -54,6 +64,8 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
     private Toolbar toolbar;
+    private Bitmap bmBlurred;
+    private String uid;
 
     public static final int CHAT_WEB_LOADER = 0;
     public static final int CHAT_SEARCH_LOADER = 1;
@@ -154,10 +166,15 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 R.drawable.ic_lock_black_24dp
             };
         OwnerProfile owner = new OwnerProfile(this);
+
+        uid = owner.getUid();
+        Log.d("[TP-diploma]", "URL to load from: http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
+        new DownloadAndBlurImageTask(bmBlurred).execute("http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
+
         RecyclerView.Adapter mAdapter = new MenuAdapter(
                 owner.getLogin(),
                 owner.getEmail(),
-                R.drawable.ic_user_picture,
+                bmBlurred,
                 titles,
                 listeners,
                 pictures);
@@ -375,6 +392,62 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         catch (Exception e) {
             // Something went wrong, let the app work without morphing the buttons :)
             e.printStackTrace();
+        }
+    }
+
+    private class DownloadAndBlurImageTask extends AsyncTask<String, Void, Bitmap> {
+        Bitmap bmImage;
+
+        public DownloadAndBlurImageTask(Bitmap bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            Log.d("[TP-diploma]", "task is working");
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+                bmImage = BlurBuilder.blur(ChatsActivity.this, mIcon11);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return bmImage;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
+            File file = new File(filePath);
+            RelativeLayout rl = (RelativeLayout) ChatsActivity.this.findViewById(R.id.left_drawer_header);
+
+            if (result != null) {
+                Log.d("[TP-diploma]", "DownloadImageTask result not null");
+                bmImage = result;
+                rl.setBackground(new BitmapDrawable(getResources(), result));
+                try {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    result.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.d("[TP-diploma]", "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d("[TP-diploma]", "Error accessing file: " + e.getMessage());
+                }
+            } else {
+                Log.d("[TP-diploma]", "DownloadImageTask result NULL");
+                if(file.exists()) {
+                    Log.d("[TP-diploma]", "DownloadImageTask file exists: " + file.getAbsolutePath());
+                    bmImage = BitmapFactory.decodeFile(filePath);
+                    rl.setBackground(new BitmapDrawable(getResources(), bmImage));
+                }
+                else {
+                    Log.d("[TP-diploma]", "DownloadImageTask file do not exist");
+                    bmImage = BitmapFactory.decodeResource(ChatsActivity.this.getResources(), R.drawable.ic_user_picture);
+                    rl.setBackground(new BitmapDrawable(getResources(), bmImage));
+                }
+            }
         }
     }
 }

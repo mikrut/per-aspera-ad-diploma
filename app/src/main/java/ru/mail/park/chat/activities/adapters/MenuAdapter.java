@@ -1,10 +1,12 @@
 package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final int[] icons;
     private final String name;
     private final String email;
-    private final int userPicture;
+    private final Bitmap bmBlurred;
     private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
@@ -56,8 +58,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             userEmail.setText(email);
         }
 
-        public void setUserPicture(@DrawableRes int picture) {
-            userPicture.setImageResource(picture);
+        public void setUserPicture(Bitmap bmBlur) {
+            if(bmBlur != null)
+                userPicture.setImageBitmap(bmBlur);
+            else {
+                userPicture.setImageResource(R.drawable.ic_user_picture);
+                Log.d("[TP-diploma]", "bmBlur is FUCKING NULL!!!!!!!!!!! AAAAAAA");
+            }
         }
     }
 
@@ -85,13 +92,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public MenuAdapter(String name, String email, @DrawableRes int userPicture, String titles[],
+    public MenuAdapter(String name, String email, Bitmap bmBlurred, String titles[],
                        @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
-        this.userPicture = userPicture;
+        this.bmBlurred = bmBlurred;
         this.listeners = listeners;
     }
 
@@ -118,7 +125,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 HeaderHolder headerHolder = (HeaderHolder) holder;
                 headerHolder.setUserEmail(email);
                 headerHolder.setUserName(name);
-                headerHolder.setUserPicture(userPicture);
+                headerHolder.setUserPicture(bmBlurred);
                 break;
             case ITEM:
                 position--;
