@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.File;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
@@ -24,6 +27,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final int[] icons;
     private final String name;
     private final String email;
+    private final String filePath;
     private final Bitmap bmBlurred;
     private final View.OnClickListener[] listeners;
 
@@ -58,12 +62,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             userEmail.setText(email);
         }
 
-        public void setUserPicture(Bitmap bmBlur) {
-            if(bmBlur != null)
-                userPicture.setImageBitmap(bmBlur);
+        public void setUserPicture(String filePath) {
+            File file = new File(filePath);
+
+            if(file.exists())
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
             else {
                 userPicture.setImageResource(R.drawable.ic_user_picture);
-                Log.d("[TP-diploma]", "bmBlur is FUCKING NULL!!!!!!!!!!! AAAAAAA");
             }
         }
     }
@@ -92,12 +97,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public MenuAdapter(String name, String email, Bitmap bmBlurred, String titles[],
+    public MenuAdapter(String name, String email, String filePath,  Bitmap bmBlurred, String titles[],
                        @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
+        this.filePath = filePath;
         this.bmBlurred = bmBlurred;
         this.listeners = listeners;
     }
@@ -125,7 +131,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 HeaderHolder headerHolder = (HeaderHolder) holder;
                 headerHolder.setUserEmail(email);
                 headerHolder.setUserName(name);
-                headerHolder.setUserPicture(bmBlurred);
+                headerHolder.setUserPicture(filePath);
                 break;
             case ITEM:
                 position--;

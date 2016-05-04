@@ -39,11 +39,13 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
+    private ImageView currentAvatar;
     private TextView  userTitle;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
     private String accessToken;
+    private String uid;
     private String selectedFilePath;
 
     private EditText userLogin;
@@ -67,11 +69,11 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
         imgUploadPicture = (ImageView) findViewById(R.id.user_upload_picture);
+        currentAvatar = (ImageView) findViewById(R.id.user_picture_in_editor);
         userTitle = (TextView) findViewById(R.id.user_title);
 
         userLogin = (EditText) findViewById(R.id.user_login);
         userEmail = (EditText) findViewById(R.id.user_email);
-        userPhone = (EditText) findViewById(R.id.user_phone);
         firstName = (EditText) findViewById(R.id.first_name);
         lastName  = (EditText) findViewById(R.id.last_name);
 
@@ -79,11 +81,19 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         userTitle.setText(ownerProfile.getContactTitle());
         userLogin.setText(ownerProfile.getLogin());
         userEmail.setText(ownerProfile.getEmail());
-        userPhone.setText(ownerProfile.getPhone());
         firstName.setText(ownerProfile.getFirstName());
         lastName.setText(ownerProfile.getLastName());
 
         accessToken = ownerProfile.getAuthToken();
+        uid = ownerProfile.getUid();
+
+        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+        File file = new File(filePath);
+
+        if(file.exists())
+            currentAvatar.setImageURI(Uri.parse(filePath));
+        else
+            currentAvatar.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
 
         imgCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -228,7 +238,6 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         OwnerProfile profile = new OwnerProfile(this);
         profile.setEmail(userEmail.getText().toString());
         profile.setLogin(userLogin.getText().toString());
-        profile.setPhone(userPhone.getText().toString());
         profile.setFirstName(firstName.getText().toString());
         profile.setLastName(lastName.getText().toString());
         profile.setImg(selectedFilePath);

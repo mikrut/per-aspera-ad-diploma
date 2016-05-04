@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -28,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
@@ -60,6 +62,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
+    private ImageView userPicOnHeader;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
@@ -171,9 +174,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         Log.d("[TP-diploma]", "URL to load from: http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
         new DownloadAndBlurImageTask(bmBlurred).execute("http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
 
+        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+
         RecyclerView.Adapter mAdapter = new MenuAdapter(
                 owner.getLogin(),
                 owner.getEmail(),
+                filePath,
                 bmBlurred,
                 titles,
                 listeners,
