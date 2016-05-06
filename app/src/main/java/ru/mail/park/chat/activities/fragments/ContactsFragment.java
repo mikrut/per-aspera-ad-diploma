@@ -83,8 +83,9 @@ public class ContactsFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Context context = getContext();
         if (context instanceof OnPickEventListener) {
             onPickEventListener = (OnPickEventListener) context;
             onPickEventListener.onContactSetChanged(chosenContacts);

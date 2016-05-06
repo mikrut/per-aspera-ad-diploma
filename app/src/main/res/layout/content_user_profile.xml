@@ -8,9 +8,7 @@
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
     android:paddingBottom="10dp"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activities.ProfileViewActivity"
-    tools:showIn="@layout/activity_user_profile">
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
         android:orientation="vertical"
@@ -32,46 +30,26 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:drawableStart="@drawable/ic_person_black_24dp"
-                android:drawableLeft="@drawable/ic_person_black_24dp"
-                android:drawablePadding="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:text="Voloshin"
+            <ru.mail.park.chat.activities.views.ContactInfoElementView
                 android:id="@+id/user_login"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginTop="10dp" />
-
-            <TextView
-                android:visibility="gone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="last seen at 10:15"
-                android:id="@+id/user_last_seen"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <TextView
-                android:drawableStart="@drawable/ic_email_black_24dp"
-                android:drawableLeft="@drawable/ic_email_black_24dp"
-                android:drawablePadding="10dp"
-                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:text="d.voloshin@corp.mail.ru"
+                android:src="@drawable/ic_person_black_24dp"
+                android:hint="Login" />
+
+            <ru.mail.park.chat.activities.views.ContactInfoElementView
                 android:id="@+id/user_email"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <TextView
-                android:drawableStart="@drawable/ic_phone_black_24dp"
-                android:drawableLeft="@drawable/ic_phone_black_24dp"
-                android:drawablePadding="10dp"
-                android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:text="8-123-456-78-90"
+                android:src="@drawable/ic_email_black_24dp"
+                android:hint="Email" />
+
+            <ru.mail.park.chat.activities.views.ContactInfoElementView
                 android:id="@+id/user_phone"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_phone_black_24dp"
+                android:hint="Phone" />
 
             <View
                 android:layout_marginTop="10dp"
