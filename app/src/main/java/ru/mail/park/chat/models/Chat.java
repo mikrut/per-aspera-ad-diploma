@@ -11,12 +11,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
+
 import ru.mail.park.chat.database.ChatsContract;
 
 /**
  * Created by Михаил on 06.03.2016.
  */
-public class Chat {
+public class Chat implements Serializable {
     @NonNull
     private String cid;
     @NonNull
