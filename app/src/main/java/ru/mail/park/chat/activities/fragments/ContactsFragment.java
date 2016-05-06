@@ -34,6 +34,7 @@ public class ContactsFragment extends Fragment {
     public static final String IS_MULTICHOICE = ContactsFragment.class.getCanonicalName() + ".IS_MULTICHOICE";
     public static final String PICKED_CONTACTS = ContactsFragment.class.getCanonicalName() + ".PICKED_CONTACTS";
 
+    private ContactAdapter contactAdapter;
     private RecyclerView contactsView;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -98,15 +99,18 @@ public class ContactsFragment extends Fragment {
     }
 
     protected AContactAdapter onCreateContactAdapter(@NonNull List<Contact> data) {
-        return new ContactAdapter(data, new AContactAdapter.ContactHolder.OnContactClickListener() {
+         contactAdapter = new ContactAdapter(data, new AContactAdapter.ContactHolder.OnContactClickListener() {
             @Override
             public void onContactClick(View contactView, AContactAdapter.ContactHolder viewHolder) {
                 Contact contact = viewHolder.getContact();
                 if (chosenContacts.contains(contact)) {
                     chosenContacts.remove(contact);
+                    viewHolder.setChosen(false);
                 } else {
                     if (!multichoice) {
                         chosenContacts.clear();
+                    } else {
+                        viewHolder.setChosen(true);
                     }
                     chosenContacts.add(contact);
                 }
@@ -117,6 +121,11 @@ public class ContactsFragment extends Fragment {
                 }
             }
         });
+
+        if (multichoice) {
+            contactAdapter.setMultichoice(chosenContacts);
+        }
+        return contactAdapter;
     }
 
     private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
