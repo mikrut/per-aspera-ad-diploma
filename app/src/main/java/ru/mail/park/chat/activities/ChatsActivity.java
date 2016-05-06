@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -73,6 +74,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     public static final int CHAT_WEB_LOADER = 0;
     public static final int CHAT_SEARCH_LOADER = 1;
     public static final int CHAT_DB_LOADER = 2;
+
+    private static final String CHATS_DATA = ChatsActivity.class.getCanonicalName() + ".CHATS_DATA";
+    private List<Chat> chatsData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -341,6 +345,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                     }
 
                     if (data != null) {
+                        chatsData = data;
                         chatsList.setAdapter(new ChatsAdapter(data));
                     }
                     swipeContainer.setRefreshing(false);
@@ -357,7 +362,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private final SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-            getLoaderManager().restartLoader(0, null, chatsLoaderListener);
+            getLoaderManager().restartLoader(0, null, chatsLoaderListener).forceLoad();
         }
     };
 
@@ -454,6 +459,21 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                     rl.setBackground(new BitmapDrawable(getResources(), bmImage));
                 }
             }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(CHATS_DATA, (Serializable) chatsData);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        chatsData = (List<Chat>) savedInstanceState.getSerializable(CHATS_DATA);
+        if (chatsData != null) {
+            chatsList.setAdapter(new ChatsAdapter(chatsData));
         }
     }
 }

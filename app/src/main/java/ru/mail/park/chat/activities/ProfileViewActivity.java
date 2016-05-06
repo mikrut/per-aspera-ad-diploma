@@ -40,6 +40,7 @@ import java.io.InputStream;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
+import ru.mail.park.chat.activities.views.ContactInfoElementView;
 import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
@@ -61,9 +62,9 @@ public class ProfileViewActivity extends AppCompatActivity {
     private FloatingActionButton userSendMessage;
 
     private ImageView userPicture;
-    private TextView userLogin;
-    private TextView userEmail;
-    private TextView userPhone;
+    private ContactInfoElementView userLogin;
+    private ContactInfoElementView userEmail;
+    private ContactInfoElementView userPhone;
     private TextView onlineIndicator;
     private LinearLayout profileDataLayout;
 
@@ -75,7 +76,7 @@ public class ProfileViewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_profile);
+        setContentView(R.layout.activity_profile_view);
 
         toolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         toolbarLayout.setTitle("Loading...");
@@ -96,9 +97,9 @@ public class ProfileViewActivity extends AppCompatActivity {
         userSendMessage = (FloatingActionButton) findViewById(R.id.user_send_message);
 
         userPicture = (ImageView) findViewById(R.id.user_picture);
-        userLogin = (TextView) findViewById(R.id.user_login);
-        userEmail = (TextView) findViewById(R.id.user_email);
-        userPhone = (TextView) findViewById(R.id.user_phone);
+        userLogin = (ContactInfoElementView) findViewById(R.id.user_login);
+        userEmail = (ContactInfoElementView) findViewById(R.id.user_email);
+        userPhone = (ContactInfoElementView) findViewById(R.id.user_phone);
         onlineIndicator = (TextView) findViewById(R.id.online_indicator);
         profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
 
