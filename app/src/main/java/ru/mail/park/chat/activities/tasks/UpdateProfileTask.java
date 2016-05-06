@@ -5,9 +5,11 @@ import android.os.AsyncTask;
 import android.app.AlertDialog;
 
 import java.io.IOException;
+import java.security.acl.Owner;
 
 import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.api.Users;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -32,6 +34,8 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
                 boolean success = usersAPI.updateProfileLikeAPro(profile, profile.getAuthToken(), (MultipartProfileUpdater.IUploadListener)activity);//usersAPI.updateProfile(profile);
                 publishProgress("Saving to local db...");
                 if (success) {
+                    Contact thisUser = usersAPI.getFullUser(profile.getUid());
+                    profile = new OwnerProfile(thisUser, alertDialog.getContext());
                     profile.saveToPreferences(alertDialog.getContext());
                 }
                 return  success;

@@ -154,7 +154,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            String filePath = "";//data.getStringExtra(GET_FROM_GALLERY);
+            String filePath = "";
             FileInputStream fstrm = null;
             HttpFileUpload hfu = null;
 
@@ -189,8 +189,6 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                     } catch(Exception e) {
                         Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
                     }
-/*                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                    hfu.Send_Now(fstrm, this);*/
                 }
             }
         }

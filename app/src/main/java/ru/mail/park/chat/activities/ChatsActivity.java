@@ -422,7 +422,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 mIcon11 = BitmapFactory.decodeStream(in);
                 bmImage = BlurBuilder.blur(ChatsActivity.this, mIcon11);
             } catch (Exception e) {
-                Log.e("Error", e.getMessage());
+//                Log.e("Error", e.getMessage());
                 e.printStackTrace();
             }
             return bmImage;

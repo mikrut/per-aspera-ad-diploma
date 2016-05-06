@@ -334,9 +334,8 @@ public class ProfileViewActivity extends AppCompatActivity {
 
         public DownloadImageTask(ImageView bmImage) {
             this.bmImage = bmImage;
-            View parent = (View) bmImage.getParent();
-            curHeight = parent.getHeight();
-            curWidth = parent.getWidth();
+            curHeight = bmImage.getHeight();
+            curWidth = bmImage.getWidth();
         }
 
         protected Bitmap doInBackground(String... urls) {
