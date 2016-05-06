@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <ImageView
+        android:tint="@color/textColorPrimary"
+        android:id="@+id/picture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_email_black_24dp"
+        android:padding="15dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:drawablePadding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/picture"
+        tools:text="d.voloshin@corp.mail.ru"
+        android:id="@+id/main_text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_marginTop="10dp"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:id="@+id/helper_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Email"
+        android:layout_below="@+id/main_text"
+        android:layout_alignLeft="@+id/main_text"
+        android:textColor="@color/textColorSecondary"
+        tools:ignore="RtlHardcoded" />
+
+</merge>

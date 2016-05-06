@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -55,6 +57,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
     public static class ContactHolder extends TitledPicturedViewHolder {
         final ImageView contactImage;
+        final ImageView choosenImage;
         final TextView contactName;
         final TextView contactLastSeen;
 
@@ -64,6 +67,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         public ContactHolder(View itemView) {
             super(itemView);
             contactImage = (ImageView) itemView.findViewById(R.id.image);
+            choosenImage = (ImageView) itemView.findViewById(R.id.choosenImage);
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
 
@@ -75,6 +79,20 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                     v.getContext().startActivity(intent);
                 }
             });
+        }
+
+        public void setChosen(boolean chosen) {
+            setChosen(chosen, true);
+        }
+
+        public void setChosen(boolean chosen, boolean withAnimation) {
+            choosenImage.setVisibility(chosen ? View.VISIBLE : View.GONE);
+            if (withAnimation) {
+                Animation chosenAnimation = AnimationUtils
+                        .loadAnimation(itemView.getContext(),
+                            chosen ? R.anim.done_appearence : R.anim.done_disappearence);
+                choosenImage.startAnimation(chosenAnimation);
+            }
         }
 
         public void setContact(Contact contact) {

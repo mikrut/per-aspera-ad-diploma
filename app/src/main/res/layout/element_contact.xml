@@ -40,6 +40,17 @@
             android:gravity="center"
             tools:text="UN"
             android:textColor="#ffffff" />
+
+        <ImageView
+            android:id="@+id/choosenImage"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_done_green_circle"
+            android:layout_alignBottom="@+id/image"
+            android:layout_alignRight="@+id/image"
+            tools:ignore="RtlHardcoded" />
     </RelativeLayout>
 
     <TextView

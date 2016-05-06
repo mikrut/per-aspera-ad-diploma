@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.models.Contact;
@@ -24,6 +25,8 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 08.03.2016.
  */
 public class ContactAdapter extends AContactAdapter {
+    private TreeSet<Contact> choosenContacts;
+
     private final Map<Character, List<Contact>> contactGroups;
     private ContactHolder.OnContactClickListener contactClickListener;
     private int itemCount;
@@ -94,6 +97,8 @@ public class ContactAdapter extends AContactAdapter {
                 super.onBindViewHolder(holder, position);
                 if (contactClickListener != null)
                     ((ContactHolder) holder).setOnContactClickListener(contactClickListener);
+                if (choosenContacts != null)
+                    ((ContactHolder) holder).setChosen(choosenContacts.contains(getContactForPosition(position)), false);
                 break;
         }
     }
@@ -159,5 +164,13 @@ public class ContactAdapter extends AContactAdapter {
         public void setLetter(char letter) {
             this.letter.setText(String.valueOf(letter));
         }
+    }
+
+    public void setMultichoice(@NonNull TreeSet<Contact> chosenContacts) {
+        this.choosenContacts = chosenContacts;
+    }
+
+    public void setSinglechoice() {
+        choosenContacts = null;
     }
 }
