@@ -26,14 +26,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.util.Calendar;
 
 import java.io.InputStream;
@@ -320,7 +317,7 @@ public class ProfileViewActivity extends AppCompatActivity {
                 }
             };
 
-    private Bitmap downloadFile(String path, int height, int width, String token) throws IOException {
+    static public Bitmap downloadFile(String path, int height, int width, String token) throws IOException {
         String requestPath = path + "&height=" + String.valueOf(height) + "&width=" + String.valueOf(width) + "&accessToken=" + token;
         Log.d("[TP-diploma]", "Requesting image: " + requestPath);
         InputStream in = new java.net.URL(requestPath).openStream();

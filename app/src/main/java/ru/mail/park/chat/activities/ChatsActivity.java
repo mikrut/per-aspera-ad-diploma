@@ -31,6 +31,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
 
@@ -48,6 +49,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
+import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatHelper;
@@ -176,7 +178,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
         uid = owner.getUid();
         Log.d("[TP-diploma]", "URL to load from: http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
-        new DownloadAndBlurImageTask(bmBlurred).execute("http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
 
         String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
 
@@ -191,6 +192,8 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         mRecyclerView.setAdapter(mAdapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        new DownloadAndBlurImageTask(bmBlurred, (IUserPicSetupListener)mAdapter).execute("http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
 
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeContainer.setOnRefreshListener(refreshListener);
@@ -408,21 +411,41 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
     private class DownloadAndBlurImageTask extends AsyncTask<String, Void, Bitmap> {
         Bitmap bmImage;
+        IUserPicSetupListener listener;
 
-        public DownloadAndBlurImageTask(Bitmap bmImage) {
+        public DownloadAndBlurImageTask(Bitmap bmImage, IUserPicSetupListener listener) {
             this.bmImage = bmImage;
+            this.listener = listener;
         }
 
         protected Bitmap doInBackground(String... urls) {
+            OwnerProfile own = new OwnerProfile(ChatsActivity.this);
             Log.d("[TP-diploma]", "task is working");
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
+            String smallFilePath = "http://p30480.lab1.stud.tech-mail.ru" + own.getImg();///file/image?height=100&width=100&path=
+
+            try {
+                Log.d("[TP-diploma]", "Requesting smallUserPic: " + smallFilePath);
+                InputStream in = new java.net.URL(smallFilePath).openStream();
+                Bitmap smallUserPic = BitmapFactory.decodeStream(in);
+                File file = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + own.getUid() + ".bmp");
+                FileOutputStream fos = new FileOutputStream(file);
+                if(smallUserPic != null)
+                    smallUserPic.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                else
+                    Log.d("[TP-diploma]", "DownloadAndBlurImageTask: smallUserPic = null");
+
+                fos.close();
+            } catch (IOException e) {
+
+            }
+
             try {
                 InputStream in = new java.net.URL(urldisplay).openStream();
                 mIcon11 = BitmapFactory.decodeStream(in);
                 bmImage = BlurBuilder.blur(ChatsActivity.this, mIcon11);
             } catch (Exception e) {
-//                Log.e("Error", e.getMessage());
                 e.printStackTrace();
             }
             return bmImage;
@@ -459,6 +482,8 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                     rl.setBackground(new BitmapDrawable(getResources(), bmImage));
                 }
             }
+
+            listener.onUserPicUploadComplete(Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp");
         }
     }
 

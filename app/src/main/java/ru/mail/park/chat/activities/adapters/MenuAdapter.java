@@ -18,17 +18,19 @@ import java.io.File;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
+import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
 
 /**
  * Created by Михаил on 08.03.2016.
  */
-public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IUserPicSetupListener {
     private final String[] titles;
     private final int[] icons;
     private final String name;
     private final String email;
     private final String filePath;
     private final Bitmap bmBlurred;
+    private View headerViewObject = null;
     private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
@@ -41,6 +43,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public HeaderHolder(final View headerView) {
             super(headerView);
+
             userName = (TextView) headerView.findViewById(R.id.userName);
             userEmail = (TextView) headerView.findViewById(R.id.userEmail);
             userPicture = (ImageView) headerView.findViewById(R.id.userPicture);
@@ -65,11 +68,29 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public void setUserPicture(String filePath) {
             File file = new File(filePath);
 
-            if(file.exists())
+            if(file.exists()) {
+                Log.d("[TP-diploma]", "Setting an image: " + filePath);
                 userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            }
             else {
                 userPicture.setImageResource(R.drawable.ic_user_picture);
             }
+        }
+    }
+
+    @Override
+    public void onUserPicUploadComplete(String filePath) {
+        File file = new File(filePath);
+        ImageView userPicture;
+
+        userPicture = (ImageView) headerViewObject.findViewById(R.id.userPicture);
+
+        if(file.exists()) {
+            Log.d("[TP-diploma]", "Setting an image: " + filePath);
+            userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
+        }
+        else {
+            userPicture.setImageResource(R.drawable.ic_user_picture);
         }
     }
 
@@ -114,6 +135,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case HEADER:
                 View headerView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.header, parent, false);
+
+                headerViewObject = headerView;
                 return new HeaderHolder(headerView);
             case ITEM:
                 View rowView = LayoutInflater.from(parent.getContext())
