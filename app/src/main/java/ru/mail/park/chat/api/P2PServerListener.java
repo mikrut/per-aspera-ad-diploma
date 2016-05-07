@@ -36,6 +36,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 /**
  * Created by 1запуск BeCompact on 29.02.2016.
  */
+@Deprecated
 public class P2PServerListener extends Thread implements IMessageSender {
     ServerSocket serverSocket;
     DataInputStream input;
@@ -63,45 +64,7 @@ public class P2PServerListener extends Thread implements IMessageSender {
     }
 
     public void run() {
-        try {
-            if (destination != null) {
-                final Random rndForTorCircuits = new Random();
-                final String user = rndForTorCircuits.nextInt(100000) + "";
-                final String pass = rndForTorCircuits.nextInt(100000) + "";
-                final int proxyPort = 9050;
-                final String proxyHost = "127.0.0.1";
 
-                ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
-                Socket socket = proxyInfo.getSocketFactory().createSocket(destination.destinationName, destination.destinationPort);
-
-                output = new DataOutputStream(socket.getOutputStream());
-                input = new DataInputStream(socket.getInputStream());
-                Log.i("P2P connection", "got a connection");
-                Log.i("P2P connection", destination.destinationName);
-            } else {
-                serverSocket = new ServerSocket(port);
-                Log.i("P2P Server IP", serverSocket.getInetAddress().getCanonicalHostName());
-                Socket socket = serverSocket.accept();
-                Log.i("P2P Socket IP", socket.getInetAddress().getCanonicalHostName());
-
-                input = new DataInputStream(socket.getInputStream());
-                output = new DataOutputStream(socket.getOutputStream());
-                Log.i("P2P server", "connection finished!");
-            }
-
-            String message;
-            while ((message = input.readUTF()) != null) {
-                Log.i("P2P Server IN message", message);
-                if (messageListener != null) {
-                    publishProgress(message);
-                }
-            }
-
-            input.close();
-            output.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void publishProgress(final String message) {
