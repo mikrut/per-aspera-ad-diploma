@@ -65,7 +65,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
-    private ImageView userPicOnHeader;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;

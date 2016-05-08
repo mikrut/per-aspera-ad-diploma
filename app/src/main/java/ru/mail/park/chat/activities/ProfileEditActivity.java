@@ -52,7 +52,6 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
     private EditText userEmail;
     private EditText firstName;
     private EditText lastName;
-    private EditText userPhone;
 
     private Intent takePictureIntent;
 

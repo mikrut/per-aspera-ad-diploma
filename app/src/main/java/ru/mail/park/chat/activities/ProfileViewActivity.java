@@ -232,8 +232,8 @@ public class ProfileViewActivity extends AppCompatActivity {
     private void setUserData(Contact user, Contact.Relation relation) {
         contact = user;
 
-        toolbarLayout.setTitle(user.getContactTitle());
-        userLogin.setText(user.getLogin());
+        toolbarLayout.setTitle(user.getLogin());
+        userLogin.setText(user.getContactTitle());
 
         if (user.getEmail() != null) {
             userEmail.setText(user.getEmail());

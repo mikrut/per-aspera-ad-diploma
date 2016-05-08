@@ -43,9 +43,19 @@ public class MultipartProfileUpdater {
     }
 
     boolean Sending(IUploadListener listener){
+        String result = null;
+
         Log.d("[TP-diploma]", "sending started");
-        new HttpMultipartUpdateProfileTask(listener).execute();
-        return true;
+        HttpMultipartUpdateProfileTask hmupTask = new HttpMultipartUpdateProfileTask(listener);
+        hmupTask.execute();
+
+        try {
+            result = hmupTask.get();
+        } catch(Exception e) {
+            return false;
+        }
+
+        return result != null;
     }
 
 
@@ -168,7 +178,7 @@ public class MultipartProfileUpdater {
                 // retrieve the response from server
                 int ch;
 
-                StringBuffer b =new StringBuffer();
+                StringBuffer b = new StringBuffer();
                 while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
                 String s=b.toString();
 
