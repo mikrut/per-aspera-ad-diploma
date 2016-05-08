@@ -27,18 +27,26 @@ public class P2PDialogActivity extends DialogActivity {
 
     public final static int LISTENER_DEFAULT_PORT = 8275;
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            P2PService.P2PServiceSingletonBinder binder = (P2PService.P2PServiceSingletonBinder) service;
-            messages = binder.getService();
-        }
+    private ServiceConnection mConnection;
+    private ServiceConnection getConnection() {
+        if (mConnection == null) {
+            mConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    P2PService.P2PServiceSingletonBinder binder = (P2PService.P2PServiceSingletonBinder) service;
+                    P2PService p2PService = binder.getService();
+                    messages = p2PService;
+                    p2PService.addListener(P2PDialogActivity.this);
+                }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
 
+                }
+            };
         }
-    };
+        return mConnection;
+    }
 
     @Override
     protected IMessageSender getMessageSender() throws IOException {
@@ -53,7 +61,7 @@ public class P2PDialogActivity extends DialogActivity {
                 intent.putExtra(P2PService.DESTINATION_URL, host);
                 intent.putExtra(P2PService.DESTINATION_PORT, port);
 
-                bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                bindService(intent, getConnection(), Context.BIND_AUTO_CREATE);
                 return null;
             }
         }
@@ -81,7 +89,7 @@ public class P2PDialogActivity extends DialogActivity {
 
                     Intent serviceIntent = new Intent(this, P2PService.class);
                     serviceIntent.setAction(P2PService.ACTION_START_SERVER);
-                    bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
+                    bindService(serviceIntent, getConnection(), Context.BIND_AUTO_CREATE);
                 }
             }
         } else {
@@ -95,5 +103,14 @@ public class P2PDialogActivity extends DialogActivity {
             Message message = new Message(messageBody, this);
             messages.sendMessage(null, message);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mConnection != null) {
+            unbindService(mConnection);
+        }
+        mConnection = null;
     }
 }

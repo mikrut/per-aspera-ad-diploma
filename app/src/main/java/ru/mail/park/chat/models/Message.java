@@ -217,9 +217,9 @@ public class Message implements Comparable<Message> {
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
             if (another.mid != null) {
-                int mid1 = Integer.valueOf(mid);
-                int mid2 = Integer.valueOf(another.mid);
-                return mid1 - mid2;
+                long mid1 = Long.valueOf(mid);
+                long mid2 = Long.valueOf(another.mid);
+                return (int) ((mid1 - mid2) % Integer.MAX_VALUE);
             } else if (messageBody.equals(another.messageBody)) {
                 return 0;
             }

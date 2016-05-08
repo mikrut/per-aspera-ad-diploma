@@ -38,6 +38,8 @@ public class P2PService extends Service implements IMessageSender {
 
     private static final int DEFAULT_LISTENING_PORT = 8275;
 
+    private ServerSocket serverSocket;
+
     private final Object inputSynchronizer = new Object();
     private final Object outputSynchronizer = new Object();
 
@@ -54,19 +56,20 @@ public class P2PService extends Service implements IMessageSender {
         Log.d(P2PService.class.getSimpleName(), "Starting thread");
         Server server = new Server();
         server.start();
+
+        Log.d(P2PService.class.getSimpleName(), "Finishing onCreate");
     }
 
     public void sendMessage(String chatID, Message message) {
-        Log.i("P2P Server OUT message", message.getMessageBody());
         send(message);
     }
 
     public void sendFirstMessage(String userID, Message message) {
-        Log.i("P2P Server OUT message", message.getMessageBody());
         send(message);
     }
 
     private void send(Message message) {
+        Log.i(P2PService.class.getSimpleName() + " OUT message", message.getMessageBody());
         if (output != null) {
             synchronized (outputSynchronizer) {
                 if (output != null) {
@@ -137,6 +140,9 @@ public class P2PService extends Service implements IMessageSender {
         final int proxyPort = 9050;
         final String proxyHost = "127.0.0.1";
 
+        Log.d(P2PService.class.getSimpleName(), "Destination " + destination);
+        Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
+
         ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
         try {
             closeStreams();
@@ -148,8 +154,8 @@ public class P2PService extends Service implements IMessageSender {
             synchronized (inputSynchronizer) {
                 input = new DataInputStream(socket.getInputStream());
             }
-            Log.i("P2P connection", "got a connection");
-            Log.i("P2P connection", destination);
+            Log.i(P2PService.class.getSimpleName(), "got a connection");
+            Log.i(P2PService.class.getSimpleName(), destination);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,10 +164,10 @@ public class P2PService extends Service implements IMessageSender {
     public void handleActionStartServer(int port) {
         try {
             closeStreams();
-            ServerSocket serverSocket = new ServerSocket(port);
-            Log.i("P2P Server IP", serverSocket.getInetAddress().getCanonicalHostName());
+            serverSocket = new ServerSocket(port);
+            Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
             Socket socket = serverSocket.accept();
-            Log.i("P2P Socket IP", socket.getInetAddress().getCanonicalHostName());
+            Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
 
             synchronized (inputSynchronizer) {
                 input = new DataInputStream(socket.getInputStream());
@@ -169,7 +175,7 @@ public class P2PService extends Service implements IMessageSender {
             synchronized (outputSynchronizer) {
                 output = new DataOutputStream(socket.getOutputStream());
             }
-            Log.i("P2P server", "connection finished!");
+            Log.i(P2PService.class.getSimpleName(), "connection finished!");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -218,7 +224,7 @@ public class P2PService extends Service implements IMessageSender {
                     }
 
                     if (message != null) {
-                        Log.i("P2P Server IN message", message);
+                        Log.i(P2PService.class.getSimpleName() + " IN message", message);
                         handleIncomingMessage(message);
                     }
                 }
@@ -229,6 +235,7 @@ public class P2PService extends Service implements IMessageSender {
     }
 
     private void closeStreams() {
+        Log.d(P2PService.class.getSimpleName(), "Closing streams");
         try {
             if (output != null) {
                 synchronized (outputSynchronizer) {
@@ -248,6 +255,10 @@ public class P2PService extends Service implements IMessageSender {
                     }
                 }
             }
+
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -255,6 +266,14 @@ public class P2PService extends Service implements IMessageSender {
 
     @Override
     public void disconnect() {
+        closeStreams();
+        noStop = false;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(P2PService.class.getSimpleName(), "onDestroy");
+        super.onDestroy();
         closeStreams();
         noStop = false;
     }
