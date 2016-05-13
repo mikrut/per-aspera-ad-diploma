@@ -52,6 +52,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
     private EditText userEmail;
     private EditText firstName;
     private EditText lastName;
+    private EditText userAbout;
 
     private Intent takePictureIntent;
 
@@ -75,6 +76,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         userEmail = (EditText) findViewById(R.id.user_email);
         firstName = (EditText) findViewById(R.id.first_name);
         lastName  = (EditText) findViewById(R.id.last_name);
+        userAbout = (EditText) findViewById(R.id.about_field);
 
         OwnerProfile ownerProfile = new OwnerProfile(this);
         userTitle.setText(ownerProfile.getContactTitle());
@@ -82,6 +84,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         userEmail.setText(ownerProfile.getEmail());
         firstName.setText(ownerProfile.getFirstName());
         lastName.setText(ownerProfile.getLastName());
+        userAbout.setText(ownerProfile.getAbout());
 
         accessToken = ownerProfile.getAuthToken();
         uid = ownerProfile.getUid();
@@ -190,6 +193,9 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                     }
                 }
             }
+
+            if(selectedFilePath != null)
+                currentAvatar.setImageURI(Uri.parse(selectedFilePath));
         }
     }
 
@@ -238,6 +244,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         profile.setFirstName(firstName.getText().toString());
         profile.setLastName(lastName.getText().toString());
         profile.setImg(selectedFilePath);
+        profile.setAbout(userAbout.getText().toString());
         return profile;
     }
 

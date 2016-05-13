@@ -161,6 +161,7 @@ public class Users extends ApiSection {
         parameters.add(new Pair<>("lastName", profile.getLastName()));
         parameters.add(new Pair<>("accessToken", accessToken));
         parameters.add(new Pair<>("img", profile.getImg()));
+        parameters.add(new Pair<>("aboutMe", profile.getAbout()));
 
         Log.d("[TP-diploma]", "Number of parameters: " + parameters.size());
 

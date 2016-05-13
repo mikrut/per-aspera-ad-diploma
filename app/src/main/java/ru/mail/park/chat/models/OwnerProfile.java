@@ -39,6 +39,7 @@ public class OwnerProfile extends Contact {
         setLogin(contact.getLogin());
         setUid(contact.getUid());
         setImg(contact.getImg());
+        setAbout(contact.getAbout());
 
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
@@ -75,6 +76,7 @@ public class OwnerProfile extends Contact {
         preferenceEditor.putString(PreferenceConstants.USER_LAST_NAME_N, getLastName());
         preferenceEditor.putString(PreferenceConstants.AUTH_TOKEN_N, getAuthToken());
         preferenceEditor.putString(PreferenceConstants.USER_IMG_N, getImg());
+        preferenceEditor.putString(PreferenceConstants.USER_ABOUT_N, getAbout());
 
         preferenceEditor.apply();
     }

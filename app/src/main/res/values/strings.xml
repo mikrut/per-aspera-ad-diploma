@@ -148,6 +148,7 @@
     <string name="hint_login">Login</string>
     <string name="hint_first_name">First name</string>
     <string name="hint_last_name">Last Name</string>
+    <string name="hint_about">About me</string>
     <string name="find_friends">Find Friends</string>
     <string name="contacts">Contacts</string>
     <string name="description_send_message">Send message</string>

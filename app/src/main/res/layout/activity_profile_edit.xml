@@ -138,6 +138,22 @@
                 tools:text="Voloshin"
                 android:ems="10"
                 android:id="@+id/last_name" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="@string/hint_about"
+                android:id="@+id/about_title" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:gravity="left"
+                android:inputType="textMultiLine"
+                tools:text="Im a bad nigga"
+                android:ems="10"
+                android:id="@+id/about_field" />
         </LinearLayout>
 
     </LinearLayout>

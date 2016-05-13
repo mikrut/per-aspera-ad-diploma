@@ -13,6 +13,7 @@ public class ContactsContract {
                     ContactsEntry.COLUMN_NAME_PHONE + " TEXT" + COMMA_SEP +
                     ContactsEntry.COLUMN_NAME_FIRST_NAME + " TEXT" + COMMA_SEP +
                     ContactsEntry.COLUMN_NAME_LAST_NAME + " TEXT" + COMMA_SEP +
+                    ContactsEntry.COLUMN_NAME_ABOUT + " Text" + COMMA_SEP +
                     ContactsEntry.COLUMN_NAME_PUBKEY + " BLOB" + COMMA_SEP +
                     ContactsEntry.COLUMN_NAME_ONIOIN + " TEXT" +
                     ")";
@@ -53,6 +54,7 @@ public class ContactsContract {
         public static final String COLUMN_NAME_PHONE = "phone";
         public static final String COLUMN_NAME_FIRST_NAME = "first_name";
         public static final String COLUMN_NAME_LAST_NAME = "last_name";
+        public static final String COLUMN_NAME_ABOUT = "about";
 
         public static final String COLUMN_NAME_PUBKEY = "public_key";
         public static final String COLUMN_NAME_ONIOIN = "onion_address";

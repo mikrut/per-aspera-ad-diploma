@@ -62,6 +62,7 @@ public class ProfileViewActivity extends AppCompatActivity {
     private ContactInfoElementView userLogin;
     private ContactInfoElementView userEmail;
     private ContactInfoElementView userPhone;
+    private ContactInfoElementView aboutUser;
     private TextView onlineIndicator;
     private LinearLayout profileDataLayout;
 
@@ -98,6 +99,7 @@ public class ProfileViewActivity extends AppCompatActivity {
         userEmail = (ContactInfoElementView) findViewById(R.id.user_email);
         userPhone = (ContactInfoElementView) findViewById(R.id.user_phone);
         onlineIndicator = (TextView) findViewById(R.id.online_indicator);
+        aboutUser = (ContactInfoElementView) findViewById(R.id.user_about);
         profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -246,6 +248,10 @@ public class ProfileViewActivity extends AppCompatActivity {
         new DownloadImageTask(userPicture).execute(SERVER_URL + "?path=" + user.getImg());
 
         Calendar lastSeen = user.getLastSeen();
+
+        if(user.getAbout() != null) {
+            aboutUser.setText(user.getAbout());
+        }
 
         if(relation != Contact.Relation.SELF) {
             if (user.isOnline())

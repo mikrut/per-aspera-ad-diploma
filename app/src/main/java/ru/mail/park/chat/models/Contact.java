@@ -44,6 +44,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     private @Nullable String phone;
     private @Nullable String firstName;
     private @Nullable String lastName;
+    private @Nullable String aboutUser;
 
     private @Nullable String img;
     private @Nullable Calendar lastSeen;
@@ -96,6 +97,10 @@ public class Contact implements Comparable<Contact>, Serializable {
             GregorianCalendar lastSeen = new GregorianCalendar();
             lastSeen.setTime(dateLastSeen);
             setLastSeen(lastSeen);
+        }
+
+        if(contact.has("aboutMe")) {
+            setAboutMe(contact.getString("aboutMe"));
         }
 
         if (contact.has("online")) {
@@ -165,6 +170,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         this.online = online;
     }
 
+    private void setAboutMe(String info) {
+        this.aboutUser = info;
+    }
+
     @NonNull
     public String getUid() {
         return uid;
@@ -194,6 +203,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         this.phone = phone;
     }
 
+    public String getAbout() {
+        return aboutUser != null ? aboutUser : "";
+    }
+
     public @Nullable Calendar getLastSeen() {
         return lastSeen;
     }
@@ -216,6 +229,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         if (TextUtils.equals(email, ""))
             email = null;
         this.email = email;
+    }
+
+    public void setAbout(String info) {
+        this.aboutUser = info;
     }
 
     @Nullable
