@@ -64,6 +64,10 @@ public class ContactsFragment extends Fragment {
         if (args != null) {
             multichoice = args.getBoolean(IS_MULTICHOICE, false);
         }
+        return inflateView(inflater, container);
+    }
+
+    protected View inflateView(LayoutInflater inflater, ViewGroup container) {
         return inflater.inflate(R.layout.fragment_contacts, container, false);
     }
 

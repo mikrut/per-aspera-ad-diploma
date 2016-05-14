@@ -17,6 +17,7 @@ import ru.mail.park.chat.models.Contact;
  * Created by mikrut on 22.03.16.
  */
 public class ContactListWebLoader extends ContactListDBLoader {
+    private boolean activated = true;
 
     public ContactListWebLoader(@NonNull Context context, int id) {
         super(context, id);
@@ -27,7 +28,7 @@ public class ContactListWebLoader extends ContactListDBLoader {
         Contacts contactsAPI = new Contacts(getContext());
         List<Contact> contactList = null;
         try {
-            Pair<List<Contact>, Integer> result = contactsAPI.getContacts();
+            Pair<List<Contact>, Integer> result = contactsAPI.getContacts(activated);
             contactList = result.first;
             ContactHelper contactHelper = new ContactHelper(getContext());
             contactHelper.updateContactsList(contactList);
@@ -38,5 +39,7 @@ public class ContactListWebLoader extends ContactListDBLoader {
         return contactList;
     }
 
-
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
 }

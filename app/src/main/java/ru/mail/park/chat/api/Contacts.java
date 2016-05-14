@@ -33,13 +33,19 @@ public class Contacts extends ApiSection {
     }
 
     @NonNull
-    public Pair<List<Contact>, Integer> getContacts() throws IOException {
+    public Pair<List<Contact>, Integer> getContacts() throws  IOException {
+        return getContacts(true);
+    }
+
+    @NonNull
+    public Pair<List<Contact>, Integer> getContacts(boolean activated) throws IOException {
         final String requestURL = "list";
         final String requestMethod = "POST";
-
+        
         OwnerProfile ownerProfile = new OwnerProfile(getContext());
-        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        List<Pair<String, String>> parameters = new ArrayList<>(3);
         parameters.add(new Pair<>("id", ownerProfile.getUid()));
+        parameters.add(new Pair<>("activated", String.valueOf(activated)));
 
         int contactsLength;
         List<Contact> contactList;
