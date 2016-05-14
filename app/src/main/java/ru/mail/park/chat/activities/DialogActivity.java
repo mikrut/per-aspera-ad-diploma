@@ -22,7 +22,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -44,13 +43,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
@@ -80,7 +81,6 @@ public class DialogActivity
     private static final int CODE_FILE_SELECTED = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
-    private static final int WRITER_DISAPPEAR_DELAY_MILLIS = 2000;
 
     private KeyboardDetectingLinearLayout globalLayout;
     private FrameLayout emojicons;
@@ -96,8 +96,14 @@ public class DialogActivity
     private String ownerID;
     private String accessToken;
 
+    private final Timer schedulerTimer = new Timer();
+    private final Handler uiHandler = new Handler();
+    private static final long WRITER_DISAPPEAR_DELAY_MILLIS = 2000;
+    private static final long RETRY_DELAY_MILLIS = 5000;
+
     private List<Pair<Long, Contact>> writers;
-    private Timer writersHandlerTimer;
+    private static final int MAX_UNDELIVERED_MESSAGES = 50;
+    private BlockingQueue<Message> undeliveredMessages = new ArrayBlockingQueue<Message>(MAX_UNDELIVERED_MESSAGES);
 
     private List<Message> receivedMessageList;
     private List<AttachedFile> attachemtsList;
@@ -118,7 +124,6 @@ public class DialogActivity
 
         initViews();
         initAttachments();
-        initWriters();
 
         try {
             messages = getMessageSender();
@@ -183,6 +188,13 @@ public class DialogActivity
         }
     }*/
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initWriters();
+        initRetryTimeout();
+    }
+
     private void initViews() {
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
         messagesList = (RecyclerView) findViewById(R.id.messagesList);
@@ -223,11 +235,9 @@ public class DialogActivity
     // FIXME: possible multithreading bugs
     private void initWriters() {
         writers = new LinkedList<>();
-        writersHandlerTimer = new Timer();
-        final Handler uiHandler = new Handler();
         final TextView writersView = (TextView) findViewById(R.id.writersTextView);
 
-        writersHandlerTimer.schedule(new TimerTask() {
+        schedulerTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 final long currentTimeMillis = System.currentTimeMillis();
@@ -268,6 +278,31 @@ public class DialogActivity
                 });
             }
         }, WRITER_DISAPPEAR_DELAY_MILLIS, WRITER_DISAPPEAR_DELAY_MILLIS);
+    }
+
+    private void initRetryTimeout() {
+        schedulerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (chatID != null) {
+                            Bundle args = new Bundle();
+                            args.putString(MessagesLoader.CID_ARG, chatID);
+                            getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, listener).forceLoad();
+                        }
+
+                        if (undeliveredMessages.size() == 0)
+                            messages.reconnect();
+
+                        for (Message message : undeliveredMessages) {
+                            sendMessage(message);
+                        }
+                    }
+                });
+            }
+        }, RETRY_DELAY_MILLIS, RETRY_DELAY_MILLIS);
     }
 
     private void initMessagesList() {
@@ -327,7 +362,7 @@ public class DialogActivity
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(inputMessage.getText().toString());
+                sendMessage();
             }
         });
 
@@ -373,20 +408,25 @@ public class DialogActivity
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
-    protected void sendMessage(@NonNull String messageBody) {
-        if (messageBody != null && !messageBody.equals("")) {
+    private void sendMessage() {
+        final String messageBody = inputMessage.getText().toString();
+        if (!messageBody.equals("")) {
             Message message = new Message(messageBody, this);
             message.setFiles(attachemtsList);
-
-            addMessage(message);
-            if (chatID != null) {
-                messages.sendMessage(chatID, message);
-            } else if (userID != null) {
-                messages.sendFirstMessage(userID, message);
-            }
+            sendMessage(message);
 
             initAttachments();
             inputMessage.setText("");
+        }
+    }
+
+    protected void sendMessage(@NonNull Message message) {
+        undeliveredMessages.add(message);
+        addMessage(message);
+        if (chatID != null) {
+            messages.sendMessage(chatID, message);
+        } else if (userID != null) {
+            messages.sendFirstMessage(userID, message);
         }
     }
 
@@ -402,6 +442,7 @@ public class DialogActivity
                 messagesAdapter.notifyItemInserted(position);
                 inserted = true;
             } else if (comp == 0) {
+                undeliveredMessages.remove(receivedMessageList.get(position));
                 receivedMessageList.set(position, message);
                 messagesAdapter.notifyItemChanged(position);
                 inserted = true;
@@ -545,6 +586,7 @@ public class DialogActivity
         if (messages != null) {
             messages.disconnect();
         }
+        schedulerTimer.cancel();
     }
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
@@ -577,7 +619,7 @@ public class DialogActivity
                     return new MessagesLoader(DialogActivity.this, args);
                 case MESSAGES_DB_LOADER:
                 default:
-                        return new MessagesDBLoader(DialogActivity.this, args);
+                    return new MessagesDBLoader(DialogActivity.this, args);
             }
         }
 

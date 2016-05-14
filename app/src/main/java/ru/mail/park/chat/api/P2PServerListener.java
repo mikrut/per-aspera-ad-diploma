@@ -149,4 +149,8 @@ public class P2PServerListener extends Thread implements IMessageSender {
             Log.e("P2P disconnect", e.getLocalizedMessage());
         }*/
     }
+
+    public void reconnect() {
+
+    }
 }

@@ -258,9 +258,8 @@ public class Messages extends ApiSection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.d("[TP-diploma]", jsonRequest.toString());
+        Log.d(Messages.class.getSimpleName(), jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
-        Log.d("[TP-diploma]", ws.getState().toString());
     }
 
     public void sendFirstMessage(String uid, Message message) {
@@ -384,7 +383,7 @@ public class Messages extends ApiSection implements IMessageSender {
         ws.disconnect();
     }
 
-    private void reconnect() {
+    public void reconnect() {
         if (ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING)) {
             try {
                 ws = ws.recreate();
@@ -393,6 +392,7 @@ public class Messages extends ApiSection implements IMessageSender {
                 e.printStackTrace();
             }
         }
+        Log.d(Messages.class.getSimpleName(), ws.getState().toString());
     }
 
     public void setGroupCreateListener(IGroupCreateListener groupCreateListener) {

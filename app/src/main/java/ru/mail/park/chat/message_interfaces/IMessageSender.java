@@ -14,5 +14,6 @@ public interface IMessageSender {
     void sendMessage(String chatID, Message message);
     void sendFirstMessage(String userID, Message message);
     void disconnect();
+    void reconnect();
     void write(@NonNull String cid);
 }
