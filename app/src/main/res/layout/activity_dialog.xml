@@ -15,39 +15,36 @@
         android:background="#ffffff"
         android:layout_weight="1" >
 
-        <ScrollView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            <LinearLayout
-                android:layout_gravity="bottom"
-                android:gravity="bottom"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/messagesList"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    tools:listitem="@layout/element_message_right" />
 
-                <TextView
-                    android:id="@+id/writersTextView"
-                    android:drawableLeft="@drawable/edit_tinted_18dp"
-                    android:drawableStart="@drawable/edit_tinted_18dp"
-                    android:drawablePadding="3dp"
-                    android:gravity="bottom"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="25dp"
-                    android:layout_marginRight="25dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/textColorSecondary"
-                    android:visibility="gone"
-                    tools:visibility="visible"
-                    tools:text="User TESTUSER writes a message..."/>
-            </LinearLayout>
-        </ScrollView>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/messagesList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:layout_marginBottom="25dp"
+                tools:listitem="@layout/element_message_right" />
+
+            <TextView
+                android:id="@+id/writersTextView"
+                android:drawableLeft="@drawable/edit_tinted_18dp"
+                android:drawableStart="@drawable/edit_tinted_18dp"
+                android:drawablePadding="3dp"
+                android:gravity="bottom"
+                android:layout_marginTop="-25dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textColorSecondary"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="User TESTUSER writes a message..."/>
+
+        </LinearLayout>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/buttonDown"

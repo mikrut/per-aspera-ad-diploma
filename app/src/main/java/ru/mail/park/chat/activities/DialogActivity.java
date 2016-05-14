@@ -24,9 +24,11 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,7 +98,7 @@ public class DialogActivity
     private String ownerID;
     private String accessToken;
 
-    private final Timer schedulerTimer = new Timer();
+    private Timer schedulerTimer;
     private final Handler uiHandler = new Handler();
     private static final long WRITER_DISAPPEAR_DELAY_MILLIS = 2000;
     private static final long RETRY_DELAY_MILLIS = 5000;
@@ -237,6 +239,7 @@ public class DialogActivity
         writers = new LinkedList<>();
         final TextView writersView = (TextView) findViewById(R.id.writersTextView);
 
+        schedulerTimer = new Timer();
         schedulerTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -267,12 +270,17 @@ public class DialogActivity
                     @Override
                     public void run() {
                         if (writersView != null) {
+                            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) messagesList.getLayoutParams();
+                            int bottomMargin = 0;
                             if (resultString != null) {
                                 writersView.setText(resultString);
                                 writersView.setVisibility(View.VISIBLE);
+                                bottomMargin = writersView.getHeight();
                             } else {
                                 writersView.setVisibility(View.GONE);
                             }
+                            layoutParams.setMargins(layoutParams.leftMargin,
+                                    layoutParams.topMargin, layoutParams.rightMargin, bottomMargin);
                         }
                     }
                 });
@@ -287,7 +295,7 @@ public class DialogActivity
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (chatID != null) {
+                        if (chatID != null && messages instanceof Messages && !((Messages) messages).isStateOK()) {
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, listener).forceLoad();

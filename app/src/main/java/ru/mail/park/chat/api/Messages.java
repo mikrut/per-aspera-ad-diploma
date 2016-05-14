@@ -383,8 +383,12 @@ public class Messages extends ApiSection implements IMessageSender {
         ws.disconnect();
     }
 
+    public boolean isStateOK() {
+        return !(ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING));
+    }
+
     public void reconnect() {
-        if (ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING)) {
+        if (!isStateOK()) {
             try {
                 ws = ws.recreate();
                 ws.connectAsynchronously();

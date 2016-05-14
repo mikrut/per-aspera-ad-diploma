@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.Iterator;
@@ -34,6 +35,7 @@ public class ContactsFragment extends Fragment {
     public static final String IS_MULTICHOICE = ContactsFragment.class.getCanonicalName() + ".IS_MULTICHOICE";
     public static final String PICKED_CONTACTS = ContactsFragment.class.getCanonicalName() + ".PICKED_CONTACTS";
 
+    private ProgressBar spinner;
     private ContactAdapter contactAdapter;
     private RecyclerView contactsView;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -74,6 +76,8 @@ public class ContactsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        spinner = (ProgressBar) view.findViewById(R.id.spinner);
 
         contactsView = (RecyclerView) view.findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -157,6 +161,7 @@ public class ContactsFragment extends Fragment {
             swipeRefreshLayout.setRefreshing(false);
 
             if (data != null) {
+                spinner.setVisibility(View.GONE);
                 contactsView.setAdapter(onCreateContactAdapter(data));
             }
 
