@@ -33,13 +33,19 @@ public class Contacts extends ApiSection {
     }
 
     @NonNull
-    public Pair<List<Contact>, Integer> getContacts() throws IOException {
+    public Pair<List<Contact>, Integer> getContacts() throws  IOException {
+        return getContacts(true);
+    }
+
+    @NonNull
+    public Pair<List<Contact>, Integer> getContacts(boolean activated) throws IOException {
         final String requestURL = "list";
         final String requestMethod = "POST";
-
+        
         OwnerProfile ownerProfile = new OwnerProfile(getContext());
-        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        List<Pair<String, String>> parameters = new ArrayList<>(3);
         parameters.add(new Pair<>("id", ownerProfile.getUid()));
+        parameters.add(new Pair<>("activated", String.valueOf(activated)));
 
         int contactsLength;
         List<Contact> contactList;
@@ -68,6 +74,27 @@ public class Contacts extends ApiSection {
 
     public boolean addContact(@NonNull String uid) throws IOException {
         final String requestURL = "info";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("idUser", uid));
+
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            final int status = result.getInt("status");
+            if(status == 200) {
+                return true;
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error");
+        }
+    }
+
+    public boolean activateContact(@NonNull String uid) throws IOException {
+        final String requestURL = "activate";
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);

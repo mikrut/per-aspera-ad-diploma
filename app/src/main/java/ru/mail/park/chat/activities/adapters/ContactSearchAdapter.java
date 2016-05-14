@@ -23,15 +23,13 @@ public class ContactSearchAdapter extends AContactAdapter {
     private boolean addible = true;
 
     public static class ContactSearchHolder extends ContactHolder {
-        final ImageButton addFriendImage;
 
         public ContactSearchHolder(final View itemView) {
             super(itemView);
-            addFriendImage = (ImageButton) itemView.findViewById(R.id.addFriendImage);
-            
-            addFriendImage.setOnClickListener(new View.OnClickListener() {
+
+            setContactAction(contactAction.getDrawable(), new OnContactActionListener() {
                 @Override
-                public void onClick(View v) {
+                public void onContactAction(Contact contact) {
                     Log.v("add frend", "clicked");
                     new AddContactTask(itemView.getContext()).execute(uid);
                 }
@@ -39,11 +37,7 @@ public class ContactSearchAdapter extends AContactAdapter {
         }
 
         public void setAddible(boolean addible) {
-            if (addible) {
-                addFriendImage.setVisibility(View.VISIBLE);
-            } else {
-                addFriendImage.setVisibility(View.GONE);
-            }
+            setActionEnabled(addible);
         }
     }
 

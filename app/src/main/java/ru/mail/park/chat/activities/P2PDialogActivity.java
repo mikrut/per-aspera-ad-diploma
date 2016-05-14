@@ -81,9 +81,8 @@ public class P2PDialogActivity extends DialogActivity {
     }
 
     @Override
-    protected void sendMessage(@NonNull String messageBody) {
+    protected void sendMessage(@NonNull Message message) {
         if (messages != null) {
-            Message message = new Message(messageBody, this);
             messages.sendMessage(null, message);
         }
     }
