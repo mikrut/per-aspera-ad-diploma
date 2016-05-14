@@ -93,6 +93,27 @@ public class Contacts extends ApiSection {
         }
     }
 
+    public boolean activateContact(@NonNull String uid) throws IOException {
+        final String requestURL = "activate";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("idUser", uid));
+
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            final int status = result.getInt("status");
+            if(status == 200) {
+                return true;
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error");
+        }
+    }
+
     public int deleteContact(@NonNull String uid) throws IOException {
         final String requestURL = "info";
         final String requestMethod = "DELETE";

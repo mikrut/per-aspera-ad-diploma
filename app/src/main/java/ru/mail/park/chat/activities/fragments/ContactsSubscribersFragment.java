@@ -12,6 +12,7 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.AContactAdapter;
+import ru.mail.park.chat.activities.tasks.ActivateContactTask;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
 import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.models.Contact;
@@ -43,7 +44,8 @@ public class ContactsSubscribersFragment extends ContactsFragment {
             new AContactAdapter.ContactHolder.OnContactActionListener() {
                 @Override
                 public void onContactAction(Contact contact) {
-                    
+                    ActivateContactTask task = new ActivateContactTask(getContext());
+                    task.execute(contact.getUid());
                 }
             }
         );

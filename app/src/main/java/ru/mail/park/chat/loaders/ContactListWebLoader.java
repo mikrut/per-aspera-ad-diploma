@@ -30,9 +30,11 @@ public class ContactListWebLoader extends ContactListDBLoader {
         try {
             Pair<List<Contact>, Integer> result = contactsAPI.getContacts(activated);
             contactList = result.first;
-            ContactHelper contactHelper = new ContactHelper(getContext());
-            contactHelper.updateContactsList(contactList);
-            Log.v(getClass().getName(), String.valueOf(result.first.size()));
+            if (activated) {
+                ContactHelper contactHelper = new ContactHelper(getContext());
+                contactHelper.updateContactsList(contactList);
+            }
+            Log.v(getClass().getSimpleName(), String.valueOf(result.first.size()));
         } catch (IOException e) {
             e.printStackTrace();
         }
