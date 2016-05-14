@@ -2,12 +2,16 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +27,9 @@ import ru.mail.park.chat.models.Contact;
  */
 public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     static final int CONTACT = 1;
+
+    private Drawable contactActionDrawable;
+    private ContactHolder.OnContactActionListener contactActionListener;
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -46,6 +53,10 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         }
 
         contactHolder.setContact(contact);
+
+        if (contactActionListener != null && contactActionDrawable != null) {
+            contactHolder.setContactAction(contactActionDrawable, contactActionListener);
+        }
     }
 
     protected abstract Contact getContactForPosition(int position);
@@ -61,6 +72,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         final TextView contactName;
         final TextView contactLastSeen;
 
+        final ImageButton contactAction;
+
         String uid;
         Contact contact;
 
@@ -70,6 +83,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
             choosenImage = (ImageView) itemView.findViewById(R.id.choosenImage);
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
+            contactAction = (ImageButton) itemView.findViewById(R.id.contact_action_image_button);
 
             setOnContactClickListener(new OnContactClickListener() {
                 @Override
@@ -79,6 +93,40 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                     v.getContext().startActivity(intent);
                 }
             });
+        }
+
+        public interface OnContactActionListener {
+            void onContactAction(Contact contact);
+        }
+
+        public void setContactAction(Drawable icon, final OnContactActionListener listener) {
+            setContactAction(icon, null, listener);
+        }
+
+        public void setContactAction(Drawable icon, CharSequence actionDescription,
+                                     final OnContactActionListener listener) {
+            if (contactAction != null) {
+                contactAction.setImageDrawable(icon);
+                contactAction.setContentDescription(actionDescription);
+                contactAction.setVisibility(View.VISIBLE);
+                contactAction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.v(ContactHolder.class.getSimpleName(), "Contact action");
+                        listener.onContactAction(contact);
+                    }
+                });
+            }
+        }
+
+        public void setActionDrawable(Drawable icon) {
+            if (contactAction != null) {
+                contactAction.setImageDrawable(icon);
+            }
+        }
+
+        public void setActionEnabled(boolean enabled) {
+            contactAction.setVisibility(enabled ? View.VISIBLE : View.GONE);
         }
 
         public void setChosen(boolean chosen) {
@@ -131,5 +179,11 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         public interface OnContactClickListener {
             void onContactClick(View contactView, ContactHolder viewHolder);
         }
+    }
+
+    public void setContactAction(Drawable contactActionDrawable,
+                                 ContactHolder.OnContactActionListener listener) {
+        this.contactActionDrawable = contactActionDrawable;
+        this.contactActionListener = listener;
     }
 }

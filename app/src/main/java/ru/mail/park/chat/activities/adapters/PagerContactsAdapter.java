@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import ru.mail.park.chat.activities.fragments.ContactsCurrentFragment;
+import ru.mail.park.chat.activities.fragments.ContactsSubscribersFragment;
 
 /**
  * Created by Михаил on 14.05.2016.
@@ -14,7 +15,7 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
     private static final int ADDIBLE_CONTACTS_POSITION = 1;
 
     ContactsCurrentFragment currentFragment = new ContactsCurrentFragment();
-    ContactsCurrentFragment addibleFragment = new ContactsCurrentFragment();
+    ContactsSubscribersFragment addibleFragment = new ContactsSubscribersFragment();
 
     public PagerContactsAdapter(FragmentManager fm) {
         super(fm);

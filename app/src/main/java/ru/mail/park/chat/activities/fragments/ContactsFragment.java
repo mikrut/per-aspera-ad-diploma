@@ -38,8 +38,8 @@ public class ContactsFragment extends Fragment {
     private RecyclerView contactsView;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private final static int DB_LOADER = 0;
-    private final static int WEB_LOADER = 1;
+    protected final static int DB_LOADER = 0;
+    protected final static int WEB_LOADER = 1;
 
     private boolean multichoice = false;
     private TreeSet<Contact> chosenContacts = new TreeSet<>();
@@ -133,44 +133,49 @@ public class ContactsFragment extends Fragment {
         return contactAdapter;
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
-            new LoaderManager.LoaderCallbacks<List<Contact>>() {
-                @Override
-                public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
-                    switch (id) {
-                        case DB_LOADER:
-                            return new ContactListDBLoader(getActivity(), id);
-                        case WEB_LOADER:
-                            return new ContactListWebLoader(getActivity(), id);
-                        default:
-                            return null;
-                    }
-                }
+    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener = getLoaderCallbacks();
 
-                @Override
-                public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
-                    swipeRefreshLayout.setRefreshing(false);
+    protected LoaderManager.LoaderCallbacks<List<Contact>> getLoaderCallbacks() {
+        return new ContactsLoaderCallbacks();
+    }
 
-                    if (data != null) {
-                        contactsView.setAdapter(onCreateContactAdapter(data));
-                    }
+    protected class ContactsLoaderCallbacks implements LoaderManager.LoaderCallbacks<List<Contact>> {
+        @Override
+        public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+                case DB_LOADER:
+                    return new ContactListDBLoader(getActivity(), id);
+                case WEB_LOADER:
+                    return new ContactListWebLoader(getActivity(), id);
+                default:
+                    return null;
+            }
+        }
 
-                    switch (loader.getId()) {
-                        case DB_LOADER:
-                            getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
-                            break;
-                        case WEB_LOADER:
-                            if (data == null)
-                                Toast.makeText(getActivity(), "Load error. Check your connection.", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
+        @Override
+        public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+            swipeRefreshLayout.setRefreshing(false);
 
-                @Override
-                public void onLoaderReset(Loader<List<Contact>> loader) {
-                    // TODO: something...
-                }
-            };
+            if (data != null) {
+                contactsView.setAdapter(onCreateContactAdapter(data));
+            }
+
+            switch (loader.getId()) {
+                case DB_LOADER:
+                    getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+                    break;
+                case WEB_LOADER:
+                    if (data == null)
+                        Toast.makeText(getActivity(), "Load error. Check your connection.", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Contact>> loader) {
+            // TODO: something...
+        }
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
