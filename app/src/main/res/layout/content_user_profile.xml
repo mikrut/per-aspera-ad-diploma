@@ -62,7 +62,7 @@
                 android:id="@+id/user_about"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
-                android:src="@drawable/ic_phone_black_24dp"
+                android:src="@drawable/ic_person_black_24dp"
                 android:hint="About me" />
 
             <View

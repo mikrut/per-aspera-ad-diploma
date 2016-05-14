@@ -60,6 +60,7 @@ public class ProfileViewActivity extends AppCompatActivity {
 
     private ImageView userPicture;
     private ContactInfoElementView userLogin;
+    private ContactInfoElementView userLastName;
     private ContactInfoElementView userEmail;
     private ContactInfoElementView userPhone;
     private ContactInfoElementView aboutUser;
@@ -98,6 +99,7 @@ public class ProfileViewActivity extends AppCompatActivity {
         userLogin = (ContactInfoElementView) findViewById(R.id.user_login);
         userEmail = (ContactInfoElementView) findViewById(R.id.user_email);
         userPhone = (ContactInfoElementView) findViewById(R.id.user_phone);
+        userLastName = (ContactInfoElementView) findViewById(R.id.user_lastname);
         onlineIndicator = (TextView) findViewById(R.id.online_indicator);
         aboutUser = (ContactInfoElementView) findViewById(R.id.user_about);
         profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
@@ -234,8 +236,9 @@ public class ProfileViewActivity extends AppCompatActivity {
     private void setUserData(Contact user, Contact.Relation relation) {
         contact = user;
 
-        toolbarLayout.setTitle(user.getLogin());
-        userLogin.setText(user.getContactTitle());
+        toolbarLayout.setTitle(user.getLogin()); //toolbar is for login
+        userLogin.setText(user.getFirstName()); //userLogin is firstName
+        userLastName.setText(user.getLastName());
 
         if (user.getEmail() != null) {
             userEmail.setText(user.getEmail());

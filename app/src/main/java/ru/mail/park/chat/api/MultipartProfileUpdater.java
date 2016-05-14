@@ -47,15 +47,16 @@ public class MultipartProfileUpdater {
 
         Log.d("[TP-diploma]", "sending started");
         HttpMultipartUpdateProfileTask hmupTask = new HttpMultipartUpdateProfileTask(listener);
+        Log.d("[TP-diploma]", "HttpMultipartUpdateProfileTask created");
         hmupTask.execute();
 
-        try {
+    /*    try {
             result = hmupTask.get();
         } catch(Exception e) {
             return false;
-        }
+        }*/
 
-        return result != null;
+        return true;//result != null;
     }
 
 
@@ -85,6 +86,8 @@ public class MultipartProfileUpdater {
                 String twoHyphens = "--";
                 String boundary = "===" + System.currentTimeMillis() + "===";
                 String Tag = "[TP-diploma]";
+
+                Log.d(Tag, "doInBackground started");
 
                 // Open a HTTP connection to the URL
                 HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();

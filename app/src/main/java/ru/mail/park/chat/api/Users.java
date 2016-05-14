@@ -163,6 +163,11 @@ public class Users extends ApiSection {
         parameters.add(new Pair<>("img", profile.getImg()));
         parameters.add(new Pair<>("aboutMe", profile.getAbout()));
 
+        for(int i = 0; i < parameters.size(); i++) {
+            Pair<String, String> p = parameters.get(i);
+            Log.d("[TP-diploma]", p.first + ": " + (p.second == null ? "null" : p.second) );
+        }
+
         Log.d("[TP-diploma]", "Number of parameters: " + parameters.size());
 
         MultipartProfileUpdater mpu = new MultipartProfileUpdater(SERVER_URL + requestURL, parameters);
