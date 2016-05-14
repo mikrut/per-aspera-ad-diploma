@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -17,14 +18,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Pair;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
@@ -32,6 +36,7 @@ import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,7 +44,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
@@ -50,10 +61,10 @@ import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
-import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -61,7 +72,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 // TODO: send message
 public class DialogActivity
         extends AppCompatActivity
-        implements IMessageReaction,
+        implements IChatListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         HttpFileUpload.IUploadListener {
@@ -69,6 +80,7 @@ public class DialogActivity
     private static final int CODE_FILE_SELECTED = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
+    private static final int WRITER_DISAPPEAR_DELAY_MILLIS = 2000;
 
     private KeyboardDetectingLinearLayout globalLayout;
     private FrameLayout emojicons;
@@ -77,19 +89,21 @@ public class DialogActivity
     private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
     private RecyclerView attachments;
+    private ImageButton buttonDown;
 
     private String chatID;
     private String userID;
     private String ownerID;
     private String accessToken;
 
+    private List<Pair<Long, Contact>> writers;
+    private Timer writersHandlerTimer;
+
     private List<Message> receivedMessageList;
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
     protected IMessageSender messages;
-
-    private ImageButton buttonDown;
 
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
@@ -104,6 +118,7 @@ public class DialogActivity
 
         initViews();
         initAttachments();
+        initWriters();
 
         try {
             messages = getMessageSender();
@@ -202,6 +217,57 @@ public class DialogActivity
         LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
         attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         attachments.setLayoutManager(attachmentsManager);
+        attachments.setVisibility(View.GONE);
+    }
+
+    // FIXME: possible multithreading bugs
+    private void initWriters() {
+        writers = new LinkedList<>();
+        writersHandlerTimer = new Timer();
+        final Handler uiHandler = new Handler();
+        final TextView writersView = (TextView) findViewById(R.id.writersTextView);
+
+        writersHandlerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                final long currentTimeMillis = System.currentTimeMillis();
+                Iterator<Pair<Long, Contact>> i = writers.iterator();
+                while (i.hasNext()) {
+                    Pair<Long, Contact> current = i.next();
+                    if (Math.abs(current.first - currentTimeMillis) > WRITER_DISAPPEAR_DELAY_MILLIS)
+                        i.remove();
+                }
+
+                String writersString = null;
+                if (writers.size() > 0) {
+                    writersString = "User%s %s writes a message...";
+                    String writersConcatenated = "";
+                    for (Pair<Long, Contact> writer : writers) {
+                        writersConcatenated = writersConcatenated +
+                                writer.second.getContactTitle() + ", ";
+                    }
+                    writersConcatenated =
+                            writersConcatenated.substring(0, writersConcatenated.length() - 2);
+                    writersString = String.format(writersString,
+                            writers.size() > 1 ? "s" : "",
+                            writersConcatenated);
+                }
+                final String resultString = writersString;
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (writersView != null) {
+                            if (resultString != null) {
+                                writersView.setText(resultString);
+                                writersView.setVisibility(View.VISIBLE);
+                            } else {
+                                writersView.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+                });
+            }
+        }, WRITER_DISAPPEAR_DELAY_MILLIS, WRITER_DISAPPEAR_DELAY_MILLIS);
     }
 
     private void initMessagesList() {
@@ -233,6 +299,24 @@ public class DialogActivity
     }
 
     private void initActionListeners() {
+        inputMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (chatID != null)
+                    messages.write(chatID);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -277,7 +361,9 @@ public class DialogActivity
     }
 
     protected IMessageSender getMessageSender() throws IOException {
-        return new Messages(this, this);
+        Messages messages = new Messages(this);
+        messages.setChatListener(this);
+        return messages;
     }
 
     private void onUpdateChatID() {
@@ -298,6 +384,9 @@ public class DialogActivity
             } else if (userID != null) {
                 messages.sendFirstMessage(userID, message);
             }
+
+            initAttachments();
+            inputMessage.setText("");
         }
     }
 
@@ -399,10 +488,6 @@ public class DialogActivity
             Message incomeMsg = dispatchNewMessage(msg);
             if (incomeMsg != null)
                 addMessage(incomeMsg);
-
-            attachemtsList.clear();
-            attachments.getAdapter().notifyDataSetChanged();
-            inputMessage.setText("");
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -418,8 +503,16 @@ public class DialogActivity
     }
 
     @Override
-    public void onChatCreated(Chat chat) {
-        // TODO: ???
+    public void onWrite(String cid, Contact user) {
+        if (ObjectUtils.compare(cid, chatID) == 0) {
+            for (int i = 0; i < writers.size(); i++) {
+                if (writers.get(i).second.equals(user)) {
+                    writers.set(i, new Pair<>(System.currentTimeMillis(), user));
+                    return;
+                }
+            }
+            writers.add(new Pair<>(System.currentTimeMillis(), user));
+        }
     }
 
     private void setEmojiconFragment(boolean useSystemDefault) {

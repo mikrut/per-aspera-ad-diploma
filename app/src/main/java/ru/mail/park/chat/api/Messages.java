@@ -16,15 +16,18 @@ import com.neovisionaries.ws.client.WebSocketState;
 
 import java.io.IOException;
 import java.net.Proxy;
+import java.text.ParseException;
 import java.util.List;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
+import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -36,10 +39,12 @@ import org.json.JSONObject;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Messages extends ApiSection implements IMessageSender {
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 0; // Don't close the socket
     private WebSocket ws;
-    private final IMessageReaction taskListener;
-    private final Context taskContext;
+
+    private IChatListener chatListener;
+    private IGroupCreateListener groupCreateListener;
+
     private final OwnerProfile profile;
 
     private enum Method {
@@ -55,14 +60,10 @@ public class Messages extends ApiSection implements IMessageSender {
         return server + "?idUser=" + id;
     }
 
-    public Messages(@NonNull final Activity context, final IMessageReaction listener) throws IOException {
+    public Messages(@NonNull final Activity context) throws IOException {
         super(context);
 
-        this.taskContext = context;
-        this.taskListener = listener;
-
-        profile = new OwnerProfile(taskContext);
-
+        profile = new OwnerProfile(context);
         WebSocketFactory wsFactory = new WebSocketFactory();
 
         ProxySettings proxySettings = wsFactory.getProxySettings();
@@ -70,7 +71,7 @@ public class Messages extends ApiSection implements IMessageSender {
         if (torStart) {
             NetCipher.setProxy(NetCipher.ORBOT_HTTP_PROXY);
             Proxy netCipherProxy = NetCipher.getProxy();
-            Log.v(Messages.class.getCanonicalName(), netCipherProxy.address().toString());
+            Log.v(Messages.class.getSimpleName(), netCipherProxy.address().toString());
 
             String[] ipPort = netCipherProxy.address().toString().split(":");
             proxySettings.setHost(ipPort[0].substring(1));
@@ -112,14 +113,14 @@ public class Messages extends ApiSection implements IMessageSender {
                             @Override
                             public void run() {
                                 try {
-                                    Log.v(Messages.class.getCanonicalName(), message);
+                                    Log.v(Messages.class.getSimpleName(), message);
                                     JSONObject jsonIncome = new JSONObject(message);
 
                                     String method;
                                     if (jsonIncome.has("method")) {
                                         method = jsonIncome.getString("method");
-                                    } else if (jsonIncome.has("typePushe")) {
-                                        method = jsonIncome.getString("typePushe");
+                                    } else if (jsonIncome.has("typePush")) {
+                                        method = jsonIncome.getString("typePush");
                                     } else {
                                         if (lastUsed != null) {
                                             switch (lastUsed) {
@@ -144,7 +145,7 @@ public class Messages extends ApiSection implements IMessageSender {
                                     if (status != 200)
                                         throw new IOException("Wrong income status: " + String.valueOf(status));
 
-                                    if (taskListener != null) {
+                                    if (chatListener != null) {
                                         switch (method) {
                                             case "SEND":
                                                 dispatchSend(jsonIncome);
@@ -161,6 +162,8 @@ public class Messages extends ApiSection implements IMessageSender {
                                             case "createChats":
                                                 dispatchCreateChats(jsonIncome);
                                                 break;
+                                            case "writeMessage":
+                                                dispatchWriteMessage(jsonIncome);
                                         }
                                     }
                                 } catch (JSONException | IOException e) {
@@ -177,7 +180,9 @@ public class Messages extends ApiSection implements IMessageSender {
 
     private void dispatchCreateChats(JSONObject jsonIncome) throws JSONException {
         Chat chat = new Chat(jsonIncome.getJSONObject("data"), getContext());
-        taskListener.onChatCreated(chat);
+        if (groupCreateListener != null) {
+            groupCreateListener.onChatCreated(chat);
+        }
     }
 
     private void dispatchSend(JSONObject income) throws JSONException {
@@ -187,7 +192,8 @@ public class Messages extends ApiSection implements IMessageSender {
         String cid = data.getString("idMessage");
         String creationDate = data.getString("dtCreate");
 
-        taskListener.onAcknowledgeSendMessage(data);
+        if (chatListener != null)
+            chatListener.onAcknowledgeSendMessage(data);
     }
 
     private void dispatchNewMessage(JSONObject income) throws JSONException {
@@ -198,16 +204,31 @@ public class Messages extends ApiSection implements IMessageSender {
         String cid = data.getString("idRoom");
         String creationDate = data.getString("dtCreate");
 
-        taskListener.onIncomeMessage(data);
+        if (chatListener != null)
+            chatListener.onIncomeMessage(data);
     }
 
     private void dispatchDelete(JSONObject income) throws JSONException {
         int mid = income.getInt("mid");
-        taskListener.onActionDeleteMessage(mid);
+        if (chatListener != null)
+            chatListener.onActionDeleteMessage(mid);
     }
 
     private void dispatchGet(JSONObject income) {
 
+    }
+
+    private void dispatchWriteMessage(JSONObject income) throws JSONException {
+        JSONObject data = income.getJSONObject("data");
+
+        String cid = data.getString("idChat");
+        JSONObject user = data.getJSONObject("user");
+        try {
+            Contact contact = new Contact(user, getContext());
+            chatListener.onWrite(cid, contact);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendMessage(String cid, Message message) {
@@ -278,7 +299,7 @@ public class Messages extends ApiSection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -304,7 +325,27 @@ public class Messages extends ApiSection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getCanonicalName(), jsonRequest.toString());
+        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
+        ws.sendText(jsonRequest.toString());
+    }
+
+    @Override
+    public void write(@NonNull String cid) {
+        reconnect();
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
+
+        try {
+            jsonRequest.put("controller", "Messages");
+            jsonRequest.put("method", "write");
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            data.put("idChat", cid);
+            jsonRequest.put("data", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -352,5 +393,13 @@ public class Messages extends ApiSection implements IMessageSender {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setGroupCreateListener(IGroupCreateListener groupCreateListener) {
+        this.groupCreateListener = groupCreateListener;
+    }
+
+    public void setChatListener(IChatListener chatListener) {
+        this.chatListener = chatListener;
     }
 }
