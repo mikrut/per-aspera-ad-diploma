@@ -38,7 +38,6 @@ public class MultipartProfileUpdater {
     }
 
     public boolean Send_Now(IUploadListener listener){
-        Log.d("[TP-diploma]", "send now");
         return Sending(listener);
     }
 
@@ -47,7 +46,6 @@ public class MultipartProfileUpdater {
 
         Log.d("[TP-diploma]", "sending started");
         HttpMultipartUpdateProfileTask hmupTask = new HttpMultipartUpdateProfileTask(listener);
-        Log.d("[TP-diploma]", "HttpMultipartUpdateProfileTask created");
         hmupTask.execute();
 
     /*    try {
