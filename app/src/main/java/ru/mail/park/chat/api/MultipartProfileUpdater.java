@@ -29,10 +29,10 @@ public class MultipartProfileUpdater {
     List<Pair<String, String>> parameters;
 
     public MultipartProfileUpdater(String urlString, List<Pair<String, String>> parameters){
-        try{
+        try {
             this.parameters = parameters;
             connectURL = new URL(urlString);
-        }catch(Exception ex){
+        } catch(Exception ex) {
             Log.i("[TP-diploma]", "URL Malformatted");
         }
     }

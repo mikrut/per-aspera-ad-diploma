@@ -7,7 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -29,12 +32,16 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
+import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.MultipartProfileUpdater;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileEditActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
@@ -303,7 +310,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
     }
 
     public void onUploadComplete(String name) {
-        Toast.makeText(this, name, Toast.LENGTH_LONG);
+        Toast.makeText(this, name, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -374,12 +381,50 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                 dialogBuilder.setMessage("Sending data to server");
                 dialogBuilder.setCancelable(false);
                 new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
+
+                if(changedFields.get("img"))
+                    new UpdateLocalBlurImage(profile).execute();
+
                 return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void updateLocalImages(String imgPath, String uid) {
+        String savePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+        String saveBlurPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
+
+        Bitmap bm = BitmapFactory.decodeFile(imgPath);
+        Bitmap blurBm = BlurBuilder.blur(ProfileEditActivity.this, bm);
+
+        File file = new File(savePath);
+
+        try {
+            if (!file.exists())
+                file.createNewFile();
+
+            FileOutputStream fos = new FileOutputStream(file);
+            bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+        } catch (IOException e) {
+
+        }
+
+        file = new File(saveBlurPath);
+
+        try {
+            if (!file.exists())
+                file.createNewFile();
+
+            FileOutputStream fos = new FileOutputStream(file);
+            blurBm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+        } catch (IOException e) {
+
         }
     }
 
@@ -397,5 +442,21 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
             }
         }
 
+    }
+
+    private class UpdateLocalBlurImage extends AsyncTask<Void, Void, Void> {
+        Contact profile;
+
+        public UpdateLocalBlurImage(Contact profile) {
+            this.profile = profile;
+        }
+
+        protected Void doInBackground(Void... urls) {
+            updateLocalImages(profile.getImg(), profile.getUid());
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+        }
     }
 }
