@@ -112,12 +112,10 @@ class ServerConnection {
 
     public String getResponse() {
         StringBuilder responseBuilder = new StringBuilder();
-        Log.d("[TP-diploma]", "inside getResponse");
 
         try {
             // AFAIK everything except GET sends parameters the same way
             Log.w("url", httpURLConnection.getURL().toString());
-            Log.d("[TP-diploma]", httpURLConnection.getURL().toString());
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
                 Log.w(ServerConnection.class.getSimpleName() + ".getResponse", parameters);
@@ -147,6 +145,7 @@ class ServerConnection {
             }
             rd.close();
         } catch (IOException e) {
+            Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "Exception: " + e.getMessage());
             e.printStackTrace();
         }
         String reply = responseBuilder.toString();

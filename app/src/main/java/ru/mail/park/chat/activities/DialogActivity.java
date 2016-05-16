@@ -8,6 +8,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -28,6 +32,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,8 +46,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,18 +65,25 @@ import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
+import ru.mail.park.chat.activities.interfaces.IActionBarListener;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
+import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.api.ChatInfo;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
+import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -78,9 +95,11 @@ public class DialogActivity
         implements IChatListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
-        HttpFileUpload.IUploadListener {
+        HttpFileUpload.IUploadListener,
+        IActionBarListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int CODE_FILE_SELECTED = 3;
+    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
@@ -97,6 +116,7 @@ public class DialogActivity
     private String userID;
     private String ownerID;
     private String accessToken;
+    private ChatInfo chatInfo;
 
     private Timer schedulerTimer;
     private final Handler uiHandler = new Handler();
@@ -165,6 +185,7 @@ public class DialogActivity
 
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
+        new InitActionBarTask(this,  mActionBar, chatID).execute();
     }
 
 /*    @Override
@@ -589,6 +610,57 @@ public class DialogActivity
     }
 
     @Override
+    public void onLoadInfoCompleted(ActionBar mActionBar, ChatInfo chatInfo) {
+        CircleImageView smallUserPic;
+        TextView dialogTitle;
+        TextView dialogLastSeen;
+
+        smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
+        dialogTitle = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_title);
+        dialogLastSeen = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_last_seen);
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step I");
+
+        if(chatInfo == null)
+            return;
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step II");
+
+        Contact companion = chatInfo.getFirst();
+        if(companion != null && companion.getUid().equals(ownerID)) {
+            companion = chatInfo.getSecond();
+
+            if(!companion.getUid().equals(ownerID)) {
+                companion = null;
+            }
+        }
+
+        if(companion == null)
+            return;
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step III");
+
+        companion = new ContactHelper(this).getContact(companion.getUid());
+
+        dialogTitle.setText(companion.getContactTitle());
+        if (companion.isOnline())
+            dialogLastSeen.setText("online");
+        else if(companion.getLastSeen() != null)
+            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
+        else
+            dialogLastSeen.setText("offline");
+
+        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
+        File file = new File(filePath);
+
+        if(file.exists()) {
+            smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
+        }
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted done");
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (messages != null) {
@@ -655,4 +727,64 @@ public class DialogActivity
             // TODO: something
         }
     };
+
+    private class InitActionBarTask extends AsyncTask<Void, Void, ChatInfo> {
+        IActionBarListener listener;
+        ActionBar mActionBar;
+        String chatID;
+
+        public InitActionBarTask(IActionBarListener listener, ActionBar mActionBar, String chatID) {
+            this.listener = listener;
+            this.mActionBar = mActionBar;
+            this.chatID = chatID;
+        }
+
+        protected ChatInfo doInBackground(Void... urls) {
+            Chats chatsAPI = new Chats(DialogActivity.this);
+
+            try {
+                chatInfo = chatsAPI.getChatInfo(chatID);
+            } catch (IOException e) {
+                Log.d("[TP-diploma]", "getChatInfo Exception:" + e.getMessage());
+                return null;
+            }
+
+            try {
+                checkUserData(chatInfo.getFirst());
+                checkUserData(chatInfo.getSecond());
+            } catch(IOException e) {
+                Log.d("[TP-diploma]", "CheckUserData Exception:" + e.getMessage());
+                return null;
+            }
+
+            return chatInfo;
+        }
+
+        protected void onPostExecute(ChatInfo chatInfo) {
+            listener.onLoadInfoCompleted(mActionBar, chatInfo);
+        }
+    }
+
+    private void checkUserData(Contact user) throws IOException {
+        ContactHelper contactHelper = new ContactHelper(DialogActivity.this);
+        Contact userFromBase = contactHelper.getContact(user.getUid());
+        Pair<List<Contact>, Integer> contactList = null;
+
+        if(userFromBase != null) {
+            String requestPath = SERVER_URL + user.getImg();
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";;
+
+            File file = new File(localPath);
+
+            if(!file.exists()) {
+                InputStream in = new java.net.URL(requestPath).openStream();
+                Bitmap bm = BitmapFactory.decodeStream(in);
+
+                FileOutputStream fos = new FileOutputStream(file);
+                bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                fos.close();
+            }
+
+        }
+    }
 }

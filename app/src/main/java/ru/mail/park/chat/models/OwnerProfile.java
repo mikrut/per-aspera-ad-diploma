@@ -44,6 +44,9 @@ public class OwnerProfile extends Contact {
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
 
+    public OwnerProfile() {
+        super();
+    }
 
     public OwnerProfile(Context context) {
         SharedPreferences sharedPreferences =

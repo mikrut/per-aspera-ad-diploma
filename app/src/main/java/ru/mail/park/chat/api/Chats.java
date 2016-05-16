@@ -11,7 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,6 +121,35 @@ public class Chats extends ApiSection {
     @NonNull
     public Chat addUser(@NonNull String cid, @NonNull String uid) throws IOException {
         return addUser(cid, uid, null);
+    }
+
+    @NonNull
+    public ChatInfo getChatInfo(String cid) throws IOException {
+        ChatInfo chatInfo;
+        final String requestURL = "get";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("idRoom", cid));
+
+        try {
+            String response = executeRequest(requestURL, requestMethod, parameters);
+            Log.d("[TP-diploma]", "getChatInfo(" + cid + ") result: " + response);
+            JSONObject result = new JSONObject(response);
+            final int status = result.getInt("status");
+            if(status == 200) {
+                JSONObject ci = result.getJSONObject("data");
+                chatInfo = new ChatInfo(ci);
+            } else {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            Log.d("[TP-diploma]", e.getMessage());
+            throw new IOException("Server error", e);
+        }
+
+        return chatInfo;
     }
 
     @NonNull

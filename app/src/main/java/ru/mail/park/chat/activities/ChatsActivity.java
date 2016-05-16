@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.Loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -30,6 +32,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -65,6 +68,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     private RecyclerView chatsList;
     private SearchView searchView;
     private SwipeRefreshLayout swipeContainer;
+    private ProgressBar pbChats;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
@@ -84,6 +88,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_drawer);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        pbChats = (ProgressBar) findViewById(R.id.pb_chats);
+        pbChats.getIndeterminateDrawable().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+        pbChats.setVisibility(View.VISIBLE);
         setSupportActionBar(toolbar);
         setupActionBar();
 
@@ -351,6 +358,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                         chatsList.setAdapter(new ChatsAdapter(data));
                     }
                     swipeContainer.setRefreshing(false);
+                    pbChats.setVisibility(View.GONE);
                 }
 
                 @Override

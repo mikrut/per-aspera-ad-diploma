@@ -56,7 +56,9 @@ public class Contact implements Comparable<Contact>, Serializable {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    Contact(){}
+    Contact(){
+        email = firstName = lastName = img = aboutUser = login = null;
+    }
 
     public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
         Log.d(Contact.class.getSimpleName() + ".new", contact.toString());
@@ -87,6 +89,39 @@ public class Contact implements Comparable<Contact>, Serializable {
             setEmail(contact.getString("email"));
         if (contact.has("phone"))
             setPhone(contact.getString("phone"));
+        if (contact.has("firstName"))
+            setFirstName(contact.getString("firstName"));
+        if (contact.has("lastName"))
+            setLastName(contact.getString("lastName"));
+
+        if (contact.has("lastSeen")) {
+            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("lastSeen"));
+            GregorianCalendar lastSeen = new GregorianCalendar();
+            lastSeen.setTime(dateLastSeen);
+            setLastSeen(lastSeen);
+        }
+
+        if(contact.has("aboutMe")) {
+            setAboutMe(contact.getString("aboutMe"));
+        }
+
+        if (contact.has("online")) {
+            setOnline(contact.getBoolean("online"));
+        }
+
+        if(contact.has("img")) {
+            Log.d("[TP-diploma]", "has img");
+            setImg(contact.getString("img"));
+        }
+    }
+
+    public Contact(JSONObject contact) throws JSONException, ParseException {
+        if(contact.has("id"))
+            uid = contact.getString("id");
+        if (contact.has("login"))
+            login = contact.getString("login");
+        if (contact.has("email"))
+            setEmail(contact.getString("email"));
         if (contact.has("firstName"))
             setFirstName(contact.getString("firstName"));
         if (contact.has("lastName"))
@@ -185,7 +220,7 @@ public class Contact implements Comparable<Contact>, Serializable {
 
     @NonNull
     public String getLogin() {
-        return login;
+        return login != null ? login : "friend";
     }
 
     public void setLogin(@NonNull String login) {
@@ -204,7 +239,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     }
 
     public String getAbout() {
-        return aboutUser != null ? aboutUser : "";
+        return aboutUser;
     }
 
     public @Nullable Calendar getLastSeen() {
