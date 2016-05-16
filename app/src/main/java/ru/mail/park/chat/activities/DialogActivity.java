@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -28,13 +27,11 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
@@ -51,15 +48,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -82,8 +75,6 @@ import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
-import ru.mail.park.chat.models.Contact;
-import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -638,17 +629,19 @@ public class DialogActivity
         if(companion == null)
             return;
 
+        final Contact finalComp = companion;
+
         Log.d("[TP-diploma]", "onLoadInfoCompleted step III");
 
-        companion = new ContactHelper(this).getContact(companion.getUid());
+//        companion = new ContactHelper(this).getContact(companion.getUid());
 
-        dialogTitle.setText(companion.getContactTitle());
-        if (companion.isOnline())
-            dialogLastSeen.setText("online");
-        else if(companion.getLastSeen() != null)
-            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
-        else
-            dialogLastSeen.setText("offline");
+//        dialogTitle.setText(companion.getContactTitle());
+//        if (companion.isOnline())
+//            dialogLastSeen.setText("online");
+//        else if(companion.getLastSeen() != null)
+//            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
+//        else
+//            dialogLastSeen.setText("offline");
 
         String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
         File file = new File(filePath);
@@ -656,6 +649,16 @@ public class DialogActivity
         if(file.exists()) {
             smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
         }
+
+        mActionBar.getCustomView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DialogActivity.this, ProfileViewActivity.class);
+                intent.putExtra(ProfileViewActivity.UID_EXTRA, finalComp.getUid());
+                startActivity(intent);
+                finish();
+            }
+        });
 
         Log.d("[TP-diploma]", "onLoadInfoCompleted done");
     }
