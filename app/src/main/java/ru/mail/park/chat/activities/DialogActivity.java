@@ -102,6 +102,7 @@ public class DialogActivity
     private ImageButton sendMessage;
     private RecyclerView attachments;
     private ImageButton buttonDown;
+    private ActionBar mActionBar;
 
     private String chatID;
     private String userID;
@@ -161,7 +162,7 @@ public class DialogActivity
             onUpdateChatID();
         }
 
-        ActionBar mActionBar = getSupportActionBar();
+        mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowHomeEnabled(false);
         mActionBar.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
@@ -207,6 +208,22 @@ public class DialogActivity
         super.onResume();
         initWriters();
         initRetryTimeout();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.actionbar_dialog, null);
+        mCustomView.findViewById(R.id.small_dialog_user_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        mActionBar.setCustomView(mCustomView);
     }
 
     private void initViews() {
@@ -621,7 +638,7 @@ public class DialogActivity
         if(companion != null && companion.getUid().equals(ownerID)) {
             companion = chatInfo.getSecond();
 
-            if(!companion.getUid().equals(ownerID)) {
+            if(companion.getUid().equals(ownerID)) {
                 companion = null;
             }
         }
@@ -635,7 +652,7 @@ public class DialogActivity
 
 //        companion = new ContactHelper(this).getContact(companion.getUid());
 
-//        dialogTitle.setText(companion.getContactTitle());
+        dialogTitle.setText(companion.getContactTitle());
 //        if (companion.isOnline())
 //            dialogLastSeen.setText("online");
 //        else if(companion.getLastSeen() != null)
@@ -744,6 +761,7 @@ public class DialogActivity
 
         protected ChatInfo doInBackground(Void... urls) {
             Chats chatsAPI = new Chats(DialogActivity.this);
+            Log.d("[TP-diploma]", "InitActionBarTask started");
 
             try {
                 chatInfo = chatsAPI.getChatInfo(chatID);
@@ -775,7 +793,7 @@ public class DialogActivity
 
         if(userFromBase != null) {
             String requestPath = SERVER_URL + user.getImg();
-            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";;
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";
 
             File file = new File(localPath);
 

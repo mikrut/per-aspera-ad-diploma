@@ -117,6 +117,7 @@ class ServerConnection {
             // AFAIK everything except GET sends parameters the same way
             Log.w("url", httpURLConnection.getURL().toString());
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
+                Log.d("[TP-diploma]", "parameters in request: " + parameters);
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
                 Log.w(ServerConnection.class.getSimpleName() + ".getResponse", parameters);
 
