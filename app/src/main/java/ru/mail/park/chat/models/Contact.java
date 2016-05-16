@@ -143,7 +143,6 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
 
         if(contact.has("img")) {
-            Log.d("[TP-diploma]", "has img");
             setImg(contact.getString("img"));
         }
     }
@@ -293,7 +292,6 @@ public class Contact implements Comparable<Contact>, Serializable {
     }
 
     public void setImg(String img) {
-        Log.d("[TP-diploma]", "set img");
         this.img = img;
     }
 

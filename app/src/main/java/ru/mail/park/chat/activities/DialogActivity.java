@@ -787,11 +787,14 @@ public class DialogActivity
     }
 
     private void checkUserData(Contact user) throws IOException {
+        if(user == null)
+            return;
+
         ContactHelper contactHelper = new ContactHelper(DialogActivity.this);
         Contact userFromBase = contactHelper.getContact(user.getUid());
         Pair<List<Contact>, Integer> contactList = null;
 
-        if(userFromBase != null) {
+        if(userFromBase != null && !user.getImg().equals("false")) {
             String requestPath = SERVER_URL + user.getImg();
             String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";
 
