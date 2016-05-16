@@ -16,6 +16,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +29,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
@@ -60,12 +63,15 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private ProfileEditActivity thisAct = null;
 
+    private HashMap<String, Boolean> changedFields;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_edit);
 
         thisAct = this;
+        changedFields = new HashMap<>();
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
         imgUploadPicture = (ImageView) findViewById(R.id.user_upload_picture);
@@ -96,6 +102,101 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
             currentAvatar.setImageURI(Uri.parse(filePath));
         else
             currentAvatar.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
+
+        userLogin.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userLogin")) {
+                    changedFields.put("userLogin", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        userEmail.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userEmail")) {
+                    changedFields.put("userEmail", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        firstName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("firstName")) {
+                    changedFields.put("firstName", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        lastName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!changedFields.containsKey("lastName")) {
+                    changedFields.put("lastName", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        userAbout.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userAbout")) {
+                    changedFields.put("userAbout", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
 
         imgCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -167,6 +268,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                     Log.d("[TP-diploma]", "sending file started");
                     try {
                         selectedFilePath = mImageUri.getPath();
+                        changedFields.put("img", true);
                         Toast.makeText(ProfileEditActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -187,6 +289,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                         cursor.close();
 
                         selectedFilePath = filePath;
+                        changedFields.put("img", true);
                         Toast.makeText(ProfileEditActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch(Exception e) {
                         Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
@@ -239,12 +342,24 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private OwnerProfile getUpdatedProfile() {
         OwnerProfile profile = new OwnerProfile(this);
-        profile.setEmail(userEmail.getText().toString());
-        profile.setLogin(userLogin.getText().toString());
-        profile.setFirstName(firstName.getText().toString());
-        profile.setLastName(lastName.getText().toString());
-        profile.setImg(selectedFilePath);
-        profile.setAbout(userAbout.getText().toString());
+        if(changedFields.containsKey("userEmail"))
+            profile.setEmail(userEmail.getText().toString());
+
+        if(changedFields.containsKey("userLogin"))
+            profile.setLogin(userLogin.getText().toString());
+
+        if(changedFields.containsKey("firstName"))
+            profile.setFirstName(firstName.getText().toString());
+
+        if(changedFields.containsKey("lastName"))
+            profile.setLastName(lastName.getText().toString());
+
+        if(changedFields.containsKey("img"))
+            profile.setImg(selectedFilePath);
+
+        if(changedFields.containsKey("userAbout"))
+            profile.setAbout(userAbout.getText().toString());
+
         return profile;
     }
 
