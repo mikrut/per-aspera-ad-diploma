@@ -126,7 +126,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 getString(R.string.action_group_chats),
                 getString(R.string.contacts),
                 getString(R.string.action_settings),
-                getString(R.string.action_help),
                 getString(R.string.action_log_out)
         };
         View.OnClickListener[] listeners = {new View.OnClickListener() {
@@ -153,7 +152,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 Intent intent = new Intent(ChatsActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
-        }, null,
+        },
            new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -177,7 +176,6 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 R.drawable.ic_group_black_24dp,
                 R.drawable.ic_contacts_black_24dp,
                 R.drawable.ic_settings_black_24dp,
-                R.drawable.ic_help_black_24dp,
                 R.drawable.ic_lock_black_24dp
             };
         OwnerProfile owner = new OwnerProfile(this);
