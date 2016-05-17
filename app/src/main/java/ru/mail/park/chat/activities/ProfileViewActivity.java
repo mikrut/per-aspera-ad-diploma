@@ -174,6 +174,20 @@ public class ProfileViewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if(uid != null) {
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";;
+
+
+            File localFile = new File(localPath);
+            if(localFile.exists())
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(localPath));
+
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long

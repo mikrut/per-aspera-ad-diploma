@@ -299,7 +299,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                         changedFields.put("img", true);
                         Toast.makeText(ProfileEditActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch(Exception e) {
-                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
+                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -310,7 +310,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
     }
 
     public void onUploadComplete(String name) {
-        Toast.makeText(this, name, Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -382,7 +382,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                 dialogBuilder.setCancelable(false);
                 new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
 
-                if(changedFields.get("img"))
+                if(changedFields.containsKey("img"))
                     new UpdateLocalBlurImage(profile).execute();
 
                 return true;

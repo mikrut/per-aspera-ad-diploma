@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class MultipartProfileUpdater {
     URL connectURL;
-    String responseString;
-    byte[ ] dataToServer;
     FileInputStream fileInputStream = null;
     List<Pair<String, String>> parameters;
 
@@ -42,19 +40,19 @@ public class MultipartProfileUpdater {
     }
 
     boolean Sending(IUploadListener listener){
-        String result = null;
+        Boolean result = true;
 
         Log.d("[TP-diploma]", "sending started");
         HttpMultipartUpdateProfileTask hmupTask = new HttpMultipartUpdateProfileTask(listener);
         hmupTask.execute();
 
-    /*    try {
+        /*try {
             result = hmupTask.get();
         } catch(Exception e) {
             return false;
         }*/
 
-        return true;//result != null;
+        return result;//result != null;
     }
 
 
@@ -66,7 +64,7 @@ public class MultipartProfileUpdater {
         void onUploadComplete(String name);
     }
 
-    class HttpMultipartUpdateProfileTask extends AsyncTask<Void,Void,String>
+    class HttpMultipartUpdateProfileTask extends AsyncTask<Void,Void,Boolean>
     {
         IUploadListener listener;
 
@@ -78,7 +76,7 @@ public class MultipartProfileUpdater {
             //display progress dialog.
         }
 
-        protected String doInBackground(Void... params) {
+        protected Boolean doInBackground(Void... params) {
             try {
                 String lineEnd = "\r\n";
                 String twoHyphens = "--";
@@ -181,23 +179,20 @@ public class MultipartProfileUpdater {
 
                 StringBuffer b = new StringBuffer();
                 while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
-                String s=b.toString();
 
                 dos.close();
-                Log.d("[TP-diploma]", "mpu result: " + s);
-                return s;
+                return conn.getResponseCode() == 200;
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage());
+                return false;
             }
         }
 
-        protected void onPostExecute(String result) {
-            if (result != null && listener != null) {
+        protected void onPostExecute(Boolean result) {
+            if (result && listener != null) {
                 try {
-                    listener.onUploadComplete(result);
-                } catch (Exception
-                        e) {
+                    listener.onUploadComplete(String.valueOf(result));
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
