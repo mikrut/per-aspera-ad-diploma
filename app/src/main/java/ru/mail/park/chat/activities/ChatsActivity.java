@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
@@ -10,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,10 +31,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
 
@@ -48,6 +46,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
@@ -225,7 +224,28 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     @Override
     protected void onResume() {
         super.onResume();
+        CircleImageView civ = null;
         getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
+        if(uid != null) {
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+            String localBlurPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
+
+            RelativeLayout rl = (RelativeLayout)ChatsActivity.this.findViewById(R.id.left_drawer_header);
+            try {
+                civ = (CircleImageView) rl.findViewById(R.id.userPicture);
+            } catch (NullPointerException e) {
+
+            }
+
+            File localFile = new File(localPath);
+            if(localFile.exists() && civ != null)
+                civ.setImageBitmap(BitmapFactory.decodeFile(localPath));
+
+            File localBlurFile = new File(localBlurPath);
+
+            if(localBlurFile.exists() && rl != null)
+                rl.setBackground(new BitmapDrawable(getResources(), BitmapFactory.decodeFile(localBlurPath)));
+        }
     }
 
     @Override
@@ -428,7 +448,21 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
             Log.d("[TP-diploma]", "task is working");
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
-            String smallFilePath = "http://p30480.lab1.stud.tech-mail.ru" + own.getImg();///file/image?height=100&width=100&path=
+            String smallFilePath = "http://p30480.lab1.stud.tech-mail.ru" + own.getImg();
+
+            String localPath =  Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+            String localBlurPath =  Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
+
+            File fileLocal = new File(localPath);
+            File fileLocalBlur = new File(localBlurPath);
+
+            if(fileLocal.exists()) {
+
+            }
+
+            if(fileLocalBlur.exists()) {
+
+            }
 
             try {
                 Log.d("[TP-diploma]", "Requesting smallUserPic: " + smallFilePath);
