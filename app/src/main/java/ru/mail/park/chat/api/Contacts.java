@@ -73,7 +73,7 @@ public class Contacts extends ApiSection {
     }
 
     public boolean addContact(@NonNull String uid) throws IOException {
-        final String requestURL = "info";
+        final String requestURL = "create";
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);

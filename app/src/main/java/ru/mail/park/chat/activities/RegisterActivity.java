@@ -1,8 +1,12 @@
 package ru.mail.park.chat.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,6 +15,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import java.util.Map;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.RegisterTask;
@@ -42,6 +48,19 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         emailSignUpButton = (Button) findViewById(R.id.email_sign_up_button);
 
         emailSignUpButton.setOnClickListener(signUpListener);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null && toolbar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+        }
     }
 
     private final View.OnClickListener signUpListener = new View.OnClickListener() {
@@ -62,27 +81,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         task.execute(login, firstName, lastName, password, email);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_register, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public void onRegistrationStart() {
@@ -99,8 +97,36 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
     }
 
     @Override
-    public void onRegistrationFail(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    public void onRegistrationFail(Map<ErrorType, String> errors) {
+        mLoginView.setError(null);
+        mFirstNameView.setError(null);
+        mLastNameView.setError(null);
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+        if (errors != null) {
+            for (Map.Entry<ErrorType, String> error : errors.entrySet()) {
+                switch (error.getKey()) {
+                    case LOGIN:
+                        mLoginView.setError(error.getValue());
+                        break;
+                    case FIRST_NAME:
+                        mFirstNameView.setError(error.getValue());
+                        break;
+                    case LAST_NAME:
+                        mLastNameView.setError(error.getValue());
+                        break;
+                    case EMAIL:
+                        mEmailView.setError(error.getValue());
+                        break;
+                    case PASSWORD:
+                        mPasswordView.setError(error.getValue());
+                        break;
+                }
+            }
+        } else {
+            Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

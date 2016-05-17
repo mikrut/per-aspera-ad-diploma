@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private ImageView appImage;
     private CheckBox withoutTorAllowedCheckBox;
     private TextView tvRegisterLink;
     private Button mEmailSignInButton;
@@ -45,6 +47,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        appImage = (ImageView) findViewById(R.id.app_picture);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -126,11 +130,13 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     @Override
     public void onStartAuth() {
         mProgressView.setVisibility(View.VISIBLE);
+        appImage.setVisibility(View.GONE);
     }
 
     @Override
     public void onLoginSuccess(OwnerProfile contact) {
         mProgressView.setVisibility(View.GONE);
+        appImage.setVisibility(View.VISIBLE);
 
         contact.saveToPreferences(this);
         MessengerDBHelper dbHelper = new MessengerDBHelper(this);
@@ -145,6 +151,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     @Override
     public void onLoginFail(String message) {
         mProgressView.setVisibility(View.GONE);
+        appImage.setVisibility(View.VISIBLE);
 
         mPasswordView.setOnEditorActionListener(onPasswordListener);
         mEmailSignInButton.setOnClickListener(onSignInListener);

@@ -11,8 +11,11 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import ru.mail.park.chat.auth_signup.IRegisterCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -34,12 +37,30 @@ public class Auth extends ApiSection {
         super(context);
     }
 
+    public class SignUpException extends Exception {
+
+        public SignUpException(String detailMessage, Map<IRegisterCallbacks.ErrorType, String> errorTypeStringMap) {
+            super(detailMessage);
+            this.errorTypeStringMap = errorTypeStringMap;
+        }
+
+        private Map<IRegisterCallbacks.ErrorType, String> errorTypeStringMap;
+
+        public Map<IRegisterCallbacks.ErrorType, String> getErrorTypeStringMap() {
+            return errorTypeStringMap;
+        }
+
+        public void setErrorTypeStringMap(Map<IRegisterCallbacks.ErrorType, String> errorTypeStringMap) {
+            this.errorTypeStringMap = errorTypeStringMap;
+        }
+    }
+
     @NonNull
     public OwnerProfile signUp(String login,
                                String firstName,
                                String lastName,
                                String password,
-                               String email) throws IOException {
+                               String email) throws IOException, SignUpException {
         final String requestURL = "signUp";
         final String requestMethod = "PUT";
 
@@ -59,7 +80,13 @@ public class Auth extends ApiSection {
                 user = new OwnerProfile(data);
             } else {
                 String message = result.getString("message");
-                throw new IOException(message);
+                Map<IRegisterCallbacks.ErrorType, String> errorsMap = new HashMap<>();
+                JSONObject errors = result.getJSONObject("errors");
+                for (IRegisterCallbacks.ErrorType errorType : IRegisterCallbacks.ErrorType.values()) {
+                    if (errors.has(errorType.toString()))
+                        errorsMap.put(errorType, errors.getJSONArray(errorType.toString()).getString(0));
+                }
+                throw new SignUpException(message, errorsMap);
             }
         } catch (JSONException | ParseException e) {
             throw new IOException("Server error");

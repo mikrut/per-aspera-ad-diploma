@@ -167,5 +167,6 @@
     <string name="action_log_out">Log out</string>
     <string name="title_activity_create_group_dialog">Create Group Dialog</string>
     <string name="title_activity_dialog">Dialog</string>
+    <string name="prompt_email">E-Mail</string>
 
 </resources>
