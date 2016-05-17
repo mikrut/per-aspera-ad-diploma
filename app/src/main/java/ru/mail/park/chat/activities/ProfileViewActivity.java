@@ -39,6 +39,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
 import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.loaders.OwnerWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -254,6 +255,9 @@ public class ProfileViewActivity extends AppCompatActivity {
 
         if(user.getAbout() != null) {
             aboutUser.setText(user.getAbout());
+            aboutUser.setVisibility(View.VISIBLE);
+        } else {
+            aboutUser.setVisibility(View.GONE);
         }
 
         if(relation != Contact.Relation.SELF) {
@@ -300,7 +304,13 @@ public class ProfileViewActivity extends AppCompatActivity {
             new LoaderManager.LoaderCallbacks<Contact>() {
                 @Override
                 public Loader<Contact> onCreateLoader(int id, Bundle args) {
-                    return new ProfileWebLoader(ProfileViewActivity.this, id, args);
+                    switch (id) {
+                        case WEB_OWN_LOADER:
+                            return new OwnerWebLoader(ProfileViewActivity.this, id, args);
+                        case WEB_LOADER:
+                        default:
+                            return new ProfileWebLoader(ProfileViewActivity.this, id, args);
+                    }
                 }
 
                 @Override

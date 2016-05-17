@@ -148,11 +148,10 @@
 
             <EditText
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="wrap_content"
                 android:gravity="left"
                 android:inputType="textMultiLine"
                 tools:text="Im a bad nigga"
-                android:ems="10"
                 android:id="@+id/about_field" />
         </LinearLayout>
 
