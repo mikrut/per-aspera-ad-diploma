@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"チャット"</string>
     <string name="action_settings">"[設定]"</string>
     <string name="action_search">"サーチ"</string>
     <string name="title_activity_login">"ログイン"</string>

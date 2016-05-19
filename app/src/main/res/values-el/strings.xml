@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"Κουβέντα"</string>
     <string name="action_settings">"Ρυθμίσεις"</string>
     <string name="action_search">"Αναζήτηση"</string>
     <string name="title_activity_login">"Συνδεθείτε"</string>

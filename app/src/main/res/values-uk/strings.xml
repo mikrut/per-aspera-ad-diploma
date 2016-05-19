@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"чат"</string>
     <string name="action_settings">"Налаштування"</string>
     <string name="action_search">"Шукати"</string>
     <string name="title_activity_login">"Hello"</string>

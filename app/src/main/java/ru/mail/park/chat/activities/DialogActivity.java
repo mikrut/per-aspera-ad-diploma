@@ -125,6 +125,8 @@ public class DialogActivity
     private LinearLayoutManager layoutManager;
     protected IMessageSender messages;
 
+    private boolean receivedFromWeb = false;
+
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
 
@@ -447,7 +449,7 @@ public class DialogActivity
 
     private void sendMessage() {
         final String messageBody = inputMessage.getText().toString();
-        if (!messageBody.equals("")) {
+        if (!messageBody.equals("") || attachemtsList.size() > 0) {
             Message message = new Message(messageBody, this);
             message.setFiles(attachemtsList);
             sendMessage(message);
@@ -472,6 +474,7 @@ public class DialogActivity
                 (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
 
         boolean inserted = false;
+        boolean isDifferent = true;
         for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
             int comp = message.compareTo(receivedMessageList.get(position));
             if (comp < 0) {
@@ -479,7 +482,11 @@ public class DialogActivity
                 messagesAdapter.notifyItemInserted(position);
                 inserted = true;
             } else if (comp == 0) {
-                undeliveredMessages.remove(receivedMessageList.get(position));
+                Message mess = receivedMessageList.get(position);
+                undeliveredMessages.remove(mess);
+                if (mess.getMessageBody().equals(message.getMessageBody())) {
+                    isDifferent = false;
+                }
                 receivedMessageList.set(position, message);
                 messagesAdapter.notifyItemChanged(position);
                 inserted = true;
@@ -493,7 +500,7 @@ public class DialogActivity
 
         if (atBottom) {
             messagesList.scrollToPosition(receivedMessageList.size() - 1);
-        } else {
+        } else if (isDifferent) {
             buttonDown.setVisibility(View.VISIBLE);
         }
     }
@@ -730,7 +737,11 @@ public class DialogActivity
                 for (Message message : data) {
                     addMessage(message);
                 }
-                messagesList.scrollToPosition(receivedMessageList.size() - 1);
+                if (!receivedFromWeb)
+                    messagesList.scrollToPosition(receivedMessageList.size() - 1);
+                if (loader.getId() == MESSAGES_WEB_LOADER) {
+                    receivedFromWeb = true;
+                }
             } else {
                 Log.d("[TP-diploma]", "empty list");
             }

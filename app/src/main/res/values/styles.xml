@@ -92,13 +92,16 @@
     </style>
 
     <style name="AppTheme.LoginActivity">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
         <item name="android:textColor">#ffffff</item>
         <item name="android:textColorHint">#ffffff</item>
         <item name="android:textColorPrimary">#ffffff</item>
         <item name="android:textColorPrimaryInverse">#ffffff</item>
 
         <item name="colorPrimary">#ffffff</item>
-        <item name="colorPrimaryDark">#ffffff</item>
+        <item name="colorPrimaryDark">#000000</item>
 
         <item name="colorControlNormal">#ffffff</item>
         <item name="colorControlActivated">#ffffff</item>

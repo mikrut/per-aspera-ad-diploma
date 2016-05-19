@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"Chatee"</string>
     <string name="action_settings">"ajustes"</string>
     <string name="action_search">"Buscar"</string>
     <string name="title_activity_login">"Iniciar sesión"</string>

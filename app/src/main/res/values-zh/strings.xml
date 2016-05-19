@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"聊天室"</string>
     <string name="action_settings">"设置"</string>
     <string name="action_search">"搜索"</string>
     <string name="title_activity_login">"登录"</string>
@@ -65,5 +64,6 @@
     <string name="action_log_out">"注销"</string>
     <string name="title_activity_create_group_dialog">"CreateGroupDialog."</string>
     <string name="title_activity_dialog">"dialog{"</string>
+    <string name="app_name" translatable="false"></string>
 
 </resources>

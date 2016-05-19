@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"сұхбат"</string>
     <string name="action_settings">"Параметрлер"</string>
     <string name="action_search">"іздеу"</string>
     <string name="title_activity_login">"Кіру"</string>
