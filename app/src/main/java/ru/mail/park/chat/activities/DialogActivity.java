@@ -495,6 +495,9 @@ public class DialogActivity
                 inserted = true;
             } else if (comp == 0) {
                 Message mess = receivedMessageList.get(position);
+                if (mess.getFiles() != null && mess.getFiles().size() > 0) {
+                    message.setFiles(mess.getFiles());
+                }
                 undeliveredMessages.remove(mess);
                 if (mess.getMessageBody().equals(message.getMessageBody())) {
                     isDifferent = false;

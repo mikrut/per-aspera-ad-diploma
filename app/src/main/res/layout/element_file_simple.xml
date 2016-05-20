@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
@@ -18,16 +19,18 @@
 
     <TextView
         android:id="@+id/file_name_text_view"
+        android:fontFamily="sans-serif-medium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/file_icon_image_view"
         android:layout_toEndOf="@+id/file_icon_image_view"
-        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
         android:singleLine="true"
         android:ellipsize="end"
         tools:text="Some long file name text" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/file_size_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -114,7 +114,10 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         });
 
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
-        chatsList.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager liman = new LinearLayoutManager(this);
+        liman.setReverseLayout(true);
+        liman.setStackFromEnd(true);
+        chatsList.setLayoutManager(liman);
 
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);

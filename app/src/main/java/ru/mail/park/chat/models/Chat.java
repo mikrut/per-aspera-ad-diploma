@@ -79,7 +79,11 @@ public class Chat implements Serializable {
                 break;
         }
         if (chat.has("text")) {
-            setDescription(StringEscapeUtils.unescapeJava(chat.getString("text")));
+            if (chat.isNull("text")) {
+                setDescription(null);
+            } else {
+                setDescription(StringEscapeUtils.unescapeJava(chat.getString("text")));
+            }
         }
 
         if (chat.has("dtCreate")) {

@@ -40,7 +40,7 @@ public class ChatHelper {
     public long saveChat(@NonNull Chat chat) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = chat.getContentValues();
-        return db.insert(ChatsContract.ChatsEntry.TABLE_NAME, null, values);
+        return db.insertWithOnConflict(ChatsContract.ChatsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     // FIXME: ORDER BY last_message_time DESC

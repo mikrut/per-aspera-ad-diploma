@@ -86,7 +86,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             setTitle(chat.getName());
             // FIXME: take values from DB
             // FIXME: get last message text, not description
-            lastMessageText.setText(chat.getDescription());
+            if (chat.getDescription() != null) {
+                lastMessageText.setText(chat.getDescription());
+            } else {
+                lastMessageText.setText("Chat is empty");
+            }
+
             // TODO: chat pictures
             switch (chat.getType()) {
                 case Chat.GROUP_TYPE:

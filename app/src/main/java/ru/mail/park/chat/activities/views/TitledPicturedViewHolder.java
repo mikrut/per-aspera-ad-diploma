@@ -42,7 +42,7 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
                 char secondLetter = '\0';
                 if (title.contains(" ") && title.indexOf(' ') + 1 < title.length())
                     secondLetter = title.charAt(title.indexOf(' ') + 1);
-                imageText.setText(new StringBuilder().append(firstLetter).append(secondLetter).toString());
+                imageText.setText(new StringBuilder().append(firstLetter).append(secondLetter).toString().toUpperCase());
             } else {
                 imageText.setText("");
             }
