@@ -159,11 +159,15 @@ public class Messages extends ApiSection implements IMessageSender {
                                             case "GET":
                                                 dispatchGet(jsonIncome);
                                                 break;
+                                            case "writeMessage":
+                                                dispatchWriteMessage(jsonIncome);
+                                        }
+                                    }
+                                    if (groupCreateListener != null) {
+                                        switch (method) {
                                             case "createChats":
                                                 dispatchCreateChats(jsonIncome);
                                                 break;
-                                            case "writeMessage":
-                                                dispatchWriteMessage(jsonIncome);
                                         }
                                     }
                                 } catch (JSONException | IOException e) {

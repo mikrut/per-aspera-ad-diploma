@@ -20,12 +20,12 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by Михаил on 06.03.2016.
  */
-public class ChatHelper {
+public class ChatsHelper {
     private final MessengerDBHelper dbHelper;
 
     public static final String LOG_TAG = "[TP-diploma]";
 
-    public ChatHelper(Context context) {
+    public ChatsHelper(Context context) {
         dbHelper = new MessengerDBHelper(context);
     }
 
@@ -121,6 +121,7 @@ public class ChatHelper {
         for(chatsCursor.moveToFirst(); !chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
             chatsList.add(new Chat(chatsCursor));
         }
+
         return chatsList;
     }
 

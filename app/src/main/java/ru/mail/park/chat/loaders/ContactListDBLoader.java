@@ -6,7 +6,7 @@ import android.support.v4.content.AsyncTaskLoader;
 
 import java.util.List;
 
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.models.Contact;
 
 public class ContactListDBLoader extends AsyncTaskLoader<List<Contact>> {
@@ -21,8 +21,8 @@ public class ContactListDBLoader extends AsyncTaskLoader<List<Contact>> {
     @Override
     @NonNull
     public List<Contact> loadInBackground() {
-        ContactHelper contactHelper = new ContactHelper(getContext());
-        contacts = contactHelper.getContactsList();
+        ContactsHelper contactsHelper = new ContactsHelper(getContext());
+        contacts = contactsHelper.getContactsList();
         return contacts;
     }
 

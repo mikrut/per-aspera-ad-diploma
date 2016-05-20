@@ -38,7 +38,7 @@ import java.io.InputStream;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.loaders.OwnerWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
 import ru.mail.park.chat.models.Contact;
@@ -119,8 +119,8 @@ public class ProfileViewActivity extends AppCompatActivity {
             setUserData(owner, Contact.Relation.SELF);
             loaderType = WEB_OWN_LOADER;
         } else {
-            ContactHelper contactHelper = new ContactHelper(this);
-            Contact profile = contactHelper.getContact(uid);
+            ContactsHelper contactsHelper = new ContactsHelper(this);
+            Contact profile = contactsHelper.getContact(uid);
             if (profile != null) {
                 setUserData(profile, Contact.Relation.FRIEND);
             }
@@ -217,8 +217,8 @@ public class ProfileViewActivity extends AppCompatActivity {
                                         String onionAddress = editText.getText().toString();
                                         onionAddress = onionAddress.replaceAll("\\s", "");
                                         contact.setOnionAddress(onionAddress);
-                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
-                                        contactHelper.updateContact(contact);
+                                        ContactsHelper contactsHelper = new ContactsHelper(editText.getContext());
+                                        contactsHelper.updateContact(contact);
                                     }
                                 }).create().show();
                 return true;
@@ -237,8 +237,8 @@ public class ProfileViewActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int which) {
                                         String publicKeyDigest = editText.getText().toString();
                                         contact.setPubkeyDigest(publicKeyDigest);
-                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
-                                        contactHelper.updateContact(contact);
+                                        ContactsHelper contactsHelper = new ContactsHelper(editText.getContext());
+                                        contactsHelper.updateContact(contact);
                                     }
                                 }).create().show();
                 return true;
@@ -335,8 +335,8 @@ public class ProfileViewActivity extends AppCompatActivity {
                         if (data.getUid().equals(ownerUid))
                             relation = Contact.Relation.SELF;
                         else {
-                            ContactHelper contactHelper = new ContactHelper(ProfileViewActivity.this);
-                            if (contactHelper.getContact(data.getUid()) != null) {
+                            ContactsHelper contactsHelper = new ContactsHelper(ProfileViewActivity.this);
+                            if (contactsHelper.getContact(data.getUid()) != null) {
                                 relation = Contact.Relation.FRIEND;
                             }
                         }

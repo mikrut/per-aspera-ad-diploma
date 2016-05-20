@@ -1,6 +1,5 @@
 package ru.mail.park.chat.activities;
 
-import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
@@ -54,7 +53,7 @@ import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.api.BlurBuilder;
-import ru.mail.park.chat.database.ChatHelper;
+import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
@@ -366,12 +365,12 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                 @Override
                 public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
-                    ChatHelper chatHelper = new ChatHelper(ChatsActivity.this);
+                    ChatsHelper chatsHelper = new ChatsHelper(ChatsActivity.this);
 
                     if (loader.getId() == CHAT_DB_LOADER) {
                         getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, chatsLoaderListener);
                     } else if (data != null && loader.getId() == CHAT_WEB_LOADER) {
-                        chatHelper.updateChatList(data);
+                        chatsHelper.updateChatList(data);
                     }
 
                     if (data != null) {

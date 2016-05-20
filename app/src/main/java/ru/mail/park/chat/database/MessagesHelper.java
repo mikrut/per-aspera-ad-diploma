@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Message;
 
 /**
@@ -33,6 +34,12 @@ public class MessagesHelper {
             ftsValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_MESSAGE_BODY, message.getMessageBody());
             ftsValues.put("docid", res);
             db.insertOrThrow("fts_" + MessagesContract.MessagesEntry.TABLE_NAME, null, ftsValues);
+
+            if (message.getFiles() != null) {
+                for (AttachedFile file : message.getFiles()) {
+                    AttachmentsHelper.saveAttachment(file, db);
+                }
+            }
         } catch (Exception e) {
             Log.d(MessagesHelper.class.getSimpleName() + ".saveMessage", e.getMessage());
         }
@@ -56,10 +63,16 @@ public class MessagesHelper {
         Cursor messagesCursor = getMessagesCursor(cid);
         ArrayList<Message> messagesList = new ArrayList<>(messagesCursor.getCount());
 
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
         for(messagesCursor.moveToFirst();
             !messagesCursor.isAfterLast(); messagesCursor.moveToNext()) {
             try {
-                messagesList.add(new Message(messagesCursor));
+                Message message = new Message(messagesCursor);
+                if (message.getMid() != null) {
+                    message.setFiles(AttachmentsHelper.getAttachments(message.getMid(), db));
+                }
+                messagesList.add(message);
             } catch (ParseException e) {
                 e.printStackTrace();
             }

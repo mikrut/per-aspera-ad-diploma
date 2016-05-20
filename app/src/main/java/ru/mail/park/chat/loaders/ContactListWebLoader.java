@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 import ru.mail.park.chat.api.Contacts;
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -31,8 +31,8 @@ public class ContactListWebLoader extends ContactListDBLoader {
             Pair<List<Contact>, Integer> result = contactsAPI.getContacts(activated);
             contactList = result.first;
             if (activated) {
-                ContactHelper contactHelper = new ContactHelper(getContext());
-                contactHelper.updateContactsList(contactList);
+                ContactsHelper contactsHelper = new ContactsHelper(getContext());
+                contactsHelper.updateContactsList(contactList);
             }
             Log.v(getClass().getSimpleName(), String.valueOf(result.first.size()));
         } catch (IOException e) {

@@ -9,25 +9,18 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.bouncycastle.crypto.digests.SHA3Digest;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.database.ContactsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
 
@@ -74,7 +67,7 @@ public class Contact implements Comparable<Contact>, Serializable {
         } else {
             uid = contact.getString(idParameterName);
             if (context != null) {
-                ContactHelper helper = new ContactHelper(context);
+                ContactsHelper helper = new ContactsHelper(context);
                 Contact c = helper.getContact(uid);
                 if (c != null) {
                     init(c);

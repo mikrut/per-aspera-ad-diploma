@@ -68,8 +68,8 @@ import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.api.ChatInfo;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.database.ChatHelper;
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ChatsHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
@@ -216,7 +216,7 @@ public class DialogActivity
         initWriters();
         initRetryTimeout();
 
-        ChatHelper ch = new ChatHelper(this);
+        ChatsHelper ch = new ChatsHelper(this);
         thisChat = thisChat == null ? ch.getChat(chatID) : thisChat;
 
         if(thisChat != null && chatInfo != null) {
@@ -672,7 +672,7 @@ public class DialogActivity
 
         Log.d("[TP-diploma]", "onLoadInfoCompleted step III");
 
-//        companion = new ContactHelper(this).getContact(companion.getUid());
+//        companion = new ContactsHelper(this).getContact(companion.getUid());
 
         dialogTitle.setText(companion.getContactTitle());
 //        if (companion.isOnline())
@@ -699,7 +699,7 @@ public class DialogActivity
             }
         });
 
-        ChatHelper ch = new ChatHelper(DialogActivity.this);
+        ChatsHelper ch = new ChatsHelper(DialogActivity.this);
         Chat currentChat = ch.getChat(chatID);
 
         try {
@@ -826,8 +826,8 @@ public class DialogActivity
         if(user == null)
             return;
 
-        ContactHelper contactHelper = new ContactHelper(DialogActivity.this);
-        Contact userFromBase = contactHelper.getContact(user.getUid());
+        ContactsHelper contactsHelper = new ContactsHelper(DialogActivity.this);
+        Contact userFromBase = contactsHelper.getContact(user.getUid());
 
         if(userFromBase != null && !user.getImg().equals("false")) {
             String requestPath = SERVER_URL + user.getImg();

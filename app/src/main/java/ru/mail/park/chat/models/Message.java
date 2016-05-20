@@ -107,6 +107,7 @@ public class Message implements Comparable<Message> {
             JSONArray filesArray = message.getJSONArray("files");
             for (int i = 0; i < filesArray.length(); i++) {
                 AttachedFile file = new AttachedFile(filesArray.getJSONObject(i));
+                file.setMessageID(mid);
                 files.add(file);
             }
         }
@@ -207,6 +208,12 @@ public class Message implements Comparable<Message> {
 
     public void setFiles(List<AttachedFile> files) {
         this.files = files;
+        if (files != null) {
+            for (AttachedFile file : files) {
+                if (file.getMessageID() == null)
+                    file.setMessageID(mid);
+            }
+        }
     }
 
     public boolean isAcknowledged() {

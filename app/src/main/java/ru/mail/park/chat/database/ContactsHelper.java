@@ -12,10 +12,10 @@ import java.util.List;
 
 import ru.mail.park.chat.models.Contact;
 
-public class ContactHelper {
+public class ContactsHelper {
     private final MessengerDBHelper dbHelper;
 
-    public ContactHelper(Context context) {
+    public ContactsHelper(Context context) {
         dbHelper = new MessengerDBHelper(context);
     }
 
