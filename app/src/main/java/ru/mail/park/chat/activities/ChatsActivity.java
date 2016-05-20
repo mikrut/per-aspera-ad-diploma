@@ -461,7 +461,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
             File file = new File(filePath);
             RelativeLayout rl = (RelativeLayout) ChatsActivity.this.findViewById(R.id.left_drawer_header);
 
-            if (result != null) {
+            if (result != null && rl != null) {
                 Log.d("[TP-diploma]", "DownloadImageTask result not null");
                 bmImage = result;
                 rl.setBackground(new BitmapDrawable(getResources(), result));
@@ -474,7 +474,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 } catch (IOException e) {
                     Log.d("[TP-diploma]", "Error accessing file: " + e.getMessage());
                 }
-            } else {
+            } else if (rl != null) {
                 Log.d("[TP-diploma]", "DownloadImageTask result NULL");
                 if(file.exists()) {
                     Log.d("[TP-diploma]", "DownloadImageTask file exists: " + file.getAbsolutePath());

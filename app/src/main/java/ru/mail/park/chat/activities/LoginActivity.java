@@ -55,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
 
         appLogo = (TextView) findViewById(R.id.app_logo_text);
         Typeface face= Typeface.createFromAsset(getAssets(),
-                "fonts/Lora-Bold.ttf");
+                "fonts/MontserratAlternates-Bold.ttf");
 
         appLogo.setTypeface(face);
 
@@ -106,8 +106,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         super.onResume();
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-        boolean defaultCheker = OrbotHelper.isOrbotInstalled(this);
-        withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, !defaultCheker));
+        boolean paranoidCheker = OrbotHelper.isOrbotInstalled(this);
+        withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, paranoidCheker));
     }
 
     private final TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {

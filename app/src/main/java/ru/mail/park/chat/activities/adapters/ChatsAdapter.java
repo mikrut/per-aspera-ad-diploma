@@ -8,7 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
@@ -92,6 +97,35 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                     groupIndicatorView.setVisibility(View.GONE);
             }
             chatID = chat.getCid();
+
+            String timestring = "";
+            Calendar dtime = chat.getDateTime();
+            Calendar now = GregorianCalendar.getInstance();
+            if (dtime != null) {
+                if (dtime.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+                    if (dtime.get(Calendar.MONTH) == now.get(Calendar.MONTH)) {
+                        if (dtime.get(Calendar.WEEK_OF_MONTH) == now.get(Calendar.WEEK_OF_MONTH)) {
+                            timestring = capFirstLetter(dtime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
+                        } else {
+                            timestring = capFirstLetter(dtime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault())) + " " +
+                                String.valueOf(dtime.get(Calendar.DATE));
+                        }
+                    } else {
+                        timestring = capFirstLetter(dtime.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())) + " " +
+                                String.valueOf(dtime.get(Calendar.DATE));
+                    }
+                } else {
+                    DateFormat mFormat = new SimpleDateFormat("yy.MM.dd", Locale.getDefault());
+                    timestring = mFormat.format(dtime.getTime());
+                }
+            }
+
+
+            lastMessageTime.setText(timestring);
         }
+    }
+
+    private static String capFirstLetter(String input) {
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

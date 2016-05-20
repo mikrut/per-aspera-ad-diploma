@@ -29,8 +29,8 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/app_name"
-                android:layout_margin="30dp"
-                android:textSize="30dp"
+                android:layout_margin="20dp"
+                android:textSize="40dp"
                 android:id="@+id/app_logo_text"
                 android:layout_gravity="center_horizontal" />
 

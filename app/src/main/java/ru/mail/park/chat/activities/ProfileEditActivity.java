@@ -368,12 +368,17 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         switch (item.getItemId()) {
             case R.id.action_save:
                 OwnerProfile profile = getUpdatedProfile();
+                OwnerProfile currentProfile = new OwnerProfile(this);
 
-                ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
-                dialogBuilder.setTitle("Saving user data");
-                dialogBuilder.setMessage("Sending data to server");
-                dialogBuilder.setCancelable(false);
-                new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
+                if (!profile.equals(currentProfile)) {
+                    ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
+                    dialogBuilder.setTitle("Saving user data");
+                    dialogBuilder.setMessage("Sending data to server");
+                    dialogBuilder.setCancelable(false);
+                    new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
+                } else {
+                    onBackPressed();
+                }
                 return true;
             case android.R.id.home:
                 onBackPressed();

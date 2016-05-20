@@ -12,8 +12,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import ru.mail.park.chat.database.ChatsContract;
+import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.loaders.MessagesDBLoader;
 
 /**
  * Created by Михаил on 06.03.2016.
@@ -25,6 +30,8 @@ public class Chat implements Serializable {
     private String name;
     @Nullable
     private String description;
+    @Nullable
+    private Calendar dateTime;
 
     private int type;
 
@@ -72,6 +79,10 @@ public class Chat implements Serializable {
         if (chat.has("text")) {
             setDescription(StringEscapeUtils.unescapeJava(chat.getString("text")));
         }
+
+        if (chat.has("dtCreate")) {
+            setDateTime(chat.getString("dtCreate"));
+        }
     }
 
     @NonNull
@@ -103,6 +114,29 @@ public class Chat implements Serializable {
 
     public int getType() {
         return type;
+    }
+
+    @Nullable
+    public Calendar getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(@Nullable Calendar dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public void setDateTime(@Nullable String dateTime) {
+        if (dateTime != null) {
+            try {
+                Calendar time = GregorianCalendar.getInstance();
+                time.setTime(MessengerDBHelper.currentFormat.parse(dateTime));
+                this.dateTime = time;
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        } else {
+            this.dateTime = null;
+        }
     }
 
     @NonNull

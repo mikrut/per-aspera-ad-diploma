@@ -392,7 +392,8 @@ public class Contact implements Comparable<Contact>, Serializable {
                     TextUtils.equals(getEmail(), other.getEmail()) &&
                     TextUtils.equals(getPhone(), other.getPhone()) &&
                     TextUtils.equals(getFirstName(), other.getFirstName()) &&
-                    TextUtils.equals(getLastName(), other.getLastName());
+                    TextUtils.equals(getLastName(), other.getLastName()) &&
+                    TextUtils.equals(getImg(), other.getImg());
         }
         return super.equals(o);
     }
