@@ -38,7 +38,7 @@ public class ContactsHelper {
 
     private long saveContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
-        return db.insert(ContactsContract.ContactsEntry.TABLE_NAME, null, values);
+        return db.insertWithOnConflict(ContactsContract.ContactsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     private long deleteAll(SQLiteDatabase db) {

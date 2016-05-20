@@ -29,6 +29,7 @@ public class ContactsContract {
             ContactsEntry.COLUMN_NAME_PHONE,
             ContactsEntry.COLUMN_NAME_FIRST_NAME,
             ContactsEntry.COLUMN_NAME_LAST_NAME,
+            ContactsEntry.COLUMN_NAME_ABOUT,
 
             ContactsEntry.COLUMN_NAME_PUBKEY,
             ContactsEntry.COLUMN_NAME_ONIOIN
@@ -41,9 +42,10 @@ public class ContactsContract {
     public static final int PROJECTION_PHONE_INDEX = 3;
     public static final int PROJECTION_FIRST_NAME_INDEX = 4;
     public static final int PROJECTION_LAST_NAME_INDEX = 5;
+    public static final int PROJECTION_ABOUT_INDEX = 6;
 
-    public static final int PROJECTION_PUBKEY_INDEX = 6;
-    public static final int PROJECTION_ONION_INDEX = 7;
+    public static final int PROJECTION_PUBKEY_INDEX = 7;
+    public static final int PROJECTION_ONION_INDEX = 8;
 
     public static abstract class ContactsEntry implements BaseColumns {
         public static final String TABLE_NAME = "contacts";

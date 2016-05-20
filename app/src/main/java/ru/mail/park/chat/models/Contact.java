@@ -108,38 +108,6 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
     }
 
-    public Contact(JSONObject contact) throws JSONException, ParseException {
-        if(contact.has("id"))
-            uid = contact.getString("id");
-        if (contact.has("login"))
-            login = contact.getString("login");
-        if (contact.has("email"))
-            setEmail(contact.getString("email"));
-        if (contact.has("firstName"))
-            setFirstName(contact.getString("firstName"));
-        if (contact.has("lastName"))
-            setLastName(contact.getString("lastName"));
-
-        if (contact.has("lastSeen")) {
-            java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(contact.getString("lastSeen"));
-            GregorianCalendar lastSeen = new GregorianCalendar();
-            lastSeen.setTime(dateLastSeen);
-            setLastSeen(lastSeen);
-        }
-
-        if(contact.has("aboutMe")) {
-            setAboutMe(contact.getString("aboutMe"));
-        }
-
-        if (contact.has("online")) {
-            setOnline(contact.getBoolean("online"));
-        }
-
-        if(contact.has("img")) {
-            setImg(contact.getString("img"));
-        }
-    }
-
     public void init(Contact contact) {
         uid = contact.getUid();
         login = contact.getLogin();
@@ -149,6 +117,7 @@ public class Contact implements Comparable<Contact>, Serializable {
 
         email = contact.getEmail();
         phone = contact.getPhone();
+        aboutUser = contact.getAbout();
 
         img = contact.getImg();
         if (contact.getLastSeen() != null)
@@ -173,6 +142,8 @@ public class Contact implements Comparable<Contact>, Serializable {
             firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
         if (!cursor.isNull(ContactsContract.PROJECTION_LAST_NAME_INDEX))
             lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_ABOUT_INDEX))
+            aboutUser = cursor.getString(ContactsContract.PROJECTION_ABOUT_INDEX);
 
         if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX)) {
             pubkeyDigest = cursor.getBlob(ContactsContract.PROJECTION_PUBKEY_INDEX);
@@ -302,6 +273,7 @@ public class Contact implements Comparable<Contact>, Serializable {
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PHONE, phone);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_ABOUT, aboutUser);
 
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PUBKEY,
                 pubkeyDigest != null ? pubkeyDigest : null);

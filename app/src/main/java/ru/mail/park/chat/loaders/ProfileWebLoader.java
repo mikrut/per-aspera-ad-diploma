@@ -33,6 +33,7 @@ public class ProfileWebLoader extends AsyncTaskLoader<Contact> {
         Contact user = null;
         try {
            user = usersAPI.getFullUser(uid);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

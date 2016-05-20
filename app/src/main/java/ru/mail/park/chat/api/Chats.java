@@ -139,7 +139,7 @@ public class Chats extends ApiSection {
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject ci = result.getJSONObject("data");
-                chatInfo = new ChatInfo(ci);
+                chatInfo = new ChatInfo(ci, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);

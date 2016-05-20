@@ -1,5 +1,6 @@
 package ru.mail.park.chat.api;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.json.JSONArray;
@@ -27,7 +28,7 @@ public class ChatInfo {
     private String img;
     private chatTypes type;
 
-    public ChatInfo(JSONObject jsonChatInfo) {
+    public ChatInfo(JSONObject jsonChatInfo, Context context) {
         try {
             cid = jsonChatInfo.getString("id");
             name = jsonChatInfo.getString("name");
@@ -36,8 +37,8 @@ public class ChatInfo {
 
             JSONArray users = jsonChatInfo.getJSONArray("listUser");
 
-            userFirst = new Contact(users.getJSONObject(0));
-            userSecond = new Contact(users.getJSONObject(1));
+            userFirst = new Contact(users.getJSONObject(0), context);
+            userSecond = new Contact(users.getJSONObject(1), context);
         } catch(JSONException e) {
             cid = null;
             name = null;

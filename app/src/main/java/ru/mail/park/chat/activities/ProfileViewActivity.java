@@ -338,6 +338,7 @@ public class ProfileViewActivity extends AppCompatActivity {
                             ContactsHelper contactsHelper = new ContactsHelper(ProfileViewActivity.this);
                             if (contactsHelper.getContact(data.getUid()) != null) {
                                 relation = Contact.Relation.FRIEND;
+                                contactsHelper.saveContact(data);
                             }
                         }
                         setUserData(data, relation);
