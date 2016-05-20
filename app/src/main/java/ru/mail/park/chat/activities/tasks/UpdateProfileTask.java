@@ -56,7 +56,7 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
             alertDialog.setMessage("Success!");
             activity.finish();
         } else {
-            alertDialog.setMessage("Saved");
+            alertDialog.setMessage("Error sending to server");
         }
         alertDialog.setCancelable(true);
     }
