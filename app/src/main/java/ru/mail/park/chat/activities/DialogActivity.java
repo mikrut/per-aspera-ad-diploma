@@ -68,6 +68,7 @@ import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.api.ChatInfo;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.database.ContactHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
@@ -75,6 +76,7 @@ import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
@@ -109,6 +111,7 @@ public class DialogActivity
     private String ownerID;
     private String accessToken;
     private ChatInfo chatInfo;
+    private Chat thisChat;
 
     private Timer schedulerTimer;
     private final Handler uiHandler = new Handler();
@@ -153,6 +156,8 @@ public class DialogActivity
         OwnerProfile ownerProfile = new OwnerProfile(this);
         ownerID = ownerProfile.getUid();
         accessToken = ownerProfile.getAuthToken();
+        chatInfo = null;
+        thisChat = null;
 
         initMessagesList();
         initActionListeners();
@@ -210,6 +215,13 @@ public class DialogActivity
         super.onResume();
         initWriters();
         initRetryTimeout();
+
+        ChatHelper ch = new ChatHelper(this);
+        thisChat = thisChat == null ? ch.getChat(chatID) : thisChat;
+
+        if(thisChat != null && chatInfo != null) {
+            onLoadInfoCompleted(mActionBar, chatInfo);
+        }
     }
 
     @Override
@@ -684,6 +696,16 @@ public class DialogActivity
             }
         });
 
+        ChatHelper ch = new ChatHelper(DialogActivity.this);
+        Chat currentChat = ch.getChat(chatID);
+
+        try {
+            currentChat.setCompanionId(companion.getUid());
+            ch.saveChat(currentChat);
+        } catch(NullPointerException e) {
+
+        }
+
         Log.d("[TP-diploma]", "onLoadInfoCompleted done");
     }
 
@@ -803,7 +825,6 @@ public class DialogActivity
 
         ContactHelper contactHelper = new ContactHelper(DialogActivity.this);
         Contact userFromBase = contactHelper.getContact(user.getUid());
-        Pair<List<Contact>, Integer> contactList = null;
 
         if(userFromBase != null && !user.getImg().equals("false")) {
             String requestPath = SERVER_URL + user.getImg();

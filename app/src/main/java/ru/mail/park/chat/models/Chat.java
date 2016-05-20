@@ -32,6 +32,8 @@ public class Chat implements Serializable {
     private String description;
     @Nullable
     private Calendar dateTime;
+    @Nullable
+    private String companion_id;
 
     private int type;
 
@@ -104,6 +106,15 @@ public class Chat implements Serializable {
     }
 
     @Nullable
+    public String getCompanionId() {
+        return companion_id;
+    }
+
+    public void setCompanionId(@Nullable String companion_id) {
+        this.companion_id = companion_id;
+    }
+
+    @Nullable
     public String getDescription() {
         return description;
     }
@@ -145,6 +156,9 @@ public class Chat implements Serializable {
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_CID, cid);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_NAME, name);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DESCRIPTION, description);
+
+        if(companion_id != null)
+            contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_COMPANION_ID, companion_id);
         return contentValues;
     }
 }

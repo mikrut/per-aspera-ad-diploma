@@ -12,7 +12,8 @@ public abstract class ChatsContract {
             "CREATE TABLE " + ChatsEntry.TABLE_NAME + " (" +
             ChatsEntry.COLUMN_NAME_CID + " TEXT PRIMARY KEY NOT NULL" + COMMA_SEP +
             ChatsEntry.COLUMN_NAME_NAME + " TEXT NOT NULL" + COMMA_SEP +
-            ChatsEntry.COLUMN_NAME_DESCRIPTION + " TEXT" +
+            ChatsEntry.COLUMN_NAME_DESCRIPTION + " TEXT" + COMMA_SEP +
+            ChatsEntry.COLUMN_NAME_COMPANION_ID + " TEXT" +
             ")";
 
     static final String DROP_TABLE =
@@ -33,5 +34,6 @@ public abstract class ChatsContract {
         public static final String COLUMN_NAME_CID = "cid";
         public static final String COLUMN_NAME_NAME = "name";
         public static final String COLUMN_NAME_DESCRIPTION = "description";
+        public static final String COLUMN_NAME_COMPANION_ID = "companion_id";
     }
 }
