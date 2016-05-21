@@ -47,11 +47,9 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
     private Button emailSignUpButton;
 
     //step two
-    private RelativeLayout stepTwoLayout;
     private CircleImageView regImagePreview;
     private ImageButton regUserCameraShot;
     private ImageButton regUserUploadPicture;
-    private Button regNextButton;
     private TextView noteIncorrectData;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -75,11 +73,9 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         mProgressView = (ProgressBar) findViewById(R.id.register_progress);
         emailSignUpButton = (Button) findViewById(R.id.email_sign_up_button);
 
-        stepTwoLayout = (RelativeLayout) findViewById(R.id.layout_registration_step_two);
         regImagePreview = (CircleImageView) findViewById(R.id.reg_user_picture_in_editor);
         regUserCameraShot = (ImageButton) findViewById(R.id.reg_user_camera_shot);
         regUserUploadPicture = (ImageButton) findViewById(R.id.reg_user_upload_picture);
-        regNextButton = (Button) findViewById(R.id.email_next_button);
         noteIncorrectData = (TextView) findViewById(R.id.note_error_input_data);
 
         noteIncorrectData.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
@@ -99,24 +95,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
                 }
             });
         }
-
-        regNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(checkRegistrationInfo(mLoginView.getText().toString(),
-                                         mFirstNameView.getText().toString(),
-                                         mLastNameView.getText().toString(),
-                                         mPasswordView.getText().toString(),
-                                         mConfirmPassvordView.getText().toString(),
-                                         mEmailView.getText().toString())) {
-                    noteIncorrectData.setVisibility(View.GONE);
-                    switchSteps(true);
-                    stepTwoLayout.setVisibility(View.VISIBLE);
-                } else {
-                    noteIncorrectData.setVisibility(View.VISIBLE);
-                }
-            }
-        });
 
         regUserCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,30 +126,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
                 startActivityForResult(uploadPictureIntent, GET_FROM_GALLERY);
             }
         });
-    }
-
-    private void switchSteps(boolean firstToSecond) {
-        if(!firstToSecond) {
-            stepTwoLayout.setVisibility(View.GONE);
-
-            mPasswordView.setVisibility(View.VISIBLE);
-            mConfirmPassvordView.setVisibility(View.VISIBLE);
-            mEmailView.setVisibility(View.VISIBLE);
-            mLoginView.setVisibility(View.VISIBLE);
-            mFirstNameView.setVisibility(View.VISIBLE);
-            mLastNameView.setVisibility(View.VISIBLE);
-            regNextButton.setVisibility(View.VISIBLE);
-        } else {
-            mPasswordView.setVisibility(View.GONE);
-            mConfirmPassvordView.setVisibility(View.GONE);
-            mEmailView.setVisibility(View.GONE);
-            mLoginView.setVisibility(View.GONE);
-            mFirstNameView.setVisibility(View.GONE);
-            mLastNameView.setVisibility(View.GONE);
-            regNextButton.setVisibility(View.GONE);
-
-            stepTwoLayout.setVisibility(View.VISIBLE);
-        }
     }
 
     private File createTemporaryFile(String part, String ext) throws Exception
@@ -254,20 +208,34 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
             task.execute(login, firstName, lastName, password, email, imageFound ? selectedFilePath : null);
         else {
             noteIncorrectData.setVisibility(View.VISIBLE);
-            switchSteps(false);
         }
 
     }
 
     private boolean checkRegistrationInfo(String login, String firstName, String lastName, String password, String confirmPassword, String email) {
-        boolean result = true;
+        if(login.equals(""))
+            return false;
 
-        if(!password.equals(confirmPassword))
-            result = false;
+        if(firstName.equals(""))
+            return false;
 
+        if(lastName.equals(""))
+            return false;
+
+        if(email.equals(""))
+            return false;
+
+        if(password.equals(""))
+            return false;
+
+        if(confirmPassword.equals(""))
+            return false;
         //add other data checks
 
-        return result;
+        if(!password.equals(confirmPassword))
+            return false;
+
+        return true;
     }
 
     @Override
