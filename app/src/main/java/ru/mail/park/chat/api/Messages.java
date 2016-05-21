@@ -249,6 +249,7 @@ public class Messages extends ApiSection implements IMessageSender {
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
             data.put("textMessage", message.getMessageBody());
+            data.put("uniqueId", message.getUniqueID());
 
             List<AttachedFile> files = message.getFiles();
             if (files != null && files.size() > 0) {

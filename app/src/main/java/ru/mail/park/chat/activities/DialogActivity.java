@@ -463,6 +463,7 @@ public class DialogActivity
         final String messageBody = inputMessage.getText().toString();
         if (!messageBody.equals("") || attachemtsList.size() > 0) {
             Message message = new Message(messageBody, this);
+            message.setUniqueID(System.currentTimeMillis());
             message.setFiles(attachemtsList);
             sendMessage(message);
 

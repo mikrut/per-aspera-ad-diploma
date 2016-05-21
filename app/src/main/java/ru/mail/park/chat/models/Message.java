@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +36,7 @@ public class Message implements Comparable<Message> {
 
     private @NonNull String title;
 
+    private long uniqueID;
     private List<AttachedFile> files = new ArrayList<AttachedFile>();
 
     public Message(String messageBody, Context context) {
@@ -65,6 +67,10 @@ public class Message implements Comparable<Message> {
             messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
         } else {
             throw new JSONException("No textMessage or text parameter is JSON");
+        }
+
+        if (message.has("uniqueId")) {
+            uniqueID = message.getLong("uniqueId");
         }
 
         if (cid == null && message.has("idRoom"))
@@ -220,6 +226,14 @@ public class Message implements Comparable<Message> {
         return mid != null;
     }
 
+    public long getUniqueID() {
+        return uniqueID;
+    }
+
+    public void setUniqueID(long uniqueID) {
+        this.uniqueID = uniqueID;
+    }
+
     @Override
     public int compareTo(@NonNull Message another) {
         if (mid != null) {
@@ -230,8 +244,9 @@ public class Message implements Comparable<Message> {
             } else if (messageBody.equals(another.messageBody)) {
                 return 0;
             }
+
             return 1;
-        } else if (messageBody.equals(another.messageBody)) {
+        } else if (ObjectUtils.compare(uniqueID, another.uniqueID) == 0) {
             return 0;
         }
         return 1;
