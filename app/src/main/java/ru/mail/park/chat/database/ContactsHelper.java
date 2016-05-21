@@ -77,22 +77,27 @@ public class ContactsHelper {
 
     @Nullable
     public Contact getContact(@NonNull String uid) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
-        String[] selectionArgs = { uid };
-        Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
-                ContactsContract.CONTACT_PROJECTION,
-                selection, selectionArgs,
-                null, null, null,
-                "1");
+        try {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
+            String[] selectionArgs = {uid};
+            Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
+                    ContactsContract.CONTACT_PROJECTION,
+                    selection, selectionArgs,
+                    null, null, null,
+                    "1");
 
-        Contact contact = null;
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            contact = new Contact(cursor);
+            Contact contact = null;
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                contact = new Contact(cursor);
+            }
+            cursor.close();
+            return contact;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        cursor.close();
-        return contact;
+        return null;
     }
 
     @NonNull

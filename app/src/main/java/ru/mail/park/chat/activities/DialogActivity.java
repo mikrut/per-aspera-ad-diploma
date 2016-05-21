@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.Notification;
@@ -8,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -17,7 +19,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -95,6 +99,7 @@ public class DialogActivity
         HttpFileUpload.IUploadListener,
         IActionBarListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
+    private static final int REQUEST_WRITE_STORAGE = 112;
     private static final int CODE_FILE_SELECTED = 3;
     public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
@@ -195,6 +200,16 @@ public class DialogActivity
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
         new InitActionBarTask(this,  mActionBar, chatID).execute();
+
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        boolean hasWPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission || !hasWPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+        }
     }
 
 /*    @Override
@@ -227,8 +242,10 @@ public class DialogActivity
         initWriters();
         initRetryTimeout();
 
-        ChatsHelper ch = new ChatsHelper(this);
-        thisChat = thisChat == null ? ch.getChat(chatID) : thisChat;
+        if (chatID != null) {
+            ChatsHelper ch = new ChatsHelper(this);
+            thisChat = (thisChat == null) ? ch.getChat(chatID) : thisChat;
+        }
 
         if(thisChat != null) {
             Log.d("[TP-diploma]", "DialogActivity.onResume thisChat != null");
@@ -756,11 +773,11 @@ public class DialogActivity
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         Log.d("[TP-diploma]", "preparing to send file");
         if (resultCode == Activity.RESULT_OK) {
-            String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-            FileInputStream fstrm = null;
-            HttpFileUpload hfu = null;
-
             if (requestCode == CODE_FILE_SELECTED) {
+                String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+                FileInputStream fstrm = null;
+                HttpFileUpload hfu = null;
+
                 Log.d("[TP-diploma]", "sending file started");
                 try {
                     fstrm = new FileInputStream(filePath);
@@ -772,6 +789,22 @@ public class DialogActivity
                 }
             }
         }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //reload my activity with permission granted or use the features what required the permission
+                } else {
+                    finish();
+                }
+            }
+        }
+
     }
 
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {

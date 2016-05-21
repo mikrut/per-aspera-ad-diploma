@@ -34,18 +34,21 @@ public class Contacts extends ApiSection {
 
     @NonNull
     public Pair<List<Contact>, Integer> getContacts() throws  IOException {
-        return getContacts(true);
+        return getContacts(true, true);
     }
 
     @NonNull
-    public Pair<List<Contact>, Integer> getContacts(boolean activated) throws IOException {
-        final String requestURL = "list";
+    public Pair<List<Contact>, Integer> getContacts(boolean activated, boolean my) throws IOException {
+        final String requestURL = activated ? "list" : "getFollowers";
         final String requestMethod = "POST";
         
         OwnerProfile ownerProfile = new OwnerProfile(getContext());
         List<Pair<String, String>> parameters = new ArrayList<>(3);
         parameters.add(new Pair<>("id", ownerProfile.getUid()));
         parameters.add(new Pair<>("activated", String.valueOf(activated)));
+        if (my) {
+            parameters.add(new Pair<>("my", String.valueOf(true)));
+        }
 
         int contactsLength;
         List<Contact> contactList;
@@ -114,29 +117,23 @@ public class Contacts extends ApiSection {
         }
     }
 
-    public int deleteContact(@NonNull String uid) throws IOException {
-        final String requestURL = "info";
-        final String requestMethod = "DELETE";
+    public void deleteContact(@NonNull String uid) throws IOException {
+        final String requestURL = "delete";
+        final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(2);
-        parameters.add(new Pair<>("uid", uid));
+        parameters.add(new Pair<>("idUser", uid));
 
-        int contactsLength;
         try {
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
-            if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                contactsLength = data.getInt("contacts_length");
-            } else {
+            if(status != 200) {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
         } catch (JSONException e) {
             throw new IOException("Server error");
         }
-
-        return contactsLength;
     }
 
     public static class SearchResult {
