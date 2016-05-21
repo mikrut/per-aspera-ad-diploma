@@ -29,25 +29,16 @@ public class ChatsHelper {
         dbHelper = new MessengerDBHelper(context);
     }
 
-    public void updateChat(@NonNull Chat chat) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = chat.getContentValues();
-        String whereClause = ChatsContract.ChatsEntry.COLUMN_NAME_CID + " = ?";
-        String[] whereArgs = {chat.getCid()};
-        db.update(ChatsContract.ChatsEntry.TABLE_NAME, values, whereClause, whereArgs);
-    }
-
     public long saveChat(@NonNull Chat chat) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = chat.getContentValues();
+        ContactsToChatsHelper.saveChatUsers(chat.getCid(), chat.getChatUsers(), db);
         return db.insertWithOnConflict(ChatsContract.ChatsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     // FIXME: ORDER BY last_message_time DESC
     @NonNull
-    private Cursor getChatsCursor(@NonNull String queryString) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
+    private Cursor getChatsCursor(@NonNull String queryString, @NonNull SQLiteDatabase db) {
         queryString = queryString.replace("\\", "\\\\");
         queryString = queryString.replace("%", "\\%");
         queryString = queryString.replace("_", "\\_");
@@ -65,10 +56,9 @@ public class ChatsHelper {
                 ChatsContract.ChatsEntry.COLUMN_NAME_NAME + " LIKE ? ESCAPE '\\'", selectionArgs);
     }
 
-    // FIXME: ORDER BY last_message_time DESC
     @NonNull
-    private Cursor getChatsCursor() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+    private Cursor getChatsCursor(@NonNull SQLiteDatabase db) {
+        String orderBy = ChatsContract.ChatsEntry.COLUMN_NAME_DATETIME + " ASC";
 
         return db.query(
                 ChatsContract.ChatsEntry.TABLE_NAME,
@@ -77,7 +67,7 @@ public class ChatsHelper {
                 null, // No WHERE - no args
                 null, // No GROUP BY
                 null, // No GROUP BY filter
-                null  // No ORDER BY
+                orderBy
         );
     }
 
@@ -96,6 +86,8 @@ public class ChatsHelper {
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             chat = new Chat(cursor);
+            List<Contact> contacts = ContactsToChatsHelper.getChatUsers(cid, db);
+            chat.setChatUsers(contacts);
         }
         cursor.close();
         return chat;
@@ -103,23 +95,27 @@ public class ChatsHelper {
 
     @NonNull
     public List<Chat> getChatsList() {
-        Cursor chatsCursor = getChatsCursor();
-        return cursorToList(chatsCursor);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor chatsCursor = getChatsCursor(db);
+        return cursorToList(chatsCursor, db);
     }
 
     @NonNull
     public List<Chat> getChatsList(@NonNull String queryString) {
-        Cursor chatsCursor = getChatsCursor(queryString);
-        List<Chat> result = cursorToList(chatsCursor);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor chatsCursor = getChatsCursor(queryString, db);
+        List<Chat> result = cursorToList(chatsCursor, db);
         chatsCursor.close();
         return result;
     }
 
-    private static final List<Chat> cursorToList(Cursor chatsCursor) {
+    private static List<Chat> cursorToList(Cursor chatsCursor, SQLiteDatabase db) {
         ArrayList<Chat> chatsList = new ArrayList<>(chatsCursor.getCount());
 
         for(chatsCursor.moveToFirst(); !chatsCursor.isAfterLast(); chatsCursor.moveToNext()) {
-            chatsList.add(new Chat(chatsCursor));
+            Chat chat = new Chat(chatsCursor);
+            chat.setChatUsers(ContactsToChatsHelper.getChatUsers(chat.getCid(), db));
+            chatsList.add(chat);
         }
 
         return chatsList;

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONArray;
@@ -13,8 +14,10 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import ru.mail.park.chat.database.ChatsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
@@ -34,8 +37,8 @@ public class Chat implements Serializable {
     private Calendar dateTime;
     @Nullable
     private String companion_id;
-
     private int type;
+    private List<Contact> chatUsers = new ArrayList<>();
 
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
@@ -97,6 +100,27 @@ public class Chat implements Serializable {
         if (chat.has("dtCreate")) {
             setDateTime(chat.getString("dtCreate"));
         }
+
+        if (chat.has("listUser")) {
+            JSONArray listUser = chat.getJSONArray("listUser");
+            for (int i = 0; i < listUser.length(); i++) {
+                JSONObject user = listUser.getJSONObject(i);
+                try {
+                    Contact contact = new Contact(user, context);
+                    chatUsers.add(contact);
+                } catch (ParseException e) {
+                    Log.w(Chat.class.getSimpleName() + ".new", "New Contact: " + e.getLocalizedMessage());
+                }
+            }
+        }
+    }
+
+    public List<Contact> getChatUsers() {
+        return chatUsers;
+    }
+
+    public void setChatUsers(List<Contact> chatUsers) {
+        this.chatUsers = chatUsers;
     }
 
     @NonNull
@@ -149,13 +173,13 @@ public class Chat implements Serializable {
     }
 
     public void setDateTime(@Nullable String dateTime) {
-        if (dateTime != null) {
+        if (dateTime != null && !dateTime.equals("null")) {
             try {
                 Calendar time = GregorianCalendar.getInstance();
                 time.setTime(MessengerDBHelper.currentFormat.parse(dateTime));
                 this.dateTime = time;
             } catch (ParseException e) {
-                e.printStackTrace();
+                Log.w(Chat.class.getSimpleName() + ".setDateTime", e.getLocalizedMessage());
             }
         } else {
             this.dateTime = null;

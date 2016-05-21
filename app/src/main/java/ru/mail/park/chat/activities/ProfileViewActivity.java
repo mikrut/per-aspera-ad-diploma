@@ -39,8 +39,10 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
 import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.database.ContactsToChatsHelper;
 import ru.mail.park.chat.loaders.OwnerWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -142,7 +144,13 @@ public class ProfileViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileViewActivity.this, DialogActivity.class);
-                intent.putExtra(DialogActivity.USER_ID, uid);
+                ContactsToChatsHelper helper = new ContactsToChatsHelper(ProfileViewActivity.this);
+                Chat chat = helper.getChat(uid);
+                if (chat != null) {
+                    intent.putExtra(DialogActivity.CHAT_ID, chat.getCid());
+                } else {
+                    intent.putExtra(DialogActivity.USER_ID, uid);
+                }
                 startActivity(intent);
                 finish();
             }
