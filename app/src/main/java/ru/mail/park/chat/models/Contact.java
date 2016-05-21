@@ -103,7 +103,6 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
 
         if(contact.has("img")) {
-            Log.d("[TP-diploma]", "has img");
             setImg(contact.getString("img"));
         }
     }

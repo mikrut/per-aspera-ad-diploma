@@ -10,6 +10,7 @@
     <string name="action_sign_in">Войти</string>
     <string name="action_sign_in_short">Войти</string>
     <string name="action_sign_up">Регистрация</string>
+    <string name="action_reg_step_two">Далее</string>
     <string name="add_to_contacts">Добавить в контакты</string>
     <string name="anonymous_name">аноним</string>
     <string name="close">Закрыть</string>
@@ -36,6 +37,7 @@
     <string name="pref_title_paranoid_mode">Включить режим параноика</string>
     <string name="prompt_login">Логин</string>
     <string name="prompt_password">Пароль</string>
+    <string name="prompt_confirm_password">Пароль еще раз</string>
     <string name="title_activity_contacts">Контакты</string>
     <string name="title_activity_login">Войти</string>
     <string name="title_activity_profile">Профиль</string>

@@ -13,8 +13,8 @@ public interface IRegisterCallbacks {
         FIRST_NAME,
         LAST_NAME,
         EMAIL,
-        PASSWORD;
-
+        PASSWORD,
+        IMG;
 
         @Override
         public String toString() {
@@ -29,6 +29,8 @@ public interface IRegisterCallbacks {
                     return "email";
                 case PASSWORD:
                     return "password";
+                case IMG:
+                    return "img";
                 default:
                     return super.toString();
             }
