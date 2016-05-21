@@ -52,4 +52,5 @@
     <string name="action_show_profile">Профиль</string>
     <string name="title_activity_create_group_dialog">Создать групповой диалог</string>
     <string name="title_activity_dialog">Диалог</string>
+    <string name="note_error_input_data">Некорректные данные!</string>
 </resources>

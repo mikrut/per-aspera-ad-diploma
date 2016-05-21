@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -20,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -49,6 +51,7 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
     private ImageButton regUserCameraShot;
     private ImageButton regUserUploadPicture;
     private Button regNextButton;
+    private TextView noteIncorrectData;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
@@ -76,6 +79,10 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         regUserCameraShot = (ImageButton) findViewById(R.id.reg_user_camera_shot);
         regUserUploadPicture = (ImageButton) findViewById(R.id.reg_user_upload_picture);
         regNextButton = (Button) findViewById(R.id.email_next_button);
+        noteIncorrectData = (TextView) findViewById(R.id.note_error_input_data);
+
+        noteIncorrectData.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        noteIncorrectData.setVisibility(View.GONE);
 
         emailSignUpButton.setOnClickListener(signUpListener);
 
@@ -95,15 +102,18 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         regNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPasswordView.setVisibility(View.GONE);
-                mConfirmPassvordView.setVisibility(View.GONE);
-                mEmailView.setVisibility(View.GONE);
-                mLoginView.setVisibility(View.GONE);
-                mFirstNameView.setVisibility(View.GONE);
-                mLastNameView.setVisibility(View.GONE);
-                regNextButton.setVisibility(View.GONE);
-
-                stepTwoLayout.setVisibility(View.VISIBLE);
+                if(checkRegistrationInfo(mLoginView.getText().toString(),
+                                         mFirstNameView.getText().toString(),
+                                         mLastNameView.getText().toString(),
+                                         mPasswordView.getText().toString(),
+                                         mConfirmPassvordView.getText().toString(),
+                                         mEmailView.getText().toString())) {
+                    noteIncorrectData.setVisibility(View.GONE);
+                    switchSteps(true);
+                    stepTwoLayout.setVisibility(View.VISIBLE);
+                } else {
+                    noteIncorrectData.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -137,6 +147,30 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
                 startActivityForResult(uploadPictureIntent, GET_FROM_GALLERY);
             }
         });
+    }
+
+    private void switchSteps(boolean firstToSecond) {
+        if(!firstToSecond) {
+            stepTwoLayout.setVisibility(View.GONE);
+
+            mPasswordView.setVisibility(View.VISIBLE);
+            mConfirmPassvordView.setVisibility(View.VISIBLE);
+            mEmailView.setVisibility(View.VISIBLE);
+            mLoginView.setVisibility(View.VISIBLE);
+            mFirstNameView.setVisibility(View.VISIBLE);
+            mLastNameView.setVisibility(View.VISIBLE);
+            regNextButton.setVisibility(View.VISIBLE);
+        } else {
+            mPasswordView.setVisibility(View.GONE);
+            mConfirmPassvordView.setVisibility(View.GONE);
+            mEmailView.setVisibility(View.GONE);
+            mLoginView.setVisibility(View.GONE);
+            mFirstNameView.setVisibility(View.GONE);
+            mLastNameView.setVisibility(View.GONE);
+            regNextButton.setVisibility(View.GONE);
+
+            stepTwoLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private File createTemporaryFile(String part, String ext) throws Exception
@@ -214,6 +248,11 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
 
         if(checkRegistrationInfo(login, firstName, lastName, password, confirmPassword, email))
             task.execute(login, firstName, lastName, password, email, imageFound ? selectedFilePath : null);
+        else {
+            noteIncorrectData.setVisibility(View.VISIBLE);
+            switchSteps(false);
+        }
+
     }
 
     private boolean checkRegistrationInfo(String login, String firstName, String lastName, String password, String confirmPassword, String email) {

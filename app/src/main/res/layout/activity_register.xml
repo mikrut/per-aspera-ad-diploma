@@ -44,6 +44,16 @@
                 android:layout_margin="8dp"
                 android:visibility="gone" />
 
+            <TextView
+                android:layout_height="32dp"
+                android:layout_width="match_parent"
+                android:id="@+id/note_error_input_data"
+                android:text="@string/note_error_input_data"
+                android:background="#BB0000"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center_vertical|center_horizontal"/>
+
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
