@@ -226,8 +226,10 @@ public class DialogActivity
         initWriters();
         initRetryTimeout();
 
-        ChatsHelper ch = new ChatsHelper(this);
-        thisChat = thisChat == null ? ch.getChat(chatID) : thisChat;
+        if (chatID != null) {
+            ChatsHelper ch = new ChatsHelper(this);
+            thisChat = (thisChat == null) ? ch.getChat(chatID) : thisChat;
+        }
 
         if(thisChat != null && chatInfo != null) {
             onLoadInfoCompleted(mActionBar, chatInfo);
