@@ -22,10 +22,13 @@ public class AttachedFile {
         fileName = file.getString("path");
         filePath = fileName;
         if (file.has("id")) {
-            fileID = file.getString("id");
+            fileID = String.valueOf(file.getInt("id"));
         }
         if (file.has("name")) {
             fileName = file.getString("name");
+            if (file.has("format")) {
+                fileName = fileName + "." + file.getString("format");
+            }
         }
         // this.fileID = String.valueOf(file.getInt("id"));
     }
