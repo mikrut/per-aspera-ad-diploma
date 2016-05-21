@@ -1,7 +1,8 @@
-<RelativeLayout         xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:background="#000000" >
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#000000">
 
     <ImageView
         android:id="@+id/small_dialog_user_icon"
@@ -10,14 +11,24 @@
         android:layout_margin="10dp"
         android:src="@drawable/ic_keyboard_backspace_white_24dp" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/CircularImageView1"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+        <ProgressBar
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/progressBar"
+            android:visibility="visible"
             android:layout_toRightOf="@+id/small_dialog_user_icon"
             android:layout_centerVertical="true"
-            android:src="@drawable/ic_user_picture"
-            android:layout_marginLeft="8dp"/>
+            android:layout_margin="10dp"
+            />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/CircularImageView1"
+            android:visibility="gone"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_toRightOf="@+id/progressBar"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_user_picture"/>
 
     <LinearLayout
         android:layout_width="wrap_content"

@@ -83,14 +83,15 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         File file = new File(filePath);
         ImageView userPicture;
 
-        userPicture = (ImageView) headerViewObject.findViewById(R.id.userPicture);
+        if (headerViewObject != null) {
+            userPicture = (ImageView) headerViewObject.findViewById(R.id.userPicture);
 
-        if(file.exists()) {
-            Log.d("[TP-diploma]", "Setting an image: " + filePath);
-            userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
-        }
-        else {
-            userPicture.setImageResource(R.drawable.ic_user_picture);
+            if (file.exists()) {
+                Log.d("[TP-diploma]", "Setting an image: " + filePath);
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            } else {
+                userPicture.setImageResource(R.drawable.ic_user_picture);
+            }
         }
     }
 

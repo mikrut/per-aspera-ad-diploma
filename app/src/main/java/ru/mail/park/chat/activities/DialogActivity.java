@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.Loader;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -30,6 +32,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -106,6 +110,9 @@ public class DialogActivity
     private ImageButton buttonDown;
     private ActionBar mActionBar;
 
+    private ProgressBar progressBar;
+    private ImageView chatImage;
+
     private String chatID;
     private String userID;
     private String ownerID;
@@ -181,6 +188,9 @@ public class DialogActivity
                 finish();
             }
         });
+        progressBar = (ProgressBar) mCustomView.findViewById(R.id.progressBar);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        chatImage = (ImageView) mCustomView.findViewById(R.id.CircularImageView1);
 
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
@@ -342,6 +352,16 @@ public class DialogActivity
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, listener).forceLoad();
+                        }
+
+                        // FIXME: add universal interface method
+                        if (messages instanceof Messages) {
+                            boolean ok = ((Messages) messages).isConnected();
+                            progressBar.setVisibility(ok ? View.GONE : View.VISIBLE);
+                            chatImage.setVisibility(ok ? View.VISIBLE : View.GONE);
+                        } else {
+                            progressBar.setVisibility(View.GONE);
+                            chatImage.setVisibility(View.VISIBLE);
                         }
 
                         if (undeliveredMessages.size() == 0)
