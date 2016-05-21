@@ -3,6 +3,7 @@ package ru.mail.park.chat.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
@@ -222,6 +223,9 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
                     }
                 }
             }
+
+            if(selectedFilePath != null)
+                regImagePreview.setImageBitmap(BitmapFactory.decodeFile(selectedFilePath));
         }
     }
 
