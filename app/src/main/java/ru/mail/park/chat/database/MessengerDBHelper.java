@@ -12,7 +12,7 @@ import java.util.Locale;
  * Created by Михаил on 06.03.2016.
  */
 public class MessengerDBHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static final String DATABASE_NAME = "Messenger.db";
 
     public static final DateFormat currentFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -40,11 +40,6 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void dropDatabase() {
-        SQLiteDatabase db = getWritableDatabase();
-        dropDatabase(db);
-    }
-
     private void dropDatabase(SQLiteDatabase db) {
         db.execSQL(ChatsContract.DROP_TABLE);
         db.execSQL(ContactsContract.DROP_TABLE);
@@ -53,6 +48,23 @@ public class MessengerDBHelper extends SQLiteOpenHelper {
         db.execSQL(AttachmentsContract.DROP_TABLE);
 
         db.execSQL(ContactsToChatsContract.DROP_TABLE);
+    }
+
+    public void clearDatabase() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete(ChatsContract.ChatsEntry.TABLE_NAME, null, null);
+            db.delete(ContactsContract.ContactsEntry.TABLE_NAME, null, null);
+            db.delete(MessagesContract.MessagesEntry.TABLE_NAME, null, null);
+            db.delete("fts_" + MessagesContract.MessagesEntry.TABLE_NAME, null, null);
+            db.delete(AttachmentsContract.AttachmentsEntry.TABLE_NAME, null, null);
+            db.delete(ContactsToChatsContract.ContactsToChatsEntry.TABLE_NAME, null, null);
+
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     @Override

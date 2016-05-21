@@ -163,7 +163,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                     owner.removeFromPreferences(ChatsActivity.this);
                     MessengerDBHelper dbHelper = new MessengerDBHelper(ChatsActivity.this);
-                    dbHelper.dropDatabase();
+                    dbHelper.clearDatabase();
 
                     Intent intent = new Intent(ChatsActivity.this, LoginActivity.class);
                     startActivity(intent);

@@ -150,10 +150,6 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         appImage.setVisibility(View.VISIBLE);
 
         contact.saveToPreferences(this);
-        MessengerDBHelper dbHelper = new MessengerDBHelper(this);
-        dbHelper.dropDatabase();
-        dbHelper.onCreate(dbHelper.getWritableDatabase());
-
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);
         finish();
