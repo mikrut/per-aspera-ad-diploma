@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,6 +38,7 @@ import java.io.InputStream;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
+import ru.mail.park.chat.activities.tasks.DeleteContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
 import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.database.ContactsToChatsHelper;
@@ -46,7 +48,8 @@ import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileViewActivity extends AppCompatActivity {
+public class ProfileViewActivity extends AppCompatActivity
+        implements DeleteContactTask.DeleteContactCallbacks {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
     public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/file/image";
     private final static int DB_LOADER = 0;
@@ -251,9 +254,22 @@ public class ProfileViewActivity extends AppCompatActivity {
                                 }).create().show();
                 return true;
             }
+            case R.id.action_delete_contact: {
+                DeleteContactTask task = new DeleteContactTask(this, this);
+                task.execute(uid);
+            }
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDeleted(boolean success) {
+        if (success) {
+            onBackPressed();
+        } else {
+            Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setUserData(Contact user, Contact.Relation relation) {
