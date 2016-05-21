@@ -780,10 +780,11 @@ public class DialogActivity
         public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
             if (data != null) {
                 Log.d("[TP-diploma]", "messages count: " + data.size());
+                int oldSize = receivedMessageList.size();
                 for (Message message : data) {
                     addMessage(message);
                 }
-                if (!receivedFromWeb)
+                if (!receivedFromWeb && receivedMessageList.size() != oldSize)
                     messagesList.scrollToPosition(receivedMessageList.size() - 1);
                 if (loader.getId() == MESSAGES_WEB_LOADER) {
                     receivedFromWeb = true;

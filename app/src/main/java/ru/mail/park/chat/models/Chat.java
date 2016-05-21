@@ -42,6 +42,14 @@ public class Chat implements Serializable {
         name = cursor.getString(ChatsContract.PROJECTION_NAME_INDEX);
         if (!cursor.isNull(ChatsContract.PROJECTION_DESCRIPTION_INDEX))
             description = cursor.getString(ChatsContract.PROJECTION_DESCRIPTION_INDEX);
+        type = cursor.getInt(ChatsContract.PROJECTION_TYPE_INDEX);
+        if (!cursor.isNull(ChatsContract.PROJECTION_DATETIME_INDEX)) {
+            dateTime = GregorianCalendar.getInstance();
+            long timeInMillis = 1000L * cursor.getInt(ChatsContract.PROJECTION_DATETIME_INDEX);
+            dateTime.setTimeInMillis(timeInMillis);
+        } else {
+            dateTime = null;
+        }
     }
 
     public static final int GROUP_TYPE = 1;
@@ -160,6 +168,8 @@ public class Chat implements Serializable {
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_CID, cid);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_NAME, name);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DESCRIPTION, description);
+        contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DATETIME, dateTime != null ? dateTime.getTimeInMillis() / 1000L : null);
+        contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_TYPE, type);
 
         if(companion_id != null)
             contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_COMPANION_ID, companion_id);
