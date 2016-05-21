@@ -80,7 +80,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_person_add_black_48dp"
-        android:tint="@color/textColorPrimary"
+        android:tint="#ffffff"
         android:visibility="gone"
         tools:visibility="visible"
         app:layout_anchor="@+id/splitter"
@@ -101,9 +101,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_sms_black_48dp"
+        android:tint="#ffffff"
         android:visibility="gone"
         tools:visibility="visible"
-        android:tint="@color/textColorPrimary"
         app:layout_anchor="@+id/splitter2"
         app:layout_anchorGravity="left|center_vertical" />
 

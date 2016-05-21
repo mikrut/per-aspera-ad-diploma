@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#000000</color>
     <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#607d8b</color>
+    <color name="colorAccent">#43a047</color>
     <color name="colorBackground">#eceff1</color>
     <color name="colorDrawerBackground">#616161</color>
 
@@ -13,7 +13,7 @@
 
     <color name="textColorSecondary">#616161</color>
     <color name="textColorSecondaryInverse">#eeeeee</color>
-    <color name="colorButtonNormal">#455a64</color>
+    <color name="colorButtonNormal">#43a047</color>
 
     <color name="menuTextColor">#ffffff</color>
 
