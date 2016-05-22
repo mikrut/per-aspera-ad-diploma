@@ -33,13 +33,14 @@ public class RegisterTask extends AsyncTask<String, Void, Triple<String, Map<IRe
         String lastName = params[2];
         String password = params[3];
         String email = params[4];
+        String imgPath = params[5];
 
         OwnerProfile user = null;
         String message = null;
         Map<IRegisterCallbacks.ErrorType, String> errors = null;
 
         try {
-            user = auth.signUp(login, firstName, lastName, password, email);
+            user = auth.signUp(login, firstName, lastName, password, email, imgPath);
         } catch (IOException e) {
             message = e.getLocalizedMessage();
         } catch (Auth.SignUpException e) {

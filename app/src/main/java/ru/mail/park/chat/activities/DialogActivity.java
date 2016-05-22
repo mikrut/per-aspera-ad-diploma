@@ -238,6 +238,7 @@ public class DialogActivity
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d("[TP-diploma]", "DialogActivity.onResume");
         initWriters();
         initRetryTimeout();
 
@@ -246,7 +247,16 @@ public class DialogActivity
             thisChat = (thisChat == null) ? ch.getChat(chatID) : thisChat;
         }
 
-        if(thisChat != null && chatInfo != null) {
+        if(thisChat != null) {
+            Log.d("[TP-diploma]", "DialogActivity.onResume thisChat != null");
+            CircleImageView smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
+            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + thisChat.getCompanionId() + ".bmp";
+            File file = new File(filePath);
+
+            Log.d("[TP-diploma]", "img path: " + filePath);
+            if(file.exists()) {
+                smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            }
             onLoadInfoCompleted(mActionBar, chatInfo);
         }
     }
@@ -743,6 +753,7 @@ public class DialogActivity
         try {
             currentChat.setCompanionId(companion.getUid());
             ch.saveChat(currentChat);
+            thisChat = currentChat;
         } catch(NullPointerException e) {
 
         }
