@@ -19,6 +19,7 @@ import java.util.Locale;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.loaders.images.IImageSettable;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 
@@ -86,6 +87,12 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         }
 
         public void initView(Chat chat) {
+            if (chat.getImagePath() != null && downloadManager != null) {
+                downloadManager.setImage(this, chat.getImagePath(), ImageDownloadManager.Size.SMALL);
+            } else {
+                setImage(null);
+            }
+
             setTitle(chat.getName());
             // FIXME: take values from DB
             // FIXME: get last message text, not description
@@ -129,13 +136,6 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             }
 
             lastMessageTime.setText(timestring);
-
-            if (chat.getImagePath() != null && downloadManager != null) {
-                downloadManager.setImage(getImage(), chat.getImagePath(), ImageDownloadManager.Size.SMALL);
-            }
-            if (chat.getImagePath() != null) {
-                Log.i("ImagePath", chat.getImagePath().toString());
-            }
         }
     }
 

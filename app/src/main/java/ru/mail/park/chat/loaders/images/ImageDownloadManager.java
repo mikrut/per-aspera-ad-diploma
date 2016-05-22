@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.util.Log;
-import android.widget.ImageView;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
@@ -79,7 +78,7 @@ public class ImageDownloadManager extends Service {
     private LruCache<String, Bitmap> memoryCache;
     private static final int MAX_MEMCACHE_SIZE = 10;
 
-    private Map<ImageView, ImageFetchTask> tasks = new HashMap<>();
+    private Map<IImageSettable, ImageFetchTask> tasks = new HashMap<>();
 
     @Override
     public void onCreate() {
@@ -154,7 +153,7 @@ public class ImageDownloadManager extends Service {
         return null;
     }
 
-    public void setImage(@NonNull ImageView imageView, @NonNull URL path,
+    public void setImage(@NonNull IImageSettable imageView, @NonNull URL path,
                          @NonNull Size size) {
         Log.v(ImageDownloadManager.class.getSimpleName(), ".setImage()");
         if (cancleGetImage(imageView, path, size)) {
@@ -164,7 +163,7 @@ public class ImageDownloadManager extends Service {
         }
     }
 
-    private boolean cancleGetImage(@NonNull ImageView imageView, @NonNull URL path, @NonNull Size size) {
+    private boolean cancleGetImage(@NonNull IImageSettable imageView, @NonNull URL path, @NonNull Size size) {
         ImageFetchTask task = tasks.get(imageView);
         if (task != null) {
             if (task.getUrl().equals(path) && task.getSize().equals(size)) {
@@ -178,7 +177,7 @@ public class ImageDownloadManager extends Service {
         return true;
     }
 
-    void remove(ImageView image) {
+    void remove(IImageSettable image) {
         tasks.remove(image);
     }
 

@@ -31,7 +31,6 @@ import ru.mail.park.chat.models.Contact;
  */
 public class ContactAdapter extends AContactAdapter {
     private TreeSet<Contact> choosenContacts;
-    private ImageDownloadManager imageManager;
 
     private final Map<Character, List<Contact>> contactGroups;
     private ContactHolder.OnContactClickListener contactClickListener;
@@ -107,14 +106,6 @@ public class ContactAdapter extends AContactAdapter {
                 Contact contact = getContactForPosition(position);
                 if (choosenContacts != null)
                     cHolder.setChosen(choosenContacts.contains(contact), false);
-                if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
-                    try {
-                        URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
-                        imageManager.setImage(cHolder.getImage(), url, ImageDownloadManager.Size.SMALL);
-                    } catch (MalformedURLException e) {
-                        Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
-                    }
-                }
                 break;
         }
     }
@@ -188,13 +179,5 @@ public class ContactAdapter extends AContactAdapter {
 
     public void setSinglechoice() {
         choosenContacts = null;
-    }
-
-    public void setImageManager(ImageDownloadManager imageManager) {
-        ImageDownloadManager old = this.imageManager;
-        this.imageManager = imageManager;
-        if (old == null && imageManager != null) {
-            notifyDataSetChanged();
-        }
     }
 }
