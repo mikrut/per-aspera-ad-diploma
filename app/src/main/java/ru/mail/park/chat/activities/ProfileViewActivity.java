@@ -302,7 +302,7 @@ public class ProfileViewActivity extends AppCompatActivity
             if (user.isOnline())
                 onlineIndicator.setText("online");
             else if(lastSeen != null)
-                onlineIndicator.setText(lastSeen.getTime().toGMTString());
+                onlineIndicator.setText(formatLastSeenTime(lastSeen));
             else
                 onlineIndicator.setText("offline");
         }
@@ -336,6 +336,38 @@ public class ProfileViewActivity extends AppCompatActivity
         profileDataLayout.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.GONE);
         invalidateOptionsMenu();
+    }
+
+    public static String formatLastSeenTime(Calendar lastSeen) {
+        String lastSeenDate;
+        String lastSeenTime;
+
+        Calendar rightNow = Calendar.getInstance();
+
+        int lastSeenDayInYear = lastSeen.get(Calendar.DAY_OF_YEAR);
+        int todayDayInYear = rightNow.get(Calendar.DAY_OF_YEAR);
+
+        int lastSeenYear = lastSeen.get(Calendar.YEAR);
+        int todayYear = rightNow.get(Calendar.YEAR);
+
+        if(lastSeenYear == todayYear) {
+            switch(todayDayInYear - lastSeenDayInYear) {
+                case 0: lastSeenDate = "Today";
+                        break;
+
+                case 1: lastSeenDate = "Yesterday";
+                        break;
+
+                default: lastSeenDate = String.valueOf(lastSeen.get(Calendar.DAY_OF_MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.YEAR));
+                         break;
+            }
+        } else {
+            lastSeenDate = String.valueOf(lastSeen.get(Calendar.DAY_OF_MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.YEAR));
+        }
+
+        lastSeenTime = String.valueOf(lastSeen.get(Calendar.HOUR)) + ":" + String.valueOf(lastSeen.get(Calendar.MINUTE));
+
+        return "Last seen " + lastSeenDate + " at " + lastSeenTime;
     }
 
     private final LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
