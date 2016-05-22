@@ -204,7 +204,8 @@ public class Contact implements Comparable<Contact>, Serializable {
         return aboutUser;
     }
 
-    public @Nullable Calendar getLastSeen() {
+    public @Nullable Calendar
+    getLastSeen() {
         return lastSeen;
     }
 

@@ -8,7 +8,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
+import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -20,6 +23,8 @@ public class ChatInfo {
     private String cid;
     @NonNull
     private String name;
+    @NonNull
+    private Calendar lastSeen;
     @NonNull
     private Contact userFirst;
     @NonNull
@@ -34,6 +39,13 @@ public class ChatInfo {
             name = jsonChatInfo.getString("name");
             type = jsonChatInfo.getInt("typeChatRoom") == 0 ? chatTypes.INDIVIDUAL : chatTypes.GROUP;
             img = jsonChatInfo.getString("img");
+
+            if (jsonChatInfo.has("lastSeen")) {
+                java.util.Date dateLastSeen = MessengerDBHelper.currentFormat.parse(jsonChatInfo.getString("lastSeen"));
+                GregorianCalendar lastSeen = new GregorianCalendar();
+                lastSeen.setTime(dateLastSeen);
+                this.lastSeen = lastSeen;
+            }
 
             JSONArray users = jsonChatInfo.getJSONArray("listUser");
 
@@ -72,6 +84,10 @@ public class ChatInfo {
 
     public Contact getFirst() {
         return userFirst;
+    }
+
+    public Calendar getLastSeen() {
+        return lastSeen;
     }
 
     public Contact getSecond() {

@@ -47,8 +47,10 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         Calendar lastSeen = contact.getLastSeen();
         if (lastSeen != null) {
-            contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+            Log.d("[TP-diploma]", "got lastSeen field");
+            contactHolder.setContactLastSeen(ProfileViewActivity.formatLastSeenTime(lastSeen));
         } else {
+            Log.d("[TP-diploma]", "dont have lastSeen");
             contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
         }
 

@@ -723,12 +723,12 @@ public class DialogActivity
 //        companion = new ContactsHelper(this).getContact(companion.getUid());
 
         dialogTitle.setText(companion.getContactTitle());
-//        if (companion.isOnline())
-//            dialogLastSeen.setText("online");
-//        else if(companion.getLastSeen() != null)
-//            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
-//        else
-//            dialogLastSeen.setText("offline");
+        if (companion.isOnline())
+            dialogLastSeen.setText("online");
+        else if(companion.getLastSeen() != null)
+            dialogLastSeen.setText(ProfileViewActivity.formatLastSeenTime(companion.getLastSeen()));
+        else
+            dialogLastSeen.setText("offline");
 
         String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
         File file = new File(filePath);

@@ -53,6 +53,7 @@ public class Contacts extends ApiSection {
         int contactsLength;
         List<Contact> contactList;
         try {
+
             JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             Log.d("[TP-diploma]", "getContacts() " + result.toString());
             final int status = result.getInt("status");
