@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import ru.mail.park.chat.activities.fragments.ContactsCurrentFragment;
 import ru.mail.park.chat.activities.fragments.ContactsSubscribersFragment;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 
 /**
  * Created by Михаил on 14.05.2016.
@@ -42,6 +43,12 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
             default:
                 return null;
         }
+    }
+
+    public void setImageManager(ImageDownloadManager manager) {
+        currentFragment.setImageManager(manager);
+        addibleFragment.setImageManager(manager);
+        subscriptionsFragment.setImageManager(manager);
     }
 
     @Override
