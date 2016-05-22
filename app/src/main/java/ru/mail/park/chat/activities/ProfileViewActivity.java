@@ -350,6 +350,10 @@ public class ProfileViewActivity extends AppCompatActivity
         int lastSeenYear = lastSeen.get(Calendar.YEAR);
         int todayYear = rightNow.get(Calendar.YEAR);
 
+        int dayOfMonth = lastSeen.get(Calendar.DAY_OF_MONTH);
+        int month = lastSeen.get(Calendar.MONTH);
+        int year = lastSeen.get(Calendar.YEAR);
+
         if(lastSeenYear == todayYear) {
             switch(todayDayInYear - lastSeenDayInYear) {
                 case 0: lastSeenDate = "Today";
@@ -358,14 +362,20 @@ public class ProfileViewActivity extends AppCompatActivity
                 case 1: lastSeenDate = "Yesterday";
                         break;
 
-                default: lastSeenDate = String.valueOf(lastSeen.get(Calendar.DAY_OF_MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.YEAR));
+                default: lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
                          break;
             }
         } else {
-            lastSeenDate = String.valueOf(lastSeen.get(Calendar.DAY_OF_MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.MONTH)) + "." + String.valueOf(lastSeen.get(Calendar.YEAR));
+            lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
         }
 
-        lastSeenTime = String.valueOf(lastSeen.get(Calendar.HOUR)) + ":" + String.valueOf(lastSeen.get(Calendar.MINUTE));
+        int hour = lastSeen.get(Calendar.HOUR);
+        int min = lastSeen.get(Calendar.MINUTE);
+
+        String hours = (hour >= 10) ? String.valueOf(hour) : ("0" + String.valueOf(hour));
+        String mins = (min >= 10) ? String.valueOf(min) : ("0" + String.valueOf(min));
+
+        lastSeenTime = hours + ":" + mins;
 
         return "Last seen " + lastSeenDate + " at " + lastSeenTime;
     }
