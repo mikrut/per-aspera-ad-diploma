@@ -143,10 +143,10 @@ public class Contact implements Comparable<Contact>, Serializable {
             lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
         if (!cursor.isNull(ContactsContract.PROJECTION_ABOUT_INDEX))
             aboutUser = cursor.getString(ContactsContract.PROJECTION_ABOUT_INDEX);
-
-        if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX)) {
+        if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX))
             pubkeyDigest = cursor.getBlob(ContactsContract.PROJECTION_PUBKEY_INDEX);
-        }
+        if (!cursor.isNull(ContactsContract.PROJECTION_IMAGE_URL_INDEX))
+            img = cursor.getString(ContactsContract.PROJECTION_IMAGE_URL_INDEX);
 
         if (!cursor.isNull(ContactsContract.PROJECTION_ONION_INDEX)) {
             String onion = cursor.getString(ContactsContract.PROJECTION_ONION_INDEX);
@@ -274,6 +274,7 @@ public class Contact implements Comparable<Contact>, Serializable {
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_ABOUT, aboutUser);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_IMAGE_URL, img);
 
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PUBKEY,
                 pubkeyDigest != null ? pubkeyDigest : null);
