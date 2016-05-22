@@ -40,7 +40,7 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
                     profile = new OwnerProfile(thisUser, alertDialog.getContext());
                     profile.saveToPreferences(alertDialog.getContext());
                 }
-                return  success;
+                return success;
             } catch (IOException e) {
                 Log.d("[TP-diploma]", "Ebal ya etot exception: " + e.getMessage());
                 publishProgress(e.getLocalizedMessage());

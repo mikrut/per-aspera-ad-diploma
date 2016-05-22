@@ -519,7 +519,7 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
                 }
                 else {
                     Log.d("[TP-diploma]", "DownloadImageTask file do not exist");
-                    bmImage = BitmapFactory.decodeResource(ChatsActivity.this.getResources(), R.drawable.ic_user_picture);
+                    bmImage = BitmapFactory.decodeResource(ChatsActivity.this.getResources(), R.drawable.ic_user_picture_blur);
                     rl.setBackground(new BitmapDrawable(getResources(), bmImage));
                 }
             }

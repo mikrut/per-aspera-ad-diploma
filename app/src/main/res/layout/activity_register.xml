@@ -44,6 +44,17 @@
                 android:layout_margin="8dp"
                 android:visibility="gone" />
 
+            <TextView
+                android:layout_height="32dp"
+                android:layout_width="match_parent"
+                android:id="@+id/note_error_input_data"
+                android:text="@string/note_error_input_data"
+                android:background="#BB0000"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center_vertical|center_horizontal"/>
+
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,6 +70,7 @@
                     app:civ_border_color="#fff"
                     android:id="@+id/reg_user_picture_in_editor"
                     android:layout_width="128dp"
+                    android:src="@drawable/ic_user_picture"
                     android:layout_height="128dp"/>
 
                 <ImageButton
@@ -93,16 +105,6 @@
                     android:tint="@color/textColorPrimary"/>
 
             </RelativeLayout>
-
-            <TextView
-                android:layout_height="32dp"
-                android:layout_width="match_parent"
-                android:id="@+id/note_error_input_data"
-                android:text="@string/note_error_input_data"
-                android:background="#BB0000"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center_vertical|center_horizontal"/>
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -211,7 +213,6 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-
 
     </ScrollView>
 
