@@ -2,9 +2,11 @@ package ru.mail.park.chat.activities;
 
 import android.app.LoaderManager;
 import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -13,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -58,6 +61,7 @@ import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -224,6 +228,47 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to ImageDownloadService
+        Log.i(ChatsActivity.class.getSimpleName(), ".onStart()");
+        Intent intent = new Intent(this, ImageDownloadManager.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private ImageDownloadManager mgr;
+    private boolean bound = false;
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (bound) {
+            unbindService(mConnection);
+            bound = false;
+        }
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            ImageDownloadManager.ImageDownloadBinder binder =
+                    (ImageDownloadManager.ImageDownloadBinder) service;
+            mgr = binder.getService();
+            if (chatsList != null && chatsList.getAdapter() != null) {
+                ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
+            }
+            bound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            bound = false;
+        }
+    };
+
+
+    @Override
     protected void onResume() {
         super.onResume();
         CircleImageView civ = null;
@@ -375,7 +420,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
 
                     if (data != null) {
                         chatsData = data;
-                        chatsList.setAdapter(new ChatsAdapter(data));
+                        ChatsAdapter adapter = new ChatsAdapter(data);
+                        adapter.setDownloadManager(mgr);
+                        chatsList.setAdapter(adapter);
                     }
                     swipeContainer.setRefreshing(false);
                     pbChats.setVisibility(View.GONE);
@@ -539,7 +586,9 @@ public class ChatsActivity extends AppCompatActivity implements IAuthLogout {
         super.onRestoreInstanceState(savedInstanceState);
         chatsData = (List<Chat>) savedInstanceState.getSerializable(CHATS_DATA);
         if (chatsData != null) {
-            chatsList.setAdapter(new ChatsAdapter(chatsData));
+            ChatsAdapter adapter = new ChatsAdapter(chatsData);
+            adapter.setDownloadManager(mgr);
+            chatsList.setAdapter(adapter);
         }
     }
 }

@@ -37,7 +37,7 @@ public class AttachedFile {
         fileID = cursor.getString(AttachmentsContract.PROJECTION_FID_INDEX);
         messageID = cursor.getString(AttachmentsContract.PROJECTION_MID_INDEX);
         fileName = cursor.getString(AttachmentsContract.PROJECTION_TITLE_INDEX);
-        filePath = cursor.getString(AttachmentsContract.PROJECTION_TITLE_INDEX);
+        filePath = cursor.getString(AttachmentsContract.PROJECTION_PATH_INDEX);
     }
 
     public void setFileName(String fileName) {

@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import java.util.Locale;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -25,6 +27,7 @@ import ru.mail.park.chat.models.Chat;
  */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
     private final List<Chat> chats;
+    private ImageDownloadManager downloadManager = null;
 
     public ChatsAdapter(List<Chat> chats) {
         this.chats = chats;
@@ -125,8 +128,22 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 }
             }
 
-
             lastMessageTime.setText(timestring);
+
+            if (chat.getImagePath() != null && downloadManager != null) {
+                downloadManager.setImage(getImage(), chat.getImagePath(), ImageDownloadManager.Size.SMALL);
+            }
+            if (chat.getImagePath() != null) {
+                Log.i("ImagePath", chat.getImagePath().toString());
+            }
+        }
+    }
+
+    public void setDownloadManager(ImageDownloadManager downloadManager) {
+        ImageDownloadManager old = this.downloadManager;
+        this.downloadManager = downloadManager;
+        if (old == null && downloadManager != null) {
+            notifyDataSetChanged();
         }
     }
 

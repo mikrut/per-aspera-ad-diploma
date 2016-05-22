@@ -26,6 +26,7 @@ import ru.mail.park.chat.activities.adapters.AContactAdapter;
 import ru.mail.park.chat.activities.adapters.ContactAdapter;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
 import ru.mail.park.chat.loaders.ContactListWebLoader;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -134,6 +135,7 @@ public class ContactsFragment extends Fragment {
         if (multichoice) {
             contactAdapter.setMultichoice(chosenContacts);
         }
+        contactAdapter.setImageManager(manager);
         return contactAdapter;
     }
 
@@ -190,5 +192,13 @@ public class ContactsFragment extends Fragment {
 
     public TreeSet<Contact> getChosenContacts() {
         return chosenContacts;
+    }
+
+
+    private ImageDownloadManager manager;
+    public void setImageManager(ImageDownloadManager manager) {
+        if (contactAdapter != null)
+            contactAdapter.setImageManager(manager);
+        this.manager = manager;
     }
 }
