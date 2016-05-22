@@ -13,12 +13,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.ChatsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
@@ -39,6 +42,9 @@ public class Chat implements Serializable {
     private String companion_id;
     private int type;
     private List<Contact> chatUsers = new ArrayList<>();
+
+    @Nullable
+    private URL imagePath;
 
     public Chat(Cursor cursor) {
         cid = cursor.getString(ChatsContract.PROJECTION_CID_INDEX);
@@ -113,6 +119,24 @@ public class Chat implements Serializable {
                 }
             }
         }
+
+        String img = null;
+        if (chat.has("img")) {
+            img = chat.getString("img");
+        }
+        if (type == INDIVIDUAL_TYPE) {
+            Contact user = chatUsers.get(0);
+            if (user.getUid().equals(uid))
+                user = chatUsers.get(1);
+            img = user.getImg();
+        }
+        if (img != null && !img.equals("null") && !img.equals("false")) {
+            try {
+                imagePath = new URL(ApiSection.SERVER_URL + img);
+            } catch (MalformedURLException e) {
+                Log.w(Chat.class.getSimpleName() + ".new", e.getLocalizedMessage());
+            }
+        }
     }
 
     public List<Contact> getChatUsers() {
@@ -184,6 +208,15 @@ public class Chat implements Serializable {
         } else {
             this.dateTime = null;
         }
+    }
+
+    @Nullable
+    public URL getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(@Nullable URL imagePath) {
+        this.imagePath = imagePath;
     }
 
     @NonNull

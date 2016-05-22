@@ -51,4 +51,7 @@ dependencies {
     // Cryptographic libraries
     compile 'info.guardianproject.netcipher:netcipher:1.2'
     compile 'org.bouncycastle:bcprov-jdk15on:1.54'
+
+    // Cache libraries
+    compile 'com.jakewharton:disklrucache:2.0.2'
 }

@@ -51,6 +51,10 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
+    public ImageView getImage() {
+        return image;
+    }
+
     public void setImage(Bitmap imageBitmap) {
         image.setImageBitmap(imageBitmap);
         bitmapIsSet = (imageBitmap != null);
