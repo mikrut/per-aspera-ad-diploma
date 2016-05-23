@@ -339,8 +339,9 @@ public class ProfileViewActivity extends AppCompatActivity
     }
 
     public static String formatLastSeenTime(Calendar lastSeen) {
-        String lastSeenDate;
+        String lastSeenDate = "";
         String lastSeenTime;
+        boolean dateAgoFormat = false;
 
         Calendar rightNow = Calendar.getInstance();
 
@@ -350,34 +351,64 @@ public class ProfileViewActivity extends AppCompatActivity
         int lastSeenYear = lastSeen.get(Calendar.YEAR);
         int todayYear = rightNow.get(Calendar.YEAR);
 
+        int lastSeenHour = lastSeen.get(Calendar.HOUR);
+        int todayHour = rightNow.get(Calendar.HOUR);
+
+        int lastSeenMin = lastSeen.get(Calendar.MINUTE);
+
         int dayOfMonth = lastSeen.get(Calendar.DAY_OF_MONTH);
         int month = lastSeen.get(Calendar.MONTH);
         int year = lastSeen.get(Calendar.YEAR);
 
         if(lastSeenYear == todayYear) {
             switch(todayDayInYear - lastSeenDayInYear) {
-                case 0: lastSeenDate = "Today";
-                        break;
+                case 0: if(todayHour - lastSeenHour > 11) {
+                    lastSeenDate = "Today";
+                } else {
+                    dateAgoFormat = true;
+                    int diff = todayHour - lastSeenHour;
+                    switch(diff) {
+                        case 1: lastSeenDate = "an hour ago";
+                            break;
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11: lastSeenDate = String.valueOf(diff) + " hours ago";
+                            break;
+                    }
+                }
+                    break;
 
                 case 1: lastSeenDate = "Yesterday";
-                        break;
+                    break;
 
-                default: lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
-                         break;
+                default: lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf
+                        (dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf
+                        (year);
+                    break;
             }
         } else {
-            lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
+            lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." +
+                    ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
         }
 
-        int hour = lastSeen.get(Calendar.HOUR);
-        int min = lastSeen.get(Calendar.MINUTE);
-
-        String hours = (hour >= 10) ? String.valueOf(hour) : ("0" + String.valueOf(hour));
-        String mins = (min >= 10) ? String.valueOf(min) : ("0" + String.valueOf(min));
+        String hours = (lastSeenHour >= 10) ? String.valueOf(lastSeenHour) : ("0" + String.valueOf(lastSeenHour));
+        String mins = (lastSeenMin >= 10) ? String.valueOf(lastSeenMin) : ("0" + String.valueOf(lastSeenMin));
 
         lastSeenTime = hours + ":" + mins;
 
-        return "Last seen " + lastSeenDate + " at " + lastSeenTime;
+        String result = "Last seen " + lastSeenDate;
+
+        if(!dateAgoFormat)
+            result += " at " + lastSeenTime;
+
+        return result;
     }
 
     private final LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
