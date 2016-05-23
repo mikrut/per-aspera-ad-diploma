@@ -22,6 +22,7 @@ public class Jsonifier {
     public static JSONObject jsonifyForRecieve(Message message, OwnerProfile owner) throws JSONException {
         JSONObject data = new JSONObject();
         data.put("textMessage", message.getMessageBody());
+        data.put("uniqueId", message.getUniqueID());
         data.put("user", jsonifyUser(owner));
         data.put("dtCreate", MessengerDBHelper.currentFormat.format(GregorianCalendar.getInstance().getTime()));
         return data;

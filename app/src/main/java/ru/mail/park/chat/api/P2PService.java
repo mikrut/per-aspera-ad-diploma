@@ -6,6 +6,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -18,10 +19,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.Random;
 
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.message_interfaces.Jsonifier;
 import ru.mail.park.chat.models.Message;
@@ -46,7 +46,7 @@ public class P2PService extends Service implements IMessageSender {
     private volatile DataInputStream input;
     private volatile DataOutputStream output;
 
-    private volatile IMessageReaction messageListener;
+    private volatile IChatListener chatListener;
     private volatile boolean noStop = true;
 
     @Override
@@ -94,8 +94,8 @@ public class P2PService extends Service implements IMessageSender {
         }
     }
 
-    public void addListener(IMessageReaction messageListener) {
-        this.messageListener = messageListener;
+    public void addListener(IChatListener chatListener) {
+        this.chatListener = chatListener;
     }
 
     @Nullable
@@ -187,8 +187,8 @@ public class P2PService extends Service implements IMessageSender {
             @Override
             public void run() {
                 try {
-                    if (messageListener != null) {
-                        messageListener.onIncomeMessage(new JSONObject(message));
+                    if (chatListener != null) {
+                        chatListener.onIncomeMessage(new JSONObject(message));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -202,8 +202,8 @@ public class P2PService extends Service implements IMessageSender {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (messageListener != null) {
-                    messageListener.onAcknowledgeSendMessage(message);
+                if (chatListener != null) {
+                    chatListener.onAcknowledgeSendMessage(message);
                 }
             }
         });
@@ -262,6 +262,21 @@ public class P2PService extends Service implements IMessageSender {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean isConnected() {
+        return output != null && input != null;
+    }
+
+    @Override
+    public void reconnect() {
+
+    }
+
+    @Override
+    public void write(@NonNull String cid) {
+
     }
 
     @Override

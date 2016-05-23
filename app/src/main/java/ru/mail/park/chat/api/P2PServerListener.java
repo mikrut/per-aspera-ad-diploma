@@ -1,8 +1,7 @@
 package ru.mail.park.chat.api;
 
 import android.app.Activity;
-import android.content.Context;
-import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.jivesoftware.smack.proxy.ProxyInfo;
@@ -12,24 +11,13 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URL;
-import java.util.List;
 import java.util.Random;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import info.guardianproject.netcipher.NetCipher;
-import info.guardianproject.netcipher.proxy.OrbotHelper;
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.message_interfaces.Jsonifier;
-import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -43,7 +31,7 @@ public class P2PServerListener extends Thread implements IMessageSender {
     DataOutputStream output;
 
     Activity activity;
-    IMessageReaction messageListener;
+    IChatListener messageListener;
     DestinationParams destination;
 
     int port = 0;
@@ -53,10 +41,20 @@ public class P2PServerListener extends Thread implements IMessageSender {
         public int destinationPort;
     }
 
-    public P2PServerListener(Activity activity, IMessageReaction messageListener, DestinationParams destination) {
+    public P2PServerListener(Activity activity, IChatListener messageListener, DestinationParams destination) {
         this.activity = activity;
         this.messageListener = messageListener;
         this.destination = destination;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return false;
+    }
+
+    @Override
+    public void write(@NonNull String cid) {
+        // TODO: something...
     }
 
     public void setPort(int port) {
@@ -118,5 +116,9 @@ public class P2PServerListener extends Thread implements IMessageSender {
         } catch (IOException e){
             Log.e("P2P disconnect", e.getLocalizedMessage());
         }*/
+    }
+
+    public void reconnect() {
+
     }
 }

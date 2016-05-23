@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.Notification;
@@ -8,23 +9,37 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.rockerhieu.emojicon.EmojiconEditText;
@@ -32,28 +47,45 @@ import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
 import com.rockerhieu.emojicon.emoji.Emojicon;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
+import ru.mail.park.chat.activities.interfaces.IActionBarListener;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
+import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.api.ChatInfo;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.database.ChatsHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -61,12 +93,15 @@ import ru.mail.park.chat.models.OwnerProfile;
 // TODO: send message
 public class DialogActivity
         extends AppCompatActivity
-        implements IMessageReaction,
+        implements IChatListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
-        HttpFileUpload.IUploadListener {
+        HttpFileUpload.IUploadListener,
+        IActionBarListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
+    private static final int REQUEST_WRITE_STORAGE = 112;
     private static final int CODE_FILE_SELECTED = 3;
+    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
@@ -77,11 +112,27 @@ public class DialogActivity
     private EmojiconEditText inputMessage;
     private ImageButton sendMessage;
     private RecyclerView attachments;
+    private ImageButton buttonDown;
+    private ActionBar mActionBar;
+
+    private ProgressBar progressBar;
+    private ImageView chatImage;
 
     private String chatID;
     private String userID;
     private String ownerID;
     private String accessToken;
+    private ChatInfo chatInfo;
+    private Chat thisChat;
+
+    private Timer schedulerTimer;
+    private final Handler uiHandler = new Handler();
+    private static final long WRITER_DISAPPEAR_DELAY_MILLIS = 2000;
+    private static final long RETRY_DELAY_MILLIS = 5000;
+
+    private List<Pair<Long, Contact>> writers;
+    private static final int MAX_UNDELIVERED_MESSAGES = 50;
+    private BlockingQueue<Message> undeliveredMessages = new ArrayBlockingQueue<Message>(MAX_UNDELIVERED_MESSAGES);
 
     private List<Message> receivedMessageList;
     private List<AttachedFile> attachemtsList;
@@ -89,7 +140,7 @@ public class DialogActivity
     private LinearLayoutManager layoutManager;
     protected IMessageSender messages;
 
-    private ImageButton buttonDown;
+    private boolean receivedFromWeb = false;
 
     private boolean isEmojiFragmentShown = false;
     private boolean isSoftKeyboardShown = false;
@@ -117,6 +168,8 @@ public class DialogActivity
         OwnerProfile ownerProfile = new OwnerProfile(this);
         ownerID = ownerProfile.getUid();
         accessToken = ownerProfile.getAuthToken();
+        chatInfo = null;
+        thisChat = null;
 
         initMessagesList();
         initActionListeners();
@@ -128,7 +181,7 @@ public class DialogActivity
             onUpdateChatID();
         }
 
-        ActionBar mActionBar = getSupportActionBar();
+        mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowHomeEnabled(false);
         mActionBar.setDisplayShowTitleEnabled(false);
         LayoutInflater mInflater = LayoutInflater.from(this);
@@ -140,9 +193,23 @@ public class DialogActivity
                 finish();
             }
         });
+        progressBar = (ProgressBar) mCustomView.findViewById(R.id.progressBar);
+        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+        chatImage = (ImageView) mCustomView.findViewById(R.id.CircularImageView1);
 
         mActionBar.setCustomView(mCustomView);
         mActionBar.setDisplayShowCustomEnabled(true);
+        new InitActionBarTask(this,  mActionBar, chatID).execute();
+
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        boolean hasWPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission || !hasWPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+        }
     }
 
 /*    @Override
@@ -167,6 +234,48 @@ public class DialogActivity
                 return super.onOptionsItemSelected(item);
         }
     }*/
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("[TP-diploma]", "DialogActivity.onResume");
+        initWriters();
+        initRetryTimeout();
+
+        if (chatID != null) {
+            ChatsHelper ch = new ChatsHelper(this);
+            thisChat = (thisChat == null) ? ch.getChat(chatID) : thisChat;
+        }
+
+        if(thisChat != null) {
+            Log.d("[TP-diploma]", "DialogActivity.onResume thisChat != null");
+            CircleImageView smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
+            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + thisChat.getCompanionId() + ".bmp";
+            File file = new File(filePath);
+
+            Log.d("[TP-diploma]", "img path: " + filePath);
+            if(file.exists()) {
+                smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            }
+            onLoadInfoCompleted(mActionBar, chatInfo);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LayoutInflater mInflater = LayoutInflater.from(this);
+
+        View mCustomView = mInflater.inflate(R.layout.actionbar_dialog, null);
+        mCustomView.findViewById(R.id.small_dialog_user_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        mActionBar.setCustomView(mCustomView);
+    }
 
     private void initViews() {
         globalLayout = (KeyboardDetectingLinearLayout) findViewById(R.id.main);
@@ -202,6 +311,90 @@ public class DialogActivity
         LinearLayoutManager attachmentsManager = new LinearLayoutManager(this);
         attachmentsManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         attachments.setLayoutManager(attachmentsManager);
+        attachments.setVisibility(View.GONE);
+    }
+
+    // FIXME: possible multithreading bugs
+    private void initWriters() {
+        writers = new LinkedList<>();
+        final TextView writersView = (TextView) findViewById(R.id.writersTextView);
+
+        schedulerTimer = new Timer();
+        schedulerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                final long currentTimeMillis = System.currentTimeMillis();
+                Iterator<Pair<Long, Contact>> i = writers.iterator();
+                while (i.hasNext()) {
+                    Pair<Long, Contact> current = i.next();
+                    if (Math.abs(current.first - currentTimeMillis) > WRITER_DISAPPEAR_DELAY_MILLIS)
+                        i.remove();
+                }
+
+                String writersString = null;
+                if (writers.size() > 0) {
+                    writersString = "User%s %s writes a message...";
+                    String writersConcatenated = "";
+                    for (Pair<Long, Contact> writer : writers) {
+                        writersConcatenated = writersConcatenated +
+                                writer.second.getContactTitle() + ", ";
+                    }
+                    writersConcatenated =
+                            writersConcatenated.substring(0, writersConcatenated.length() - 2);
+                    writersString = String.format(writersString,
+                            writers.size() > 1 ? "s" : "",
+                            writersConcatenated);
+                }
+                final String resultString = writersString;
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (writersView != null) {
+                            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) messagesList.getLayoutParams();
+                            int bottomMargin = 0;
+                            if (resultString != null) {
+                                writersView.setText(resultString);
+                                writersView.setVisibility(View.VISIBLE);
+                                bottomMargin = writersView.getHeight();
+                            } else {
+                                writersView.setVisibility(View.GONE);
+                            }
+                            layoutParams.setMargins(layoutParams.leftMargin,
+                                    layoutParams.topMargin, layoutParams.rightMargin, bottomMargin);
+                        }
+                    }
+                });
+            }
+        }, WRITER_DISAPPEAR_DELAY_MILLIS, WRITER_DISAPPEAR_DELAY_MILLIS);
+    }
+
+    private void initRetryTimeout() {
+        schedulerTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (chatID != null && !messages.isConnected()) {
+                            Bundle args = new Bundle();
+                            args.putString(MessagesLoader.CID_ARG, chatID);
+                            getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, listener).forceLoad();
+                        }
+
+                        boolean ok = messages.isConnected();
+                        progressBar.setVisibility(ok ? View.GONE : View.VISIBLE);
+                        chatImage.setVisibility(ok ? View.VISIBLE : View.GONE);
+
+                        if (undeliveredMessages.size() == 0)
+                            messages.reconnect();
+
+                        for (Message message : undeliveredMessages) {
+                            sendMessage(message);
+                        }
+                    }
+                });
+            }
+        }, RETRY_DELAY_MILLIS, RETRY_DELAY_MILLIS);
     }
 
     private void initMessagesList() {
@@ -233,6 +426,24 @@ public class DialogActivity
     }
 
     private void initActionListeners() {
+        inputMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (chatID != null)
+                    messages.write(chatID);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         buttonDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -243,7 +454,7 @@ public class DialogActivity
         sendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(inputMessage.getText().toString());
+                sendMessage();
             }
         });
 
@@ -277,7 +488,9 @@ public class DialogActivity
     }
 
     protected IMessageSender getMessageSender() throws IOException {
-        return new Messages(this, this);
+        Messages messages = new Messages(this);
+        messages.setChatListener(this);
+        return messages;
     }
 
     private void onUpdateChatID() {
@@ -287,17 +500,26 @@ public class DialogActivity
         getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
     }
 
-    protected void sendMessage(@NonNull String messageBody) {
-        if (messageBody != null && !messageBody.equals("")) {
+    private void sendMessage() {
+        final String messageBody = inputMessage.getText().toString();
+        if (!messageBody.equals("") || attachemtsList.size() > 0) {
             Message message = new Message(messageBody, this);
+            message.setUniqueID(System.currentTimeMillis());
             message.setFiles(attachemtsList);
+            sendMessage(message);
 
-            addMessage(message);
-            if (chatID != null) {
-                messages.sendMessage(chatID, message);
-            } else if (userID != null) {
-                messages.sendFirstMessage(userID, message);
-            }
+            initAttachments();
+            inputMessage.setText("");
+        }
+    }
+
+    protected void sendMessage(@NonNull Message message) {
+        undeliveredMessages.add(message);
+        addMessage(message);
+        if (chatID != null) {
+            messages.sendMessage(chatID, message);
+        } else if (userID != null) {
+            messages.sendFirstMessage(userID, message);
         }
     }
 
@@ -306,6 +528,7 @@ public class DialogActivity
                 (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
 
         boolean inserted = false;
+        boolean isDifferent = true;
         for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
             int comp = message.compareTo(receivedMessageList.get(position));
             if (comp < 0) {
@@ -313,6 +536,14 @@ public class DialogActivity
                 messagesAdapter.notifyItemInserted(position);
                 inserted = true;
             } else if (comp == 0) {
+                Message mess = receivedMessageList.get(position);
+                if (mess.getFiles() != null && mess.getFiles().size() > 0) {
+                    message.setFiles(mess.getFiles());
+                }
+                undeliveredMessages.remove(mess);
+                if (mess.getMessageBody().equals(message.getMessageBody())) {
+                    isDifferent = false;
+                }
                 receivedMessageList.set(position, message);
                 messagesAdapter.notifyItemChanged(position);
                 inserted = true;
@@ -326,7 +557,7 @@ public class DialogActivity
 
         if (atBottom) {
             messagesList.scrollToPosition(receivedMessageList.size() - 1);
-        } else {
+        } else if (isDifferent) {
             buttonDown.setVisibility(View.VISIBLE);
         }
     }
@@ -399,10 +630,6 @@ public class DialogActivity
             Message incomeMsg = dispatchNewMessage(msg);
             if (incomeMsg != null)
                 addMessage(incomeMsg);
-
-            attachemtsList.clear();
-            attachments.getAdapter().notifyDataSetChanged();
-            inputMessage.setText("");
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -418,8 +645,16 @@ public class DialogActivity
     }
 
     @Override
-    public void onChatCreated(Chat chat) {
-        // TODO: ???
+    public void onWrite(String cid, Contact user) {
+        if (ObjectUtils.compare(cid, chatID) == 0) {
+            for (int i = 0; i < writers.size(); i++) {
+                if (writers.get(i).second.equals(user)) {
+                    writers.set(i, new Pair<>(System.currentTimeMillis(), user));
+                    return;
+                }
+            }
+            writers.add(new Pair<>(System.currentTimeMillis(), user));
+        }
     }
 
     private void setEmojiconFragment(boolean useSystemDefault) {
@@ -447,21 +682,96 @@ public class DialogActivity
     }
 
     @Override
+    public void onLoadInfoCompleted(ActionBar mActionBar, ChatInfo chatInfo) {
+        CircleImageView smallUserPic;
+        TextView dialogTitle;
+        TextView dialogLastSeen;
+
+        smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
+        dialogTitle = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_title);
+        dialogLastSeen = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_last_seen);
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step I");
+
+        if(chatInfo == null)
+            return;
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step II");
+
+        Contact companion = chatInfo.getFirst();
+        if(companion != null && companion.getUid().equals(ownerID)) {
+            companion = chatInfo.getSecond();
+
+            if(companion.getUid().equals(ownerID)) {
+                companion = null;
+            }
+        }
+
+        if(companion == null)
+            return;
+
+        final Contact finalComp = companion;
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted step III");
+
+//        companion = new ContactsHelper(this).getContact(companion.getUid());
+
+        dialogTitle.setText(companion.getContactTitle());
+        if (companion.isOnline())
+            dialogLastSeen.setText("online");
+        else if(companion.getLastSeen() != null)
+            dialogLastSeen.setText(ProfileViewActivity.formatLastSeenTime(companion.getLastSeen()));
+        else
+            dialogLastSeen.setText("offline");
+
+        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
+        File file = new File(filePath);
+
+        if(file.exists()) {
+            smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
+        }
+
+        mActionBar.getCustomView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DialogActivity.this, ProfileViewActivity.class);
+                intent.putExtra(ProfileViewActivity.UID_EXTRA, finalComp.getUid());
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        ChatsHelper ch = new ChatsHelper(DialogActivity.this);
+        Chat currentChat = ch.getChat(chatID);
+
+        try {
+            currentChat.setCompanionId(companion.getUid());
+            ch.saveChat(currentChat);
+            thisChat = currentChat;
+        } catch(NullPointerException e) {
+
+        }
+
+        Log.d("[TP-diploma]", "onLoadInfoCompleted done");
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (messages != null) {
             messages.disconnect();
         }
+        schedulerTimer.cancel();
     }
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         Log.d("[TP-diploma]", "preparing to send file");
         if (resultCode == Activity.RESULT_OK) {
-            String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
-            FileInputStream fstrm = null;
-            HttpFileUpload hfu = null;
-
             if (requestCode == CODE_FILE_SELECTED) {
+                String filePath = data.getStringExtra(FileDialog.RESULT_PATH);
+                FileInputStream fstrm = null;
+                HttpFileUpload hfu = null;
+
                 Log.d("[TP-diploma]", "sending file started");
                 try {
                     fstrm = new FileInputStream(filePath);
@@ -475,6 +785,22 @@ public class DialogActivity
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode)
+        {
+            case REQUEST_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //reload my activity with permission granted or use the features what required the permission
+                } else {
+                    finish();
+                }
+            }
+        }
+
+    }
+
     private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
@@ -484,7 +810,7 @@ public class DialogActivity
                     return new MessagesLoader(DialogActivity.this, args);
                 case MESSAGES_DB_LOADER:
                 default:
-                        return new MessagesDBLoader(DialogActivity.this, args);
+                    return new MessagesDBLoader(DialogActivity.this, args);
             }
         }
 
@@ -492,10 +818,15 @@ public class DialogActivity
         public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
             if (data != null) {
                 Log.d("[TP-diploma]", "messages count: " + data.size());
+                int oldSize = receivedMessageList.size();
                 for (Message message : data) {
                     addMessage(message);
                 }
-                messagesList.scrollToPosition(receivedMessageList.size() - 1);
+                if (!receivedFromWeb && receivedMessageList.size() != oldSize)
+                    messagesList.scrollToPosition(receivedMessageList.size() - 1);
+                if (loader.getId() == MESSAGES_WEB_LOADER) {
+                    receivedFromWeb = true;
+                }
             } else {
                 Log.d("[TP-diploma]", "empty list");
             }
@@ -512,4 +843,67 @@ public class DialogActivity
             // TODO: something
         }
     };
+
+    private class InitActionBarTask extends AsyncTask<Void, Void, ChatInfo> {
+        IActionBarListener listener;
+        ActionBar mActionBar;
+        String chatID;
+
+        public InitActionBarTask(IActionBarListener listener, ActionBar mActionBar, String chatID) {
+            this.listener = listener;
+            this.mActionBar = mActionBar;
+            this.chatID = chatID;
+        }
+
+        protected ChatInfo doInBackground(Void... urls) {
+            Chats chatsAPI = new Chats(DialogActivity.this);
+            Log.d("[TP-diploma]", "InitActionBarTask started");
+
+            try {
+                chatInfo = chatsAPI.getChatInfo(chatID);
+            } catch (IOException e) {
+                Log.d("[TP-diploma]", "getChatInfo Exception:" + e.getMessage());
+                return null;
+            }
+
+            try {
+                checkUserData(chatInfo.getFirst());
+                checkUserData(chatInfo.getSecond());
+            } catch(IOException e) {
+                Log.d("[TP-diploma]", "CheckUserData Exception:" + e.getMessage());
+                return null;
+            }
+
+            return chatInfo;
+        }
+
+        protected void onPostExecute(ChatInfo chatInfo) {
+            listener.onLoadInfoCompleted(mActionBar, chatInfo);
+        }
+    }
+
+    private void checkUserData(Contact user) throws IOException {
+        if(user == null)
+            return;
+
+        ContactsHelper contactsHelper = new ContactsHelper(DialogActivity.this);
+        Contact userFromBase = contactsHelper.getContact(user.getUid());
+
+        if(userFromBase != null && !user.getImg().equals("false")) {
+            String requestPath = SERVER_URL + user.getImg();
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";
+
+            File file = new File(localPath);
+
+            if(!file.exists()) {
+                InputStream in = new java.net.URL(requestPath).openStream();
+                Bitmap bm = BitmapFactory.decodeStream(in);
+
+                FileOutputStream fos = new FileOutputStream(file);
+                bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                fos.close();
+            }
+
+        }
+    }
 }

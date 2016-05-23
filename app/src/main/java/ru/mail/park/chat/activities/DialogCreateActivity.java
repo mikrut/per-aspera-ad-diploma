@@ -15,6 +15,8 @@ import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
+import ru.mail.park.chat.database.ContactsToChatsHelper;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -87,7 +89,13 @@ public class DialogCreateActivity
     @Override
     public void onContactClicked(Contact contact) {
         Intent intent = new Intent(this, DialogActivity.class);
-        intent.putExtra(DialogActivity.USER_ID, contact.getUid());
+        ContactsToChatsHelper helper = new ContactsToChatsHelper(DialogCreateActivity.this);
+        Chat chat = helper.getChat(contact.getUid());
+        if (chat != null) {
+            intent.putExtra(DialogActivity.CHAT_ID, chat.getCid());
+        } else {
+            intent.putExtra(DialogActivity.USER_ID, contact.getUid());
+        }
         startActivity(intent);
         finish();
     }

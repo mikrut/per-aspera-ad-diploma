@@ -95,6 +95,9 @@
         <service
             android:name=".api.P2PService"
             android:exported="false" />
+        <service
+            android:name=".api.P2PService"
+            android:exported="false" />
     </application>
 
 </manifest>
