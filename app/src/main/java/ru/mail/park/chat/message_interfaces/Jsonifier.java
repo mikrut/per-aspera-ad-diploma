@@ -22,8 +22,9 @@ public class Jsonifier {
     public static JSONObject jsonifyForRecieve(Message message, OwnerProfile owner) throws JSONException {
         JSONObject data = new JSONObject();
         data.put("textMessage", message.getMessageBody());
+        data.put("uniqueId", message.getUniqueID());
         data.put("user", jsonifyUser(owner));
-        data.put("dtCreate", MessengerDBHelper.iso8086.format(GregorianCalendar.getInstance().getTime()));
+        data.put("dtCreate", MessengerDBHelper.currentFormat.format(GregorianCalendar.getInstance().getTime()));
         return data;
     }
 
@@ -32,6 +33,7 @@ public class Jsonifier {
         user.put("login", contact.getLogin());
         user.put("firstName", contact.getFirstName());
         user.put("lastName", contact.getLastName());
+        user.put("id", contact.getUid());
         user.put("idUser", contact.getUid());
         return user;
     }

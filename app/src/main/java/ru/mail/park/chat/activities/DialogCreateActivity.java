@@ -10,11 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
+import ru.mail.park.chat.database.ContactsToChatsHelper;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -66,11 +69,15 @@ public class DialogCreateActivity
                             public void onClick(DialogInterface dialog, int which) {
                                 String input = editText.getText().toString();
                                 Intent intent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
-                                if (!input.equals("")) {
-                                    String address = input.substring(0, input.lastIndexOf(':'));
-                                    int port = Integer.valueOf(input.substring(input.lastIndexOf(':') + 1, input.length()));
+                                int indexOfSimicolon = input.lastIndexOf(':');
+                                if (!input.equals("") && indexOfSimicolon != -1 && input.length() > indexOfSimicolon) {
+                                    String address = input.substring(0, indexOfSimicolon);
+                                    int port = Integer.valueOf(input.substring(indexOfSimicolon + 1, input.length()));
                                     intent.putExtra(P2PDialogActivity.HOST_ARG, address);
                                     intent.putExtra(P2PDialogActivity.PORT_ARG, port);
+                                } else if (indexOfSimicolon == -1) {
+                                    Toast.makeText(DialogCreateActivity.this, "Wrong address", Toast.LENGTH_SHORT).show();
+                                    return;
                                 }
                                 startActivity(intent);
                             }
@@ -87,7 +94,13 @@ public class DialogCreateActivity
     @Override
     public void onContactClicked(Contact contact) {
         Intent intent = new Intent(this, DialogActivity.class);
-        intent.putExtra(DialogActivity.USER_ID, contact.getUid());
+        ContactsToChatsHelper helper = new ContactsToChatsHelper(DialogCreateActivity.this);
+        Chat chat = helper.getChat(contact.getUid());
+        if (chat != null) {
+            intent.putExtra(DialogActivity.CHAT_ID, chat.getCid());
+        } else {
+            intent.putExtra(DialogActivity.USER_ID, contact.getUid());
+        }
         startActivity(intent);
         finish();
     }

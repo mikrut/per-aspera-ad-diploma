@@ -392,6 +392,7 @@ public class Messages extends ApiSection implements IMessageSender {
         return !(ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING));
     }
 
+    @Override
     public boolean isConnected() {
         return ws.getState().equals(WebSocketState.OPEN);
     }

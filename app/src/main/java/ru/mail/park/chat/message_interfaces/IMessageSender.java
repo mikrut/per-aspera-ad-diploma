@@ -13,6 +13,7 @@ import ru.mail.park.chat.models.Message;
 public interface IMessageSender {
     void sendMessage(String chatID, Message message);
     void sendFirstMessage(String userID, Message message);
+    boolean isConnected();
     void disconnect();
     void reconnect();
     void write(@NonNull String cid);
