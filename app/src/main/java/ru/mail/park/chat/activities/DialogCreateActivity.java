@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.TreeSet;
 
@@ -68,11 +69,15 @@ public class DialogCreateActivity
                             public void onClick(DialogInterface dialog, int which) {
                                 String input = editText.getText().toString();
                                 Intent intent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
-                                if (!input.equals("")) {
-                                    String address = input.substring(0, input.lastIndexOf(':'));
-                                    int port = Integer.valueOf(input.substring(input.lastIndexOf(':') + 1, input.length()));
+                                int indexOfSimicolon = input.lastIndexOf(':');
+                                if (!input.equals("") && indexOfSimicolon != -1 && input.length() > indexOfSimicolon) {
+                                    String address = input.substring(0, indexOfSimicolon);
+                                    int port = Integer.valueOf(input.substring(indexOfSimicolon + 1, input.length()));
                                     intent.putExtra(P2PDialogActivity.HOST_ARG, address);
                                     intent.putExtra(P2PDialogActivity.PORT_ARG, port);
+                                } else if (indexOfSimicolon == -1) {
+                                    Toast.makeText(DialogCreateActivity.this, "Wrong address", Toast.LENGTH_SHORT).show();
+                                    return;
                                 }
                                 startActivity(intent);
                             }

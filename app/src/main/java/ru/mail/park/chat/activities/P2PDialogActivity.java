@@ -8,11 +8,14 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import java.io.IOException;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
+import ru.mail.park.chat.R;
 import ru.mail.park.chat.api.P2PServerListener;
 import ru.mail.park.chat.api.P2PService;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
@@ -26,6 +29,12 @@ public class P2PDialogActivity extends DialogActivity {
     public static final String HOST_ARG = P2PDialogActivity.class.getCanonicalName() + ".HOST_ARG";
 
     public final static int LISTENER_DEFAULT_PORT = 8275;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        attachFile.setVisibility(View.GONE);
+    }
 
     private ServiceConnection mConnection;
     private ServiceConnection getConnection() {
@@ -86,6 +95,9 @@ public class P2PDialogActivity extends DialogActivity {
 
                 if (localHostname != null) {
                     Log.i("P2P local hostname", localHostname);
+                    TextView lastSeen = (TextView) findViewById(R.id.dialog_last_seen);
+                    if (lastSeen != null)
+                        lastSeen.setText(localHostname);
 
                     Intent serviceIntent = new Intent(this, P2PService.class);
                     serviceIntent.setAction(P2PService.ACTION_START_SERVER);

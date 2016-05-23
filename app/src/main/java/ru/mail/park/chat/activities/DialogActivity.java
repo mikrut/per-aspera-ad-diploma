@@ -105,18 +105,18 @@ public class DialogActivity
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
-    private KeyboardDetectingLinearLayout globalLayout;
-    private FrameLayout emojicons;
-    private RecyclerView messagesList;
-    private ImageButton insertEmoticon, attachFile;
-    private EmojiconEditText inputMessage;
-    private ImageButton sendMessage;
-    private RecyclerView attachments;
-    private ImageButton buttonDown;
-    private ActionBar mActionBar;
+    protected KeyboardDetectingLinearLayout globalLayout;
+    protected FrameLayout emojicons;
+    protected RecyclerView messagesList;
+    protected ImageButton insertEmoticon, attachFile;
+    protected EmojiconEditText inputMessage;
+    protected ImageButton sendMessage;
+    protected RecyclerView attachments;
+    protected ImageButton buttonDown;
+    protected ActionBar mActionBar;
 
-    private ProgressBar progressBar;
-    private ImageView chatImage;
+    protected ProgressBar progressBar;
+    protected ImageView chatImage;
 
     private String chatID;
     private String userID;
