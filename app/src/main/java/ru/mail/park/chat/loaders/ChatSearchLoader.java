@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 import ru.mail.park.chat.activities.ChatsActivity;
-import ru.mail.park.chat.database.ChatHelper;
+import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -25,8 +25,8 @@ public class ChatSearchLoader extends ChatLoader {
 
     @Override
     public List<Chat> loadInBackground() {
-        ChatHelper chatHelper = new ChatHelper(getContext());
-        chats = chatHelper.getChatsList(queryString);
+        ChatsHelper chatsHelper = new ChatsHelper(getContext());
+        chats = chatsHelper.getChatsList(queryString);
         return chats;
     }
 

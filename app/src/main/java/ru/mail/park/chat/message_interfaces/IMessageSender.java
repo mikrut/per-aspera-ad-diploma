@@ -1,5 +1,7 @@
 package ru.mail.park.chat.message_interfaces;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 import ru.mail.park.chat.models.AttachedFile;
@@ -13,4 +15,6 @@ public interface IMessageSender {
     void sendFirstMessage(String userID, Message message);
     boolean isConnected();
     void disconnect();
+    void reconnect();
+    void write(@NonNull String cid);
 }

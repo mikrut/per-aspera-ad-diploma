@@ -12,10 +12,10 @@ import java.util.List;
 
 import ru.mail.park.chat.models.Contact;
 
-public class ContactHelper {
+public class ContactsHelper {
     private final MessengerDBHelper dbHelper;
 
-    public ContactHelper(Context context) {
+    public ContactsHelper(Context context) {
         dbHelper = new MessengerDBHelper(context);
     }
 
@@ -38,7 +38,7 @@ public class ContactHelper {
 
     private long saveContact(@NonNull Contact contact, SQLiteDatabase db) {
         ContentValues values = contact.getContentValues();
-        return db.insert(ContactsContract.ContactsEntry.TABLE_NAME, null, values);
+        return db.insertWithOnConflict(ContactsContract.ContactsEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     private long deleteAll(SQLiteDatabase db) {
@@ -77,22 +77,27 @@ public class ContactHelper {
 
     @Nullable
     public Contact getContact(@NonNull String uid) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
-        String[] selectionArgs = { uid };
-        Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
-                ContactsContract.CONTACT_PROJECTION,
-                selection, selectionArgs,
-                null, null, null,
-                "1");
+        try {
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            String selection = ContactsContract.ContactsEntry.COLUMN_NAME_UID + " = ?";
+            String[] selectionArgs = {uid};
+            Cursor cursor = db.query(ContactsContract.ContactsEntry.TABLE_NAME,
+                    ContactsContract.CONTACT_PROJECTION,
+                    selection, selectionArgs,
+                    null, null, null,
+                    "1");
 
-        Contact contact = null;
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            contact = new Contact(cursor);
+            Contact contact = null;
+            if (cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                contact = new Contact(cursor);
+            }
+            cursor.close();
+            return contact;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        cursor.close();
-        return contact;
+        return null;
     }
 
     @NonNull

@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.Iterator;
@@ -25,6 +26,7 @@ import ru.mail.park.chat.activities.adapters.AContactAdapter;
 import ru.mail.park.chat.activities.adapters.ContactAdapter;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
 import ru.mail.park.chat.loaders.ContactListWebLoader;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -34,12 +36,13 @@ public class ContactsFragment extends Fragment {
     public static final String IS_MULTICHOICE = ContactsFragment.class.getCanonicalName() + ".IS_MULTICHOICE";
     public static final String PICKED_CONTACTS = ContactsFragment.class.getCanonicalName() + ".PICKED_CONTACTS";
 
+    private ProgressBar spinner;
     private ContactAdapter contactAdapter;
     private RecyclerView contactsView;
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private final static int DB_LOADER = 0;
-    private final static int WEB_LOADER = 1;
+    protected final static int DB_LOADER = 0;
+    protected final static int WEB_LOADER = 1;
 
     private boolean multichoice = false;
     private TreeSet<Contact> chosenContacts = new TreeSet<>();
@@ -64,12 +67,18 @@ public class ContactsFragment extends Fragment {
         if (args != null) {
             multichoice = args.getBoolean(IS_MULTICHOICE, false);
         }
+        return inflateView(inflater, container);
+    }
+
+    protected View inflateView(LayoutInflater inflater, ViewGroup container) {
         return inflater.inflate(R.layout.fragment_contacts, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        spinner = (ProgressBar) view.findViewById(R.id.spinner);
 
         contactsView = (RecyclerView) view.findViewById(R.id.contactsView);
         contactsView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -126,47 +135,54 @@ public class ContactsFragment extends Fragment {
         if (multichoice) {
             contactAdapter.setMultichoice(chosenContacts);
         }
+        contactAdapter.setImageManager(manager);
         return contactAdapter;
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener =
-            new LoaderManager.LoaderCallbacks<List<Contact>>() {
-                @Override
-                public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
-                    switch (id) {
-                        case DB_LOADER:
-                            return new ContactListDBLoader(getActivity(), id);
-                        case WEB_LOADER:
-                            return new ContactListWebLoader(getActivity(), id);
-                        default:
-                            return null;
-                    }
-                }
+    private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener = getLoaderCallbacks();
 
-                @Override
-                public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
-                    swipeRefreshLayout.setRefreshing(false);
+    protected LoaderManager.LoaderCallbacks<List<Contact>> getLoaderCallbacks() {
+        return new ContactsLoaderCallbacks();
+    }
 
-                    if (data != null) {
-                        contactsView.setAdapter(onCreateContactAdapter(data));
-                    }
+    protected class ContactsLoaderCallbacks implements LoaderManager.LoaderCallbacks<List<Contact>> {
+        @Override
+        public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+                case DB_LOADER:
+                    return new ContactListDBLoader(getActivity(), id);
+                case WEB_LOADER:
+                    return new ContactListWebLoader(getActivity(), id);
+                default:
+                    return null;
+            }
+        }
 
-                    switch (loader.getId()) {
-                        case DB_LOADER:
-                            getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
-                            break;
-                        case WEB_LOADER:
-                            if (data == null)
-                                Toast.makeText(getActivity(), "Load error. Check your connection.", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                }
+        @Override
+        public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+            swipeRefreshLayout.setRefreshing(false);
 
-                @Override
-                public void onLoaderReset(Loader<List<Contact>> loader) {
-                    // TODO: something...
-                }
-            };
+            if (data != null) {
+                spinner.setVisibility(View.GONE);
+                contactsView.setAdapter(onCreateContactAdapter(data));
+            }
+
+            switch (loader.getId()) {
+                case DB_LOADER:
+                    getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+                    break;
+                case WEB_LOADER:
+                    if (data == null)
+                        Toast.makeText(getActivity(), "Load error. Check your connection.", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Contact>> loader) {
+            // TODO: something...
+        }
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -176,5 +192,13 @@ public class ContactsFragment extends Fragment {
 
     public TreeSet<Contact> getChosenContacts() {
         return chosenContacts;
+    }
+
+
+    private ImageDownloadManager manager;
+    public void setImageManager(ImageDownloadManager manager) {
+        if (contactAdapter != null)
+            contactAdapter.setImageManager(manager);
+        this.manager = manager;
     }
 }

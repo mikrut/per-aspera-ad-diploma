@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="178dp"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/sidemenu_topbg"
+    android:background="@color/colorDrawerBackground"
+    android:id="@+id/left_drawer_header"
     android:orientation="vertical"
     android:weightSum="1">
 

@@ -12,6 +12,7 @@
         android:orientation="vertical"
         android:padding="5dp"
         android:layout_centerInParent="true"
+        android:gravity="center_vertical"
         android:background="@drawable/element_file_background">
 
         <ImageView
@@ -36,6 +37,7 @@
 
         <TextView
             android:id="@+id/file_size_text_view"
+            tools:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -43,6 +45,7 @@
             android:singleLine="true"
             android:ellipsize="end"
             android:textColor="#ffffff"
+            android:visibility="gone"
             tools:text="1024 KB" />
 
     </LinearLayout>

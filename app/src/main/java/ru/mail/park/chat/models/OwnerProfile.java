@@ -39,10 +39,14 @@ public class OwnerProfile extends Contact {
         setLogin(contact.getLogin());
         setUid(contact.getUid());
         setImg(contact.getImg());
+        setAbout(contact.getAbout());
 
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
     }
 
+    public OwnerProfile() {
+        super();
+    }
 
     public OwnerProfile(Context context) {
         SharedPreferences sharedPreferences =
@@ -56,6 +60,8 @@ public class OwnerProfile extends Contact {
         setFirstName(sharedPreferences.getString(PreferenceConstants.USER_FIRST_NAME_N, null));
         setLastName(sharedPreferences.getString(PreferenceConstants.USER_LAST_NAME_N, null));
         setAuthToken(sharedPreferences.getString(PreferenceConstants.AUTH_TOKEN_N, null));
+        setImg(sharedPreferences.getString(PreferenceConstants.USER_IMG_N, null));
+        setAbout(sharedPreferences.getString(PreferenceConstants.USER_ABOUT_N, null));
     }
 
 
@@ -73,6 +79,8 @@ public class OwnerProfile extends Contact {
         preferenceEditor.putString(PreferenceConstants.USER_FIRST_NAME_N, getFirstName());
         preferenceEditor.putString(PreferenceConstants.USER_LAST_NAME_N, getLastName());
         preferenceEditor.putString(PreferenceConstants.AUTH_TOKEN_N, getAuthToken());
+        preferenceEditor.putString(PreferenceConstants.USER_IMG_N, getImg());
+        preferenceEditor.putString(PreferenceConstants.USER_ABOUT_N, getAbout());
 
         preferenceEditor.apply();
     }
@@ -106,7 +114,9 @@ public class OwnerProfile extends Contact {
                     TextUtils.equals(getEmail(), other.getEmail()) &&
                     TextUtils.equals(getPhone(), other.getPhone()) &&
                     TextUtils.equals(getFirstName(), other.getFirstName()) &&
-                    TextUtils.equals(getLastName(), other.getLastName());
+                    TextUtils.equals(getLastName(), other.getLastName()) &&
+                    TextUtils.equals(getImg(), other.getImg()) &&
+                    TextUtils.equals(getAbout(), other.getAbout());
         }
         return super.equals(o);
     }

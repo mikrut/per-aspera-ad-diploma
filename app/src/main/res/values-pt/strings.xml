@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"Bate-papo"</string>
     <string name="action_settings">"Definições"</string>
     <string name="action_search">"Pesquisa "</string>
     <string name="title_activity_login">"Assinar em "</string>

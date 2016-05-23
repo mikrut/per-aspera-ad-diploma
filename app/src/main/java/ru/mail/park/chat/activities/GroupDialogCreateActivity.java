@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,7 +24,8 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsSimpleListFragment;
 import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.message_interfaces.IMessageReaction;
+import ru.mail.park.chat.message_interfaces.IChatListener;
+import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
@@ -33,7 +35,7 @@ import ru.mail.park.chat.models.Message;
  */
 public class GroupDialogCreateActivity
         extends AppCompatActivity
-        implements IMessageReaction, ContactsFragment.OnPickEventListener {
+        implements IGroupCreateListener, ContactsFragment.OnPickEventListener {
     private EditText chosenContactsList;
     private EditText groupChat;
 
@@ -49,7 +51,8 @@ public class GroupDialogCreateActivity
         setContentView(R.layout.activity_group_dialog_create);
 
         try {
-            messages = new Messages(this, this);
+            messages = new Messages(this);
+            messages.setGroupCreateListener(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -125,7 +128,8 @@ public class GroupDialogCreateActivity
             case R.id.action_create:
                 if (messages == null) {
                     try {
-                        messages = new Messages(this, this);
+                        messages = new Messages(this);
+                        messages.setGroupCreateListener(this);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -160,30 +164,9 @@ public class GroupDialogCreateActivity
         }
     }
 
-
-    // FIXME: normal interfaces etc.
-    @Override
-    public void onIncomeMessage(JSONObject message) {
-
-    }
-
-    @Override
-    public void onAcknowledgeSendMessage(JSONObject message) {
-
-    }
-
-    @Override
-    public void onActionDeleteMessage(int mid) {
-
-    }
-
-    @Override
-    public void onGetHistoryMessages(ArrayList<Message> msg_list) {
-
-    }
-
     @Override
     public void onChatCreated(Chat chat) {
+        Log.v(GroupDialogCreateActivity.class.getSimpleName(), ".onChatCreated(Chat)");
         Intent intent = new Intent(this, DialogActivity.class);
         intent.putExtra(DialogActivity.CHAT_ID, chat.getCid());
         startActivity(intent);

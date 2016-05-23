@@ -3,11 +3,14 @@ package ru.mail.park.chat.activities.tasks;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.app.AlertDialog;
+import android.util.Log;
 
 import java.io.IOException;
+import java.security.acl.Owner;
 
 import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.api.Users;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -31,11 +34,15 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
             try {
                 boolean success = usersAPI.updateProfileLikeAPro(profile, profile.getAuthToken(), (MultipartProfileUpdater.IUploadListener)activity);//usersAPI.updateProfile(profile);
                 publishProgress("Saving to local db...");
+                Log.d("[TP-diploma]", "updateProfileLikeAPro result: " + String.valueOf(success));
                 if (success) {
+                    Contact thisUser = usersAPI.getFullUser(profile.getUid());
+                    profile = new OwnerProfile(thisUser, alertDialog.getContext());
                     profile.saveToPreferences(alertDialog.getContext());
                 }
-                return  success;
+                return success;
             } catch (IOException e) {
+                Log.d("[TP-diploma]", "Ebal ya etot exception: " + e.getMessage());
                 publishProgress(e.getLocalizedMessage());
                 return false;
             }
@@ -45,11 +52,11 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
 
     @Override
     protected void onPostExecute(Boolean aBoolean) {
-        if (aBoolean.equals(true)) {
+        if (aBoolean) {
             alertDialog.setMessage("Success!");
             activity.finish();
         } else {
-            alertDialog.setMessage("Failed");
+            alertDialog.setMessage("Error sending to server");
         }
         alertDialog.setCancelable(true);
     }

@@ -3,12 +3,15 @@ package ru.mail.park.chat.activities.adapters;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -19,6 +22,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.api.ApiSection;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -95,10 +100,12 @@ public class ContactAdapter extends AContactAdapter {
                 break;
             case CONTACT:
                 super.onBindViewHolder(holder, position);
+                final ContactHolder cHolder = (ContactHolder) holder;
                 if (contactClickListener != null)
-                    ((ContactHolder) holder).setOnContactClickListener(contactClickListener);
+                    cHolder.setOnContactClickListener(contactClickListener);
+                Contact contact = getContactForPosition(position);
                 if (choosenContacts != null)
-                    ((ContactHolder) holder).setChosen(choosenContacts.contains(getContactForPosition(position)), false);
+                    cHolder.setChosen(choosenContacts.contains(contact), false);
                 break;
         }
     }

@@ -3,12 +3,11 @@ package ru.mail.park.chat.loaders;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.List;
 
 import ru.mail.park.chat.activities.ChatsActivity;
-import ru.mail.park.chat.database.ChatHelper;
+import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -24,8 +23,8 @@ public class ChatLoader extends AsyncTaskLoader<List<Chat>> {
 
     @Override
     public List<Chat> loadInBackground() {
-        ChatHelper chatHelper = new ChatHelper(getContext());
-        chats = chatHelper.getChatsList();
+        ChatsHelper chatsHelper = new ChatsHelper(getContext());
+        chats = chatsHelper.getChatsList();
         return chats;
     }
 

@@ -5,6 +5,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -17,6 +20,7 @@ import android.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -80,6 +84,13 @@ public class SettingsActivity extends PreferenceActivity {
 
             root.addView(content);
             root.addView(bar);
+        }
+
+        int actionBarTextColor = ContextCompat.getColor(this, R.color.actionBarTextColor);
+        bar.setTitleTextColor(actionBarTextColor);
+        Drawable icon = bar.getNavigationIcon();
+        if (icon != null) {
+            icon.setColorFilter(actionBarTextColor, PorterDuff.Mode.SRC_IN);
         }
 
         bar.setNavigationOnClickListener(new View.OnClickListener() {

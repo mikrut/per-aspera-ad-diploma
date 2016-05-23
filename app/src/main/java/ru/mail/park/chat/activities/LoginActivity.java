@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,9 +19,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import info.guardianproject.netcipher.NetCipher;
+import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.activities.tasks.LoginTask;
 import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.R;
@@ -36,14 +41,24 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private ImageView appImage;
     private CheckBox withoutTorAllowedCheckBox;
     private TextView tvRegisterLink;
+    private TextView appLogo;
     private Button mEmailSignInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        appImage = (ImageView) findViewById(R.id.app_picture);
+
+        appLogo = (TextView) findViewById(R.id.app_logo_text);
+        Typeface face= Typeface.createFromAsset(getAssets(),
+                "fonts/MontserratAlternates-Bold.ttf");
+
+        appLogo.setTypeface(face);
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
@@ -91,7 +106,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         super.onResume();
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-        withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, true));
+        boolean paranoidCheker = OrbotHelper.isOrbotInstalled(this);
+        withoutTorAllowedCheckBox.setChecked(!preferences.getBoolean(PreferenceConstants.SECURITY_PARANOID_N, paranoidCheker));
     }
 
     private final TextView.OnEditorActionListener onPasswordListener = new TextView.OnEditorActionListener() {
@@ -125,17 +141,15 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     @Override
     public void onStartAuth() {
         mProgressView.setVisibility(View.VISIBLE);
+        appImage.setVisibility(View.GONE);
     }
 
     @Override
     public void onLoginSuccess(OwnerProfile contact) {
         mProgressView.setVisibility(View.GONE);
+        appImage.setVisibility(View.VISIBLE);
 
         contact.saveToPreferences(this);
-        MessengerDBHelper dbHelper = new MessengerDBHelper(this);
-        dbHelper.dropDatabase();
-        dbHelper.onCreate(dbHelper.getWritableDatabase());
-
         Intent intent = new Intent(this, ChatsActivity.class);
         startActivity(intent);
         finish();
@@ -144,6 +158,7 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     @Override
     public void onLoginFail(String message) {
         mProgressView.setVisibility(View.GONE);
+        appImage.setVisibility(View.VISIBLE);
 
         mPasswordView.setOnEditorActionListener(onPasswordListener);
         mEmailSignInButton.setOnClickListener(onSignInListener);

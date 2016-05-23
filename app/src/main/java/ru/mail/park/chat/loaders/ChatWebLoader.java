@@ -8,7 +8,6 @@ import java.util.List;
 
 import ru.mail.park.chat.activities.ChatsActivity;
 import ru.mail.park.chat.api.Chats;
-import ru.mail.park.chat.database.ChatHelper;
 import ru.mail.park.chat.models.Chat;
 
 /**

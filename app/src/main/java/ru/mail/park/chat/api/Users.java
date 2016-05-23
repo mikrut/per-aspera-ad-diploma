@@ -46,7 +46,6 @@ public class Users extends ApiSection {
         try {
             String j = executeRequest(requestURL, requestMethod, parameters);
             JSONObject result = new JSONObject(j);
-            Log.d("[TP-diploma]", "getFullUser(" + uid + ")" + result.toString());
             final int status = result.getInt("status");
             Log.d("[TP-diploma]", result.toString());
             if (status == 200) {
@@ -155,12 +154,31 @@ public class Users extends ApiSection {
         final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
 
         List<Pair<String, String>> parameters = new ArrayList<>();
-        parameters.add(new Pair<>("login", profile.getLogin()));
-        parameters.add(new Pair<>("email", profile.getEmail()));
-        parameters.add(new Pair<>("firstName", profile.getFirstName()));
-        parameters.add(new Pair<>("lastName", profile.getLastName()));
+
+        if(profile.getLogin() != null)
+            parameters.add(new Pair<>("login", profile.getLogin()));
+
+        if(profile.getEmail() != null)
+            parameters.add(new Pair<>("email", profile.getEmail()));
+
+        if(profile.getFirstName() != null)
+            parameters.add(new Pair<>("firstName", profile.getFirstName()));
+
+        if(profile.getLastName() != null)
+            parameters.add(new Pair<>("lastName", profile.getLastName()));
+
         parameters.add(new Pair<>("accessToken", accessToken));
-        parameters.add(new Pair<>("img", profile.getImg()));
+
+        if(profile.getImg() != null)
+            parameters.add(new Pair<>("img", profile.getImg()));
+
+        if(profile.getAbout() != null)
+            parameters.add(new Pair<>("aboutMe", profile.getAbout()));
+
+        for(int i = 0; i < parameters.size(); i++) {
+            Pair<String, String> p = parameters.get(i);
+            Log.d("[TP-diploma]", p.first + ": " + (p.second == null ? "null" : p.second) );
+        }
 
         Log.d("[TP-diploma]", "Number of parameters: " + parameters.size());
 

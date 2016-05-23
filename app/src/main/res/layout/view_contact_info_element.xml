@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_email_black_24dp"
         android:padding="15dp"
-        android:layout_centerVertical="true"
+        android:layout_alignTop="@+id/main_text"
         android:layout_alignParentLeft="true"
         tools:ignore="RtlHardcoded" />
 

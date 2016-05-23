@@ -23,10 +23,8 @@ import ru.mail.park.chat.models.AttachedFile;
 
 public class HttpFileUpload implements Runnable{
     URL connectURL;
-    String responseString;
     String Title;
     String accessToken;
-    byte[ ] dataToServer;
     FileInputStream fileInputStream = null;
 
     public HttpFileUpload(String urlString, String vTitle, String accessToken){

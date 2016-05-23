@@ -28,7 +28,7 @@ public class ContactsSimpleListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-       Object chosen = getArguments().get(ContactsFragment.PICKED_CONTACTS);
+        Object chosen = getArguments().get(ContactsFragment.PICKED_CONTACTS);
         if (chosen != null) {
             chosenContacts = (TreeSet<Contact>) chosen;
         }

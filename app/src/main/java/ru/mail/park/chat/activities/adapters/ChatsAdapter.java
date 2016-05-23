@@ -2,17 +2,25 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.loaders.images.IImageSettable;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -20,6 +28,7 @@ import ru.mail.park.chat.models.Chat;
  */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
     private final List<Chat> chats;
+    private ImageDownloadManager downloadManager = null;
 
     public ChatsAdapter(List<Chat> chats) {
         this.chats = chats;
@@ -78,10 +87,21 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
         }
 
         public void initView(Chat chat) {
+            if (chat.getImagePath() != null && downloadManager != null) {
+                downloadManager.setImage(this, chat.getImagePath(), ImageDownloadManager.Size.SMALL);
+            } else {
+                setImage(null);
+            }
+
             setTitle(chat.getName());
             // FIXME: take values from DB
             // FIXME: get last message text, not description
-            lastMessageText.setText(chat.getDescription());
+            if (chat.getDescription() != null) {
+                lastMessageText.setText(chat.getDescription());
+            } else {
+                lastMessageText.setText("Chat is empty");
+            }
+
             // TODO: chat pictures
             switch (chat.getType()) {
                 case Chat.GROUP_TYPE:
@@ -92,6 +112,42 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                     groupIndicatorView.setVisibility(View.GONE);
             }
             chatID = chat.getCid();
+
+            String timestring = "";
+            Calendar dtime = chat.getDateTime();
+            Calendar now = GregorianCalendar.getInstance();
+            if (dtime != null) {
+                if (dtime.get(Calendar.YEAR) == now.get(Calendar.YEAR)) {
+                    if (dtime.get(Calendar.MONTH) == now.get(Calendar.MONTH)) {
+                        if (dtime.get(Calendar.WEEK_OF_MONTH) == now.get(Calendar.WEEK_OF_MONTH)) {
+                            timestring = capFirstLetter(dtime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
+                        } else {
+                            timestring = capFirstLetter(dtime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault())) + " " +
+                                String.valueOf(dtime.get(Calendar.DATE));
+                        }
+                    } else {
+                        timestring = capFirstLetter(dtime.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())) + " " +
+                                String.valueOf(dtime.get(Calendar.DATE));
+                    }
+                } else {
+                    DateFormat mFormat = new SimpleDateFormat("yy.MM.dd", Locale.getDefault());
+                    timestring = mFormat.format(dtime.getTime());
+                }
+            }
+
+            lastMessageTime.setText(timestring);
         }
+    }
+
+    public void setDownloadManager(ImageDownloadManager downloadManager) {
+        ImageDownloadManager old = this.downloadManager;
+        this.downloadManager = downloadManager;
+        if (old == null && downloadManager != null) {
+            notifyDataSetChanged();
+        }
+    }
+
+    private static String capFirstLetter(String input) {
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

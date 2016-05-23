@@ -65,7 +65,11 @@ class ServerConnection {
     }
 
     private void setUrl(URL url) throws IOException {
-        boolean torStart = OrbotHelper.requestStartTor(context);
+        // TODO: check tor status properly
+        boolean torStart = OrbotHelper.isOrbotRunning(context);
+        if (!torStart) {
+            torStart = OrbotHelper.requestStartTor(context);
+        }
 
         try {
             if (torStart) {
@@ -108,13 +112,19 @@ class ServerConnection {
 
     public String getResponse() {
         StringBuilder responseBuilder = new StringBuilder();
-        Log.d("[TP-diploma]", "inside getResponse");
 
         try {
             // AFAIK everything except GET sends parameters the same way
             Log.w("url", httpURLConnection.getURL().toString());
-            Log.d("[TP-diploma]", httpURLConnection.getURL().toString());
+
+            httpURLConnection.setInstanceFollowRedirects(true);
+            httpURLConnection.setConnectTimeout(10000);
+            httpURLConnection.setReadTimeout(10000);
+            final String USER_AGENT = "Mozilla/5.0 (Linux; U; Android 1.6; en-us; GenericAndroidDevice) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1";
+            httpURLConnection.setRequestProperty("User-Agent", USER_AGENT);
+
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
+                Log.d("[TP-diploma]", "parameters in request: " + parameters);
                 byte[] postData = parameters.getBytes(Charset.forName("UTF-8"));
                 Log.w(ServerConnection.class.getSimpleName() + ".getResponse", parameters);
 
@@ -143,6 +153,7 @@ class ServerConnection {
             }
             rd.close();
         } catch (IOException e) {
+            Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "Exception: " + e.getMessage());
             e.printStackTrace();
         }
         String reply = responseBuilder.toString();

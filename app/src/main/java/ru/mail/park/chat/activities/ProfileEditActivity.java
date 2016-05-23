@@ -7,7 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +19,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,11 +32,16 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
+import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.MultipartProfileUpdater;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileEditActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
@@ -39,18 +49,20 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
+    private ImageView currentAvatar;
     private TextView  userTitle;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
     private String accessToken;
+    private String uid;
     private String selectedFilePath;
 
     private EditText userLogin;
     private EditText userEmail;
     private EditText firstName;
     private EditText lastName;
-    private EditText userPhone;
+    private EditText userAbout;
 
     private Intent takePictureIntent;
 
@@ -58,32 +70,140 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private ProfileEditActivity thisAct = null;
 
+    private HashMap<String, Boolean> changedFields;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_edit);
 
         thisAct = this;
+        changedFields = new HashMap<>();
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
         imgUploadPicture = (ImageView) findViewById(R.id.user_upload_picture);
+        currentAvatar = (ImageView) findViewById(R.id.user_picture_in_editor);
         userTitle = (TextView) findViewById(R.id.user_title);
 
         userLogin = (EditText) findViewById(R.id.user_login);
         userEmail = (EditText) findViewById(R.id.user_email);
-        userPhone = (EditText) findViewById(R.id.user_phone);
         firstName = (EditText) findViewById(R.id.first_name);
         lastName  = (EditText) findViewById(R.id.last_name);
+        userAbout = (EditText) findViewById(R.id.about_field);
 
         OwnerProfile ownerProfile = new OwnerProfile(this);
         userTitle.setText(ownerProfile.getContactTitle());
         userLogin.setText(ownerProfile.getLogin());
         userEmail.setText(ownerProfile.getEmail());
-        userPhone.setText(ownerProfile.getPhone());
         firstName.setText(ownerProfile.getFirstName());
         lastName.setText(ownerProfile.getLastName());
+        userAbout.setText(ownerProfile.getAbout());
 
         accessToken = ownerProfile.getAuthToken();
+        uid = ownerProfile.getUid();
+
+        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+        File file = new File(filePath);
+
+        if(file.exists())
+            currentAvatar.setImageURI(Uri.parse(filePath));
+        else
+            currentAvatar.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
+
+        userLogin.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userLogin")) {
+                    changedFields.put("userLogin", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        userEmail.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userEmail")) {
+                    changedFields.put("userEmail", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        firstName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("firstName")) {
+                    changedFields.put("firstName", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        lastName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!changedFields.containsKey("lastName")) {
+                    changedFields.put("lastName", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
+
+        userAbout.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Прописываем то, что надо выполнить после изменения текста
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!changedFields.containsKey("userAbout")) {
+                    changedFields.put("userAbout", true);
+                    userLogin.removeTextChangedListener(this);
+                }
+            }
+        });
 
         imgCameraShot.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,7 +264,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     public synchronized void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            String filePath = "";//data.getStringExtra(GET_FROM_GALLERY);
+            String filePath = "";
             FileInputStream fstrm = null;
             HttpFileUpload hfu = null;
 
@@ -155,6 +275,7 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                     Log.d("[TP-diploma]", "sending file started");
                     try {
                         selectedFilePath = mImageUri.getPath();
+                        changedFields.put("img", true);
                         Toast.makeText(ProfileEditActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -175,19 +296,21 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
                         cursor.close();
 
                         selectedFilePath = filePath;
+                        changedFields.put("img", true);
                         Toast.makeText(ProfileEditActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
                     } catch(Exception e) {
-                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT);
+                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
                     }
-/*                    hfu = new HttpFileUpload(FILE_UPLOAD_URL, filePath.substring(filePath.lastIndexOf('/'), filePath.length()), accessToken);
-                    hfu.Send_Now(fstrm, this);*/
                 }
             }
+
+            if(selectedFilePath != null)
+                currentAvatar.setImageURI(Uri.parse(selectedFilePath));
         }
     }
 
     public void onUploadComplete(String name) {
-        Toast.makeText(this, name, Toast.LENGTH_LONG);
+
     }
 
     @Override
@@ -226,12 +349,24 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
     private OwnerProfile getUpdatedProfile() {
         OwnerProfile profile = new OwnerProfile(this);
-        profile.setEmail(userEmail.getText().toString());
-        profile.setLogin(userLogin.getText().toString());
-        profile.setPhone(userPhone.getText().toString());
-        profile.setFirstName(firstName.getText().toString());
-        profile.setLastName(lastName.getText().toString());
-        profile.setImg(selectedFilePath);
+        if(changedFields.containsKey("userEmail"))
+            profile.setEmail(userEmail.getText().toString());
+
+        if(changedFields.containsKey("userLogin"))
+            profile.setLogin(userLogin.getText().toString());
+
+        if(changedFields.containsKey("firstName"))
+            profile.setFirstName(firstName.getText().toString());
+
+        if(changedFields.containsKey("lastName"))
+            profile.setLastName(lastName.getText().toString());
+
+        if(changedFields.containsKey("img"))
+            profile.setImg(selectedFilePath);
+
+        if(changedFields.containsKey("userAbout"))
+            profile.setAbout(userAbout.getText().toString());
+
         return profile;
     }
 
@@ -240,18 +375,61 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
         switch (item.getItemId()) {
             case R.id.action_save:
                 OwnerProfile profile = getUpdatedProfile();
+                OwnerProfile currentProfile = new OwnerProfile(this);
 
-                ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
-                dialogBuilder.setTitle("Saving user data");
-                dialogBuilder.setMessage("Sending data to server");
-                dialogBuilder.setCancelable(false);
-                new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
+                if (!profile.equals(currentProfile)) {
+                    ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
+                    dialogBuilder.setTitle("Saving user data");
+                    dialogBuilder.setMessage("Sending data to server");
+                    dialogBuilder.setCancelable(false);
+                    new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
+
+                    if(changedFields.containsKey("img"))
+                        new UpdateLocalBlurImage(profile).execute();
+                } else {
+                    onBackPressed();
+                }
+
                 return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void updateLocalImages(String imgPath, String uid) {
+        String savePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
+        String saveBlurPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
+
+        Bitmap bm = BitmapFactory.decodeFile(imgPath);
+        Bitmap blurBm = BlurBuilder.blur(ProfileEditActivity.this, bm);
+
+        File file = new File(savePath);
+
+        try {
+            if (!file.exists())
+                file.createNewFile();
+
+            FileOutputStream fos = new FileOutputStream(file);
+            bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+        } catch (IOException e) {
+
+        }
+
+        file = new File(saveBlurPath);
+
+        try {
+            if (!file.exists())
+                file.createNewFile();
+
+            FileOutputStream fos = new FileOutputStream(file);
+            blurBm.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            fos.close();
+        } catch (IOException e) {
+
         }
     }
 
@@ -269,5 +447,21 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
             }
         }
 
+    }
+
+    private class UpdateLocalBlurImage extends AsyncTask<Void, Void, Void> {
+        Contact profile;
+
+        public UpdateLocalBlurImage(Contact profile) {
+            this.profile = profile;
+        }
+
+        protected Void doInBackground(Void... urls) {
+            updateLocalImages(profile.getImg(), profile.getUid());
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+        }
     }
 }

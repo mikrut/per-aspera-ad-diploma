@@ -54,7 +54,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         public void setMessage(@NonNull final Message message) {
             setTitle(message.getTitle());
             authorUID = message.getUid();
-            messageText.setText(message.getMessageBody());
+            if (message.getMessageBody() != null && !message.getMessageBody().equals("")) {
+                messageText.setText(message.getMessageBody());
+                messageText.setVisibility(View.VISIBLE);
+            } else {
+                messageText.setVisibility(View.GONE);
+            }
             attachments.setAdapter(new FilesSimpleAdapter(itemView.getContext(), message.getFiles()));
             attachments.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override

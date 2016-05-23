@@ -1,28 +1,36 @@
 package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
+
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
+import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
 
 /**
  * Created by Михаил on 08.03.2016.
  */
-public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IUserPicSetupListener {
     private final String[] titles;
     private final int[] icons;
     private final String name;
     private final String email;
-    private final int userPicture;
+    private final String filePath;
+    private final Bitmap bmBlurred;
+    private View headerViewObject = null;
     private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
@@ -35,6 +43,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public HeaderHolder(final View headerView) {
             super(headerView);
+
             userName = (TextView) headerView.findViewById(R.id.userName);
             userEmail = (TextView) headerView.findViewById(R.id.userEmail);
             userPicture = (ImageView) headerView.findViewById(R.id.userPicture);
@@ -56,8 +65,33 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             userEmail.setText(email);
         }
 
-        public void setUserPicture(@DrawableRes int picture) {
-            userPicture.setImageResource(picture);
+        public void setUserPicture(String filePath) {
+            File file = new File(filePath);
+
+            if(file.exists()) {
+                Log.d("[TP-diploma]", "Setting an image: " + filePath);
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            }
+            else {
+                userPicture.setImageResource(R.drawable.ic_user_picture);
+            }
+        }
+    }
+
+    @Override
+    public void onUserPicUploadComplete(String filePath) {
+        File file = new File(filePath);
+        ImageView userPicture;
+
+        if (headerViewObject != null) {
+            userPicture = (ImageView) headerViewObject.findViewById(R.id.userPicture);
+
+            if (file.exists()) {
+                Log.d("[TP-diploma]", "Setting an image: " + filePath);
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
+            } else {
+                userPicture.setImageResource(R.drawable.ic_user_picture);
+            }
         }
     }
 
@@ -85,13 +119,14 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public MenuAdapter(String name, String email, @DrawableRes int userPicture, String titles[],
+    public MenuAdapter(String name, String email, String filePath,  Bitmap bmBlurred, String titles[],
                        @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
-        this.userPicture = userPicture;
+        this.filePath = filePath;
+        this.bmBlurred = bmBlurred;
         this.listeners = listeners;
     }
 
@@ -101,6 +136,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case HEADER:
                 View headerView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.header, parent, false);
+
+                headerViewObject = headerView;
                 return new HeaderHolder(headerView);
             case ITEM:
                 View rowView = LayoutInflater.from(parent.getContext())
@@ -118,7 +155,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 HeaderHolder headerHolder = (HeaderHolder) holder;
                 headerHolder.setUserEmail(email);
                 headerHolder.setUserName(name);
-                headerHolder.setUserPicture(userPicture);
+                headerHolder.setUserPicture(filePath);
                 break;
             case ITEM:
                 position--;

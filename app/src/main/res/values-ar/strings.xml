@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"الدردشة"</string>
     <string name="action_settings">"إعدادات"</string>
     <string name="action_search">"بحث"</string>
     <string name="title_activity_login">"تسجيل الدخول"</string>

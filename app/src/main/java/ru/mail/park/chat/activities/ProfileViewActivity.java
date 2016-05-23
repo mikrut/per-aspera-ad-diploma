@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,15 +38,20 @@ import java.io.InputStream;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
+import ru.mail.park.chat.activities.tasks.DeleteContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.database.ContactsToChatsHelper;
+import ru.mail.park.chat.loaders.OwnerWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
+import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileViewActivity extends AppCompatActivity {
+public class ProfileViewActivity extends AppCompatActivity
+        implements DeleteContactTask.DeleteContactCallbacks {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
-    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
+    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/file/image";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
     private final static int WEB_OWN_LOADER = 2;
@@ -60,8 +66,10 @@ public class ProfileViewActivity extends AppCompatActivity {
 
     private ImageView userPicture;
     private ContactInfoElementView userLogin;
+    private ContactInfoElementView userLastName;
     private ContactInfoElementView userEmail;
     private ContactInfoElementView userPhone;
+    private ContactInfoElementView aboutUser;
     private TextView onlineIndicator;
     private LinearLayout profileDataLayout;
 
@@ -97,7 +105,9 @@ public class ProfileViewActivity extends AppCompatActivity {
         userLogin = (ContactInfoElementView) findViewById(R.id.user_login);
         userEmail = (ContactInfoElementView) findViewById(R.id.user_email);
         userPhone = (ContactInfoElementView) findViewById(R.id.user_phone);
+        userLastName = (ContactInfoElementView) findViewById(R.id.user_lastname);
         onlineIndicator = (TextView) findViewById(R.id.online_indicator);
+        aboutUser = (ContactInfoElementView) findViewById(R.id.user_about);
         profileDataLayout = (LinearLayout) findViewById(R.id.profileDataLayout);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -114,8 +124,8 @@ public class ProfileViewActivity extends AppCompatActivity {
             setUserData(owner, Contact.Relation.SELF);
             loaderType = WEB_OWN_LOADER;
         } else {
-            ContactHelper contactHelper = new ContactHelper(this);
-            Contact profile = contactHelper.getContact(uid);
+            ContactsHelper contactsHelper = new ContactsHelper(this);
+            Contact profile = contactsHelper.getContact(uid);
             if (profile != null) {
                 setUserData(profile, Contact.Relation.FRIEND);
             }
@@ -137,7 +147,13 @@ public class ProfileViewActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ProfileViewActivity.this, DialogActivity.class);
-                intent.putExtra(DialogActivity.USER_ID, uid);
+                ContactsToChatsHelper helper = new ContactsToChatsHelper(ProfileViewActivity.this);
+                Chat chat = helper.getChat(uid);
+                if (chat != null) {
+                    intent.putExtra(DialogActivity.CHAT_ID, chat.getCid());
+                } else {
+                    intent.putExtra(DialogActivity.USER_ID, uid);
+                }
                 startActivity(intent);
                 finish();
             }
@@ -170,6 +186,20 @@ public class ProfileViewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if(uid != null) {
+            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";;
+
+
+            File localFile = new File(localPath);
+            if(localFile.exists())
+                userPicture.setImageBitmap(BitmapFactory.decodeFile(localPath));
+
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -198,8 +228,8 @@ public class ProfileViewActivity extends AppCompatActivity {
                                         String onionAddress = editText.getText().toString();
                                         onionAddress = onionAddress.replaceAll("\\s", "");
                                         contact.setOnionAddress(onionAddress);
-                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
-                                        contactHelper.updateContact(contact);
+                                        ContactsHelper contactsHelper = new ContactsHelper(editText.getContext());
+                                        contactsHelper.updateContact(contact);
                                     }
                                 }).create().show();
                 return true;
@@ -218,22 +248,36 @@ public class ProfileViewActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int which) {
                                         String publicKeyDigest = editText.getText().toString();
                                         contact.setPubkeyDigest(publicKeyDigest);
-                                        ContactHelper contactHelper = new ContactHelper(editText.getContext());
-                                        contactHelper.updateContact(contact);
+                                        ContactsHelper contactsHelper = new ContactsHelper(editText.getContext());
+                                        contactsHelper.updateContact(contact);
                                     }
                                 }).create().show();
                 return true;
+            }
+            case R.id.action_delete_contact: {
+                DeleteContactTask task = new DeleteContactTask(this, this);
+                task.execute(uid);
             }
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDeleted(boolean success) {
+        if (success) {
+            onBackPressed();
+        } else {
+            Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void setUserData(Contact user, Contact.Relation relation) {
         contact = user;
 
-        toolbarLayout.setTitle(user.getContactTitle());
-        userLogin.setText(user.getLogin());
+        toolbarLayout.setTitle(user.getLogin()); //toolbar is for login
+        userLogin.setText(user.getFirstName()); //userLogin is firstName
+        userLastName.setText(user.getLastName());
 
         if (user.getEmail() != null) {
             userEmail.setText(user.getEmail());
@@ -243,15 +287,22 @@ public class ProfileViewActivity extends AppCompatActivity {
         }
 
         Log.d("[TP-diploma]", "starting get image task");
-        new DownloadImageTask(userPicture).execute(SERVER_URL + user.getImg());
+        new DownloadImageTask(userPicture).execute(SERVER_URL + "?path=" + user.getImg());
 
         Calendar lastSeen = user.getLastSeen();
+
+        if(user.getAbout() != null) {
+            aboutUser.setText(user.getAbout());
+            aboutUser.setVisibility(View.VISIBLE);
+        } else {
+            aboutUser.setVisibility(View.GONE);
+        }
 
         if(relation != Contact.Relation.SELF) {
             if (user.isOnline())
                 onlineIndicator.setText("online");
             else if(lastSeen != null)
-                onlineIndicator.setText(lastSeen.getTime().toGMTString());
+                onlineIndicator.setText(formatLastSeenTime(lastSeen));
             else
                 onlineIndicator.setText("offline");
         }
@@ -287,11 +338,59 @@ public class ProfileViewActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
+    public static String formatLastSeenTime(Calendar lastSeen) {
+        String lastSeenDate;
+        String lastSeenTime;
+
+        Calendar rightNow = Calendar.getInstance();
+
+        int lastSeenDayInYear = lastSeen.get(Calendar.DAY_OF_YEAR);
+        int todayDayInYear = rightNow.get(Calendar.DAY_OF_YEAR);
+
+        int lastSeenYear = lastSeen.get(Calendar.YEAR);
+        int todayYear = rightNow.get(Calendar.YEAR);
+
+        int dayOfMonth = lastSeen.get(Calendar.DAY_OF_MONTH);
+        int month = lastSeen.get(Calendar.MONTH);
+        int year = lastSeen.get(Calendar.YEAR);
+
+        if(lastSeenYear == todayYear) {
+            switch(todayDayInYear - lastSeenDayInYear) {
+                case 0: lastSeenDate = "Today";
+                        break;
+
+                case 1: lastSeenDate = "Yesterday";
+                        break;
+
+                default: lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
+                         break;
+            }
+        } else {
+            lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
+        }
+
+        int hour = lastSeen.get(Calendar.HOUR);
+        int min = lastSeen.get(Calendar.MINUTE);
+
+        String hours = (hour >= 10) ? String.valueOf(hour) : ("0" + String.valueOf(hour));
+        String mins = (min >= 10) ? String.valueOf(min) : ("0" + String.valueOf(min));
+
+        lastSeenTime = hours + ":" + mins;
+
+        return "Last seen " + lastSeenDate + " at " + lastSeenTime;
+    }
+
     private final LoaderManager.LoaderCallbacks<Contact> contactsLoaderListener =
             new LoaderManager.LoaderCallbacks<Contact>() {
                 @Override
                 public Loader<Contact> onCreateLoader(int id, Bundle args) {
-                    return new ProfileWebLoader(ProfileViewActivity.this, id, args);
+                    switch (id) {
+                        case WEB_OWN_LOADER:
+                            return new OwnerWebLoader(ProfileViewActivity.this, id, args);
+                        case WEB_LOADER:
+                        default:
+                            return new ProfileWebLoader(ProfileViewActivity.this, id, args);
+                    }
                 }
 
                 @Override
@@ -302,9 +401,10 @@ public class ProfileViewActivity extends AppCompatActivity {
                         if (data.getUid().equals(ownerUid))
                             relation = Contact.Relation.SELF;
                         else {
-                            ContactHelper contactHelper = new ContactHelper(ProfileViewActivity.this);
-                            if (contactHelper.getContact(data.getUid()) != null) {
+                            ContactsHelper contactsHelper = new ContactsHelper(ProfileViewActivity.this);
+                            if (contactsHelper.getContact(data.getUid()) != null) {
                                 relation = Contact.Relation.FRIEND;
+                                contactsHelper.saveContact(data);
                             }
                         }
                         setUserData(data, relation);
@@ -317,20 +417,31 @@ public class ProfileViewActivity extends AppCompatActivity {
                 }
             };
 
+    static public Bitmap downloadFile(String path, int height, int width, String token) throws IOException {
+        String requestPath = path + "&height=" + String.valueOf(height) + "&width=" + String.valueOf(width) + "&accessToken=" + token;
+        Log.d("[TP-diploma]", "Requesting image: " + requestPath);
+        InputStream in = new java.net.URL(requestPath).openStream();
+        return BitmapFactory.decodeStream(in);
+    }
+
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
+        int curHeight;
+        int curWidth;
 
         public DownloadImageTask(ImageView bmImage) {
             this.bmImage = bmImage;
+            curHeight = bmImage.getHeight();
+            curWidth = bmImage.getWidth();
         }
 
         protected Bitmap doInBackground(String... urls) {
+            OwnerProfile owp = new OwnerProfile(ProfileViewActivity.this);
             Log.d("[TP-diploma]", "task is working");
             String urldisplay = urls[0];
             Bitmap mIcon11 = null;
             try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
+                mIcon11 = downloadFile(urldisplay, curHeight, curWidth, owp.getAuthToken());
             } catch (Exception e) {
                 Log.e("Error", e.getMessage());
                 e.printStackTrace();

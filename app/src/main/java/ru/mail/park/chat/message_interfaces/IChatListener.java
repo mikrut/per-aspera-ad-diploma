@@ -5,15 +5,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 
 /**
  * Created by 1запуск BeCompact on 27.03.2016.
  */
-public interface IMessageReaction {
+public interface IChatListener {
     void onIncomeMessage(JSONObject message);
     void onAcknowledgeSendMessage(JSONObject message);
     void onActionDeleteMessage(int mid);
     void onGetHistoryMessages(ArrayList<Message> msg_list);
-    void onChatCreated(Chat chat);
+    void onWrite(String cid, Contact user);
 }

@@ -2,20 +2,29 @@ package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.api.ApiSection;
+import ru.mail.park.chat.loaders.images.IImageSettable;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -23,6 +32,10 @@ import ru.mail.park.chat.models.Contact;
  */
 public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     static final int CONTACT = 1;
+
+    private Drawable contactActionDrawable;
+    private ImageDownloadManager imageManager;
+    private ContactHolder.OnContactActionListener contactActionListener;
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -35,17 +48,35 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
+
+        if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
+            try {
+                URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
+                imageManager.setImage(contactHolder, url, ImageDownloadManager.Size.SMALL);
+            } catch (MalformedURLException e) {
+                Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
+            }
+        } else {
+            contactHolder.setImage(null);
+        }
+
         contactHolder.setTitle(contact.getContactTitle());
         contactHolder.setUid(contact.getUid());
 
         Calendar lastSeen = contact.getLastSeen();
         if (lastSeen != null) {
-            contactHolder.setContactLastSeen(lastSeen.getTime().toGMTString());
+            Log.d("[TP-diploma]", "got lastSeen field");
+            contactHolder.setContactLastSeen(ProfileViewActivity.formatLastSeenTime(lastSeen));
         } else {
+            Log.d("[TP-diploma]", "dont have lastSeen");
             contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
         }
 
         contactHolder.setContact(contact);
+
+        if (contactActionListener != null && contactActionDrawable != null) {
+            contactHolder.setContactAction(contactActionDrawable, contactActionListener);
+        }
     }
 
     protected abstract Contact getContactForPosition(int position);
@@ -61,6 +92,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         final TextView contactName;
         final TextView contactLastSeen;
 
+        final ImageButton contactAction;
+
         String uid;
         Contact contact;
 
@@ -70,6 +103,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
             choosenImage = (ImageView) itemView.findViewById(R.id.choosenImage);
             contactName = (TextView) itemView.findViewById(R.id.contactName);
             contactLastSeen = (TextView) itemView.findViewById(R.id.contactLastSeen);
+            contactAction = (ImageButton) itemView.findViewById(R.id.contact_action_image_button);
 
             setOnContactClickListener(new OnContactClickListener() {
                 @Override
@@ -79,6 +113,40 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                     v.getContext().startActivity(intent);
                 }
             });
+        }
+
+        public interface OnContactActionListener {
+            void onContactAction(Contact contact);
+        }
+
+        public void setContactAction(Drawable icon, final OnContactActionListener listener) {
+            setContactAction(icon, null, listener);
+        }
+
+        public void setContactAction(Drawable icon, CharSequence actionDescription,
+                                     final OnContactActionListener listener) {
+            if (contactAction != null) {
+                contactAction.setImageDrawable(icon);
+                contactAction.setContentDescription(actionDescription);
+                contactAction.setVisibility(View.VISIBLE);
+                contactAction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.v(ContactHolder.class.getSimpleName(), "Contact action");
+                        listener.onContactAction(contact);
+                    }
+                });
+            }
+        }
+
+        public void setActionDrawable(Drawable icon) {
+            if (contactAction != null) {
+                contactAction.setImageDrawable(icon);
+            }
+        }
+
+        public void setActionEnabled(boolean enabled) {
+            contactAction.setVisibility(enabled ? View.VISIBLE : View.GONE);
         }
 
         public void setChosen(boolean chosen) {
@@ -105,10 +173,6 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         public void setUid(String uid) {this.uid = uid;}
 
-        public void setContactImage(Bitmap bitmap) {
-            contactImage.setImageBitmap(bitmap);
-        }
-
         @Override
         public void setTitle(String name) {
             super.setTitle(name);
@@ -130,6 +194,20 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         public interface OnContactClickListener {
             void onContactClick(View contactView, ContactHolder viewHolder);
+        }
+    }
+
+    public void setContactAction(Drawable contactActionDrawable,
+                                 ContactHolder.OnContactActionListener listener) {
+        this.contactActionDrawable = contactActionDrawable;
+        this.contactActionListener = listener;
+    }
+
+    public void setImageManager(ImageDownloadManager imageManager) {
+        ImageDownloadManager old = this.imageManager;
+        this.imageManager = imageManager;
+        if (old == null && imageManager != null) {
+            notifyDataSetChanged();
         }
     }
 }

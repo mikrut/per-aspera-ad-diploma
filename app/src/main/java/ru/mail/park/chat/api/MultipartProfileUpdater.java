@@ -23,29 +23,36 @@ import java.util.List;
  */
 public class MultipartProfileUpdater {
     URL connectURL;
-    String responseString;
-    byte[ ] dataToServer;
     FileInputStream fileInputStream = null;
     List<Pair<String, String>> parameters;
 
     public MultipartProfileUpdater(String urlString, List<Pair<String, String>> parameters){
-        try{
+        try {
             this.parameters = parameters;
             connectURL = new URL(urlString);
-        }catch(Exception ex){
+        } catch(Exception ex) {
             Log.i("[TP-diploma]", "URL Malformatted");
         }
     }
 
     public boolean Send_Now(IUploadListener listener){
-        Log.d("[TP-diploma]", "send now");
         return Sending(listener);
     }
 
     boolean Sending(IUploadListener listener){
+        Boolean result = true;
+
         Log.d("[TP-diploma]", "sending started");
-        new HttpMultipartUpdateProfileTask(listener).execute();
-        return true;
+        HttpMultipartUpdateProfileTask hmupTask = new HttpMultipartUpdateProfileTask(listener);
+        hmupTask.execute();
+
+        /*try {
+            result = hmupTask.get();
+        } catch(Exception e) {
+            return false;
+        }*/
+
+        return result;//result != null;
     }
 
 
@@ -57,7 +64,7 @@ public class MultipartProfileUpdater {
         void onUploadComplete(String name);
     }
 
-    class HttpMultipartUpdateProfileTask extends AsyncTask<Void,Void,String>
+    class HttpMultipartUpdateProfileTask extends AsyncTask<Void,Void,Boolean>
     {
         IUploadListener listener;
 
@@ -69,12 +76,14 @@ public class MultipartProfileUpdater {
             //display progress dialog.
         }
 
-        protected String doInBackground(Void... params) {
+        protected Boolean doInBackground(Void... params) {
             try {
                 String lineEnd = "\r\n";
                 String twoHyphens = "--";
                 String boundary = "===" + System.currentTimeMillis() + "===";
                 String Tag = "[TP-diploma]";
+
+                Log.d(Tag, "doInBackground started");
 
                 // Open a HTTP connection to the URL
                 HttpURLConnection conn = (HttpURLConnection)connectURL.openConnection();
@@ -168,25 +177,22 @@ public class MultipartProfileUpdater {
                 // retrieve the response from server
                 int ch;
 
-                StringBuffer b =new StringBuffer();
+                StringBuffer b = new StringBuffer();
                 while( ( ch = is.read() ) != -1 ){ b.append( (char)ch ); }
-                String s=b.toString();
 
                 dos.close();
-                Log.d("[TP-diploma]", "mpu result: " + s);
-                return s;
+                return conn.getResponseCode() == 200;
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage());
+                return false;
             }
         }
 
-        protected void onPostExecute(String result) {
-            if (result != null && listener != null) {
+        protected void onPostExecute(Boolean result) {
+            if (result && listener != null) {
                 try {
-                    listener.onUploadComplete(result);
-                } catch (Exception
-                        e) {
+                    listener.onUploadComplete(String.valueOf(result));
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

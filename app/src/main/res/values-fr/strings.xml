@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">"Tchat"</string>
     <string name="action_settings">"Paramètres"</string>
     <string name="action_search">"Rechercher"</string>
     <string name="title_activity_login">"Se connecter"</string>

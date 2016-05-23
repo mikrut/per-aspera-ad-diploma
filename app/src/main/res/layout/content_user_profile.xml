@@ -35,7 +35,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_person_black_24dp"
-                android:hint="Login" />
+                android:hint="First name" />
+
+            <ru.mail.park.chat.activities.views.ContactInfoElementView
+                android:id="@+id/user_lastname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_person_black_24dp"
+                android:hint="Last name" />
 
             <ru.mail.park.chat.activities.views.ContactInfoElementView
                 android:id="@+id/user_email"
@@ -50,6 +57,13 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_phone_black_24dp"
                 android:hint="Phone" />
+
+            <ru.mail.park.chat.activities.views.ContactInfoElementView
+                android:id="@+id/user_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_info_outline_black_24dp"
+                android:hint="About me" />
 
             <View
                 android:layout_marginTop="10dp"

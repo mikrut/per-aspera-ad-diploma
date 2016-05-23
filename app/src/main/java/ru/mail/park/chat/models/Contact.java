@@ -9,25 +9,18 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.bouncycastle.crypto.digests.SHA3Digest;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import ru.mail.park.chat.database.ContactHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.database.ContactsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
 
@@ -44,6 +37,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     private @Nullable String phone;
     private @Nullable String firstName;
     private @Nullable String lastName;
+    private @Nullable String aboutUser;
 
     private @Nullable String img;
     private @Nullable Calendar lastSeen;
@@ -55,7 +49,9 @@ public class Contact implements Comparable<Contact>, Serializable {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    Contact(){}
+    Contact(){
+        email = firstName = lastName = img = aboutUser = login = null;
+    }
 
     public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
         Log.d(Contact.class.getSimpleName() + ".new", contact.toString());
@@ -71,7 +67,7 @@ public class Contact implements Comparable<Contact>, Serializable {
         } else {
             uid = contact.getString(idParameterName);
             if (context != null) {
-                ContactHelper helper = new ContactHelper(context);
+                ContactsHelper helper = new ContactsHelper(context);
                 Contact c = helper.getContact(uid);
                 if (c != null) {
                     init(c);
@@ -98,12 +94,15 @@ public class Contact implements Comparable<Contact>, Serializable {
             setLastSeen(lastSeen);
         }
 
+        if(contact.has("aboutMe")) {
+            setAboutMe(contact.getString("aboutMe"));
+        }
+
         if (contact.has("online")) {
             setOnline(contact.getBoolean("online"));
         }
 
         if(contact.has("img")) {
-            Log.d("[TP-diploma]", "has img");
             setImg(contact.getString("img"));
         }
     }
@@ -117,6 +116,7 @@ public class Contact implements Comparable<Contact>, Serializable {
 
         email = contact.getEmail();
         phone = contact.getPhone();
+        aboutUser = contact.getAbout();
 
         img = contact.getImg();
         if (contact.getLastSeen() != null)
@@ -141,10 +141,12 @@ public class Contact implements Comparable<Contact>, Serializable {
             firstName = cursor.getString(ContactsContract.PROJECTION_FIRST_NAME_INDEX);
         if (!cursor.isNull(ContactsContract.PROJECTION_LAST_NAME_INDEX))
             lastName = cursor.getString(ContactsContract.PROJECTION_LAST_NAME_INDEX);
-
-        if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX)) {
+        if (!cursor.isNull(ContactsContract.PROJECTION_ABOUT_INDEX))
+            aboutUser = cursor.getString(ContactsContract.PROJECTION_ABOUT_INDEX);
+        if (!cursor.isNull(ContactsContract.PROJECTION_PUBKEY_INDEX))
             pubkeyDigest = cursor.getBlob(ContactsContract.PROJECTION_PUBKEY_INDEX);
-        }
+        if (!cursor.isNull(ContactsContract.PROJECTION_IMAGE_URL_INDEX))
+            img = cursor.getString(ContactsContract.PROJECTION_IMAGE_URL_INDEX);
 
         if (!cursor.isNull(ContactsContract.PROJECTION_ONION_INDEX)) {
             String onion = cursor.getString(ContactsContract.PROJECTION_ONION_INDEX);
@@ -165,6 +167,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         this.online = online;
     }
 
+    private void setAboutMe(String info) {
+        this.aboutUser = info;
+    }
+
     @NonNull
     public String getUid() {
         return uid;
@@ -176,7 +182,7 @@ public class Contact implements Comparable<Contact>, Serializable {
 
     @NonNull
     public String getLogin() {
-        return login;
+        return login != null ? login : "friend";
     }
 
     public void setLogin(@NonNull String login) {
@@ -194,7 +200,12 @@ public class Contact implements Comparable<Contact>, Serializable {
         this.phone = phone;
     }
 
-    public @Nullable Calendar getLastSeen() {
+    public String getAbout() {
+        return aboutUser;
+    }
+
+    public @Nullable Calendar
+    getLastSeen() {
         return lastSeen;
     }
 
@@ -216,6 +227,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         if (TextUtils.equals(email, ""))
             email = null;
         this.email = email;
+    }
+
+    public void setAbout(String info) {
+        this.aboutUser = info;
     }
 
     @Nullable
@@ -241,7 +256,6 @@ public class Contact implements Comparable<Contact>, Serializable {
     }
 
     public void setImg(String img) {
-        Log.d("[TP-diploma]", "set img");
         this.img = img;
     }
 
@@ -259,6 +273,8 @@ public class Contact implements Comparable<Contact>, Serializable {
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PHONE, phone);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_FIRST_NAME, firstName);
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_LAST_NAME, lastName);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_ABOUT, aboutUser);
+        contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_IMAGE_URL, img);
 
         contentValues.put(ContactsContract.ContactsEntry.COLUMN_NAME_PUBKEY,
                 pubkeyDigest != null ? pubkeyDigest : null);
@@ -342,7 +358,9 @@ public class Contact implements Comparable<Contact>, Serializable {
                     TextUtils.equals(getEmail(), other.getEmail()) &&
                     TextUtils.equals(getPhone(), other.getPhone()) &&
                     TextUtils.equals(getFirstName(), other.getFirstName()) &&
-                    TextUtils.equals(getLastName(), other.getLastName());
+                    TextUtils.equals(getLastName(), other.getLastName()) &&
+                    TextUtils.equals(getImg(), other.getImg()) &&
+                    TextUtils.equals(getAbout(), other.getAbout());
         }
         return super.equals(o);
     }
