@@ -59,6 +59,13 @@ public class Chat implements Serializable {
         } else {
             dateTime = null;
         }
+        if (!cursor.isNull(ChatsContract.PROJECTION_IMAGE_URL_INDEX)) {
+            try {
+                imagePath = new URL(cursor.getString(ChatsContract.PROJECTION_IMAGE_URL_INDEX));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static final int GROUP_TYPE = 1;
@@ -227,6 +234,7 @@ public class Chat implements Serializable {
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DESCRIPTION, description);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DATETIME, dateTime != null ? dateTime.getTimeInMillis() / 1000L : null);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_TYPE, type);
+        contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_IMAGE_URL, imagePath != null ? imagePath.toString() : null);
 
         if(companion_id != null)
             contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_COMPANION_ID, companion_id);

@@ -9,11 +9,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.loaders.images.IImageSettable;
 
 /**
  * Created by mikrut on 10.04.16.
  */
-public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
+public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements IImageSettable {
     private final ImageView image;
     private final TextView imageText;
     private boolean bitmapIsSet = false;
@@ -55,8 +56,17 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder {
         return image;
     }
 
+    @Override
     public void setImage(Bitmap imageBitmap) {
         image.setImageBitmap(imageBitmap);
+        if (imageBitmap == null) {
+
+
+        }
         bitmapIsSet = (imageBitmap != null);
+
+        if (bitmapIsSet) {
+            imageText.setVisibility(View.GONE);
+        }
     }
 }

@@ -15,11 +15,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
+import ru.mail.park.chat.api.ApiSection;
+import ru.mail.park.chat.loaders.images.IImageSettable;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -29,6 +34,7 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     static final int CONTACT = 1;
 
     private Drawable contactActionDrawable;
+    private ImageDownloadManager imageManager;
     private ContactHolder.OnContactActionListener contactActionListener;
 
     @Override
@@ -42,6 +48,18 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
+
+        if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
+            try {
+                URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
+                imageManager.setImage(contactHolder, url, ImageDownloadManager.Size.SMALL);
+            } catch (MalformedURLException e) {
+                Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
+            }
+        } else {
+            contactHolder.setImage(null);
+        }
+
         contactHolder.setTitle(contact.getContactTitle());
         contactHolder.setUid(contact.getUid());
 
@@ -155,10 +173,6 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
 
         public void setUid(String uid) {this.uid = uid;}
 
-        public void setContactImage(Bitmap bitmap) {
-            contactImage.setImageBitmap(bitmap);
-        }
-
         @Override
         public void setTitle(String name) {
             super.setTitle(name);
@@ -187,5 +201,13 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
                                  ContactHolder.OnContactActionListener listener) {
         this.contactActionDrawable = contactActionDrawable;
         this.contactActionListener = listener;
+    }
+
+    public void setImageManager(ImageDownloadManager imageManager) {
+        ImageDownloadManager old = this.imageManager;
+        this.imageManager = imageManager;
+        if (old == null && imageManager != null) {
+            notifyDataSetChanged();
+        }
     }
 }
