@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -33,6 +34,8 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -318,6 +321,7 @@ public class DialogActivity
     private void initWriters() {
         writers = new LinkedList<>();
         final TextView writersView = (TextView) findViewById(R.id.writersTextView);
+        final ImageView pencilView = (ImageView) findViewById(R.id.pencil_icon);
 
         schedulerTimer = new Timer();
         schedulerTimer.schedule(new TimerTask() {
@@ -333,7 +337,7 @@ public class DialogActivity
 
                 String writersString = null;
                 if (writers.size() > 0) {
-                    writersString = "User%s %s writes a message...";
+                    writersString = "%s %s typing...";
                     String writersConcatenated = "";
                     for (Pair<Long, Contact> writer : writers) {
                         writersConcatenated = writersConcatenated +
@@ -342,8 +346,8 @@ public class DialogActivity
                     writersConcatenated =
                             writersConcatenated.substring(0, writersConcatenated.length() - 2);
                     writersString = String.format(writersString,
-                            writers.size() > 1 ? "s" : "",
-                            writersConcatenated);
+                            writersConcatenated,
+                            writers.size() > 1 ? "are" : "is");
                 }
                 final String resultString = writersString;
                 uiHandler.post(new Runnable() {
@@ -353,11 +357,16 @@ public class DialogActivity
                             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) messagesList.getLayoutParams();
                             int bottomMargin = 0;
                             if (resultString != null) {
+                                Animation anim = AnimationUtils.loadAnimation(DialogActivity.this, R.anim.pencil_writing);
                                 writersView.setText(resultString);
                                 writersView.setVisibility(View.VISIBLE);
-                                bottomMargin = writersView.getHeight();
+                                pencilView.setVisibility(View.VISIBLE);
+                                pencilView.startAnimation(anim);
+                                bottomMargin = writersView.getHeight() > pencilView.getHeight() ? writersView.getHeight() : pencilView.getHeight();
                             } else {
                                 writersView.setVisibility(View.GONE);
+                                pencilView.setVisibility(View.GONE);
+                                pencilView.clearAnimation();
                             }
                             layoutParams.setMargins(layoutParams.leftMargin,
                                     layoutParams.topMargin, layoutParams.rightMargin, bottomMargin);
@@ -717,12 +726,12 @@ public class DialogActivity
 //        companion = new ContactsHelper(this).getContact(companion.getUid());
 
         dialogTitle.setText(companion.getContactTitle());
-        if (companion.isOnline())
-            dialogLastSeen.setText("online");
-        else if(companion.getLastSeen() != null)
-            dialogLastSeen.setText(ProfileViewActivity.formatLastSeenTime(companion.getLastSeen()));
-        else
-            dialogLastSeen.setText("offline");
+//        if (companion.isOnline())
+//            dialogLastSeen.setText("online");
+//        else if(companion.getLastSeen() != null)
+//            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
+//        else
+//            dialogLastSeen.setText("offline");
 
         String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
         File file = new File(filePath);
