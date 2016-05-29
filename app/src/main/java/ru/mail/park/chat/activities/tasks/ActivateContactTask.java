@@ -9,11 +9,13 @@ import java.io.IOException;
 
 import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.api.Contacts;
+import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.models.Contact;
 
 /**
  * Created by Михаил on 14.05.2016.
  */
-public class ActivateContactTask extends AsyncTask<String, Void, String> {
+public class ActivateContactTask extends AsyncTask<Contact, Void, String> {
     private final Context context;
 
     public ActivateContactTask(Context context) {
@@ -21,11 +23,14 @@ public class ActivateContactTask extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        final String uid = params[0];
+    protected String doInBackground(Contact... params) {
+        final Contact contact = params[0];
+        final String uid = contact.getUid();
         Contacts contacts = new Contacts(context);
         try {
             contacts.activateContact(uid);
+            ContactsHelper contactsHelper = new ContactsHelper(context);
+            contactsHelper.saveContact(contact);
             return uid;
         } catch (IOException e) {
             e.printStackTrace();
