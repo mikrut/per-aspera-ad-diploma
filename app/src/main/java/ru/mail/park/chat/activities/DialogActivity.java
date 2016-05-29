@@ -323,23 +323,6 @@ public class DialogActivity
         final TextView writersView = (TextView) findViewById(R.id.writersTextView);
         final ImageView pencilView = (ImageView) findViewById(R.id.pencil_icon);
 
-        Contact user1 = new Contact();
-        Contact user2 = new Contact();
-        Contact user3 = new Contact();
-
-        user1.setFirstName("Andrew");
-        user1.setLastName("Tereshko");
-
-        user2.setFirstName("Pavel");
-        user2.setLastName("Scherbinin");
-
-        user3.setFirstName("Ivan");
-        user3.setLastName("Petrov");
-
-        writers.add(0, new Pair<>(System.currentTimeMillis() + 1999, user1));
-        writers.add(1, new Pair<>(System.currentTimeMillis() + 1999, user2));
-        writers.add(2, new Pair<>(System.currentTimeMillis() + 1999, user3));
-
         schedulerTimer = new Timer();
         schedulerTimer.schedule(new TimerTask() {
             @Override
@@ -387,13 +370,17 @@ public class DialogActivity
                                 pencilView.setVisibility(View.VISIBLE);
                                 pencilView.startAnimation(anim);
                                 bottomMargin = writersView.getHeight() > pencilView.getHeight() ? writersView.getHeight() : pencilView.getHeight();
+                                bottomMargin += 25;
                             } else {
                                 writersView.setVisibility(View.GONE);
                                 pencilView.setVisibility(View.GONE);
                                 pencilView.clearAnimation();
+                                bottomMargin = 0;
                             }
                             layoutParams.setMargins(layoutParams.leftMargin,
                                     layoutParams.topMargin, layoutParams.rightMargin, bottomMargin);
+
+                            messagesList.setLayoutParams(layoutParams);
                         }
                     }
                 });
