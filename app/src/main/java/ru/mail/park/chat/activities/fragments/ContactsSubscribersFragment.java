@@ -56,7 +56,7 @@ public class ContactsSubscribersFragment extends ContactsFragment {
                         @Override
                         public void onContactAction(Contact contact) {
                             ActivateContactTask task = new ActivateContactTask(getContext());
-                            task.execute(contact.getUid());
+                            task.execute(contact);
                         }
                     }
             );
