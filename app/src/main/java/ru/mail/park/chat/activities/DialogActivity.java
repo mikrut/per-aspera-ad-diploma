@@ -323,6 +323,23 @@ public class DialogActivity
         final TextView writersView = (TextView) findViewById(R.id.writersTextView);
         final ImageView pencilView = (ImageView) findViewById(R.id.pencil_icon);
 
+        Contact user1 = new Contact();
+        Contact user2 = new Contact();
+        Contact user3 = new Contact();
+
+        user1.setFirstName("Andrew");
+        user1.setLastName("Tereshko");
+
+        user2.setFirstName("Pavel");
+        user2.setLastName("Scherbinin");
+
+        user3.setFirstName("Ivan");
+        user3.setLastName("Petrov");
+
+        writers.add(0, new Pair<>(System.currentTimeMillis() + 1999, user1));
+        writers.add(1, new Pair<>(System.currentTimeMillis() + 1999, user2));
+        writers.add(2, new Pair<>(System.currentTimeMillis() + 1999, user3));
+
         schedulerTimer = new Timer();
         schedulerTimer.schedule(new TimerTask() {
             @Override
@@ -331,20 +348,27 @@ public class DialogActivity
                 Iterator<Pair<Long, Contact>> i = writers.iterator();
                 while (i.hasNext()) {
                     Pair<Long, Contact> current = i.next();
-                    if (Math.abs(current.first - currentTimeMillis) > WRITER_DISAPPEAR_DELAY_MILLIS)
+                    if (Math.abs(current.first - currentTimeMillis) > WRITER_DISAPPEAR_DELAY_MILLIS) {
                         i.remove();
+                    }
                 }
 
                 String writersString = null;
+                String writersConcatenated = "";
                 if (writers.size() > 0) {
                     writersString = "%s %s typing...";
-                    String writersConcatenated = "";
-                    for (Pair<Long, Contact> writer : writers) {
-                        writersConcatenated = writersConcatenated +
-                                writer.second.getContactTitle() + ", ";
+                    if(writers.size() <= 2) {
+                        for (Pair<Long, Contact> writer : writers) {
+                            writersConcatenated = writersConcatenated +
+                                    writer.second.getFirstName().charAt(0) + ". " + writer.second.getLastName() + ", ";
+                        }
+
+                        writersConcatenated =
+                                writersConcatenated.substring(0, writersConcatenated.length() - 2);
+                    } else {
+                        writersConcatenated = String.valueOf(writers.size()) + " users";
                     }
-                    writersConcatenated =
-                            writersConcatenated.substring(0, writersConcatenated.length() - 2);
+
                     writersString = String.format(writersString,
                             writersConcatenated,
                             writers.size() > 1 ? "are" : "is");

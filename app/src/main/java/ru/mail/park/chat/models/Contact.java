@@ -49,7 +49,7 @@ public class Contact implements Comparable<Contact>, Serializable {
 
     public enum Relation {FRIEND, SELF, OTHER}
 
-    Contact(){
+    public Contact(){
         email = firstName = lastName = img = aboutUser = login = null;
     }
 
