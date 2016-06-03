@@ -34,12 +34,15 @@ public class Chat implements Serializable {
     private String cid;
     @NonNull
     private String name;
+    @NonNull
+    private Calendar lastSeen;
     @Nullable
     private String description;
     @Nullable
     private Calendar dateTime;
     @Nullable
     private String companion_id;
+
     private int type;
     private List<Contact> chatUsers = new ArrayList<>();
 

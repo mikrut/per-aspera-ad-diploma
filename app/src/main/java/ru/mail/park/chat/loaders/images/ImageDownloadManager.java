@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
@@ -108,10 +109,10 @@ public class ImageDownloadManager extends Service {
     }
 
     public void addBitmapToCache(URL url, Bitmap bitmap, Size size) {
-        String bitmapName = paramsToName(url, size);
-        memoryCache.put(bitmapName, bitmap);
+        addBitmapToMemCache(url, bitmap, size);
 
         try {
+            String bitmapName = paramsToName(url, size);
             DiskLruCache.Editor editor = diskCache.edit(bitmapName);
             if (editor != null) {
                 OutputStream out = editor.newOutputStream(0);
@@ -125,6 +126,11 @@ public class ImageDownloadManager extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addBitmapToMemCache(URL url, Bitmap bitmap, Size size) {
+        String bitmapName = paramsToName(url, size);
+        memoryCache.put(bitmapName, bitmap);
     }
 
     @Nullable
@@ -151,6 +157,17 @@ public class ImageDownloadManager extends Service {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void setImage(@NonNull final ImageView imageView, @NonNull URL path,
+                         @NonNull Size size) {
+        IImageSettable imageWrapperAdapter = new IImageSettable() {
+            @Override
+            public void setImage(Bitmap image) {
+                imageView.setImageBitmap(image);
+            }
+        };
+        setImage(imageWrapperAdapter, path, size);
     }
 
     public void setImage(@NonNull IImageSettable imageView, @NonNull URL path,

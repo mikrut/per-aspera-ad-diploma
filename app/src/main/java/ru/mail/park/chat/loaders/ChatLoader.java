@@ -25,6 +25,7 @@ public class ChatLoader extends AsyncTaskLoader<List<Chat>> {
     public List<Chat> loadInBackground() {
         ChatsHelper chatsHelper = new ChatsHelper(getContext());
         chats = chatsHelper.getChatsList();
+        chatsHelper.close();
         return chats;
     }
 

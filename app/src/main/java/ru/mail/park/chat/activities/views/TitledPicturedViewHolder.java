@@ -15,7 +15,7 @@ import ru.mail.park.chat.loaders.images.IImageSettable;
  * Created by mikrut on 10.04.16.
  */
 public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements IImageSettable {
-    private final ImageView image;
+    protected final ImageView image;
     private final TextView imageText;
     private boolean bitmapIsSet = false;
 
@@ -26,29 +26,35 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements
     }
 
     public void setTitle(String title) {
+        if (!bitmapIsSet) {
+            setTitle(image, imageText, title);
+        } else {
+            imageText.setVisibility(View.GONE);
+        }
+    }
+
+    // TODO: make custom titled image class
+    public static void setTitle(ImageView image, TextView imageText, String title) {
         if (title == null) {
             title = "";
         }
-        if (!bitmapIsSet) {
-            image.setImageBitmap(null);
-            int[] backgroundColors = image.getContext().getResources().getIntArray(R.array.colorsImageBackground);
-            int colorIndex = (title.hashCode() % backgroundColors.length + backgroundColors.length) % backgroundColors.length;
 
-            Drawable color = new ColorDrawable(backgroundColors[colorIndex]);
-            image.setImageDrawable(color);
-            imageText.setVisibility(View.VISIBLE);
+        image.setImageBitmap(null);
+        int[] backgroundColors = image.getContext().getResources().getIntArray(R.array.colorsImageBackground);
+        int colorIndex = (title.hashCode() % backgroundColors.length + backgroundColors.length) % backgroundColors.length;
 
-            if (title.length() >= 2) {
-                char firstLetter = title.charAt(0);
-                char secondLetter = '\0';
-                if (title.contains(" ") && title.indexOf(' ') + 1 < title.length())
-                    secondLetter = title.charAt(title.indexOf(' ') + 1);
-                imageText.setText(new StringBuilder().append(firstLetter).append(secondLetter).toString().toUpperCase());
-            } else {
-                imageText.setText("");
-            }
+        Drawable color = new ColorDrawable(backgroundColors[colorIndex]);
+        image.setImageDrawable(color);
+        imageText.setVisibility(View.VISIBLE);
+
+        if (title.length() >= 2) {
+            char firstLetter = title.charAt(0);
+            char secondLetter = '\0';
+            if (title.contains(" ") && title.indexOf(' ') + 1 < title.length())
+                secondLetter = title.charAt(title.indexOf(' ') + 1);
+            imageText.setText(new StringBuilder().append(firstLetter).append(secondLetter).toString().toUpperCase());
         } else {
-            imageText.setVisibility(View.GONE);
+            imageText.setText("");
         }
     }
 
@@ -59,10 +65,6 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements
     @Override
     public void setImage(Bitmap imageBitmap) {
         image.setImageBitmap(imageBitmap);
-        if (imageBitmap == null) {
-
-
-        }
         bitmapIsSet = (imageBitmap != null);
 
         if (bitmapIsSet) {

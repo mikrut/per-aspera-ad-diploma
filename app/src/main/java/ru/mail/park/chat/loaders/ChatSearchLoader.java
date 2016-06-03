@@ -27,6 +27,7 @@ public class ChatSearchLoader extends ChatLoader {
     public List<Chat> loadInBackground() {
         ChatsHelper chatsHelper = new ChatsHelper(getContext());
         chats = chatsHelper.getChatsList(queryString);
+        chatsHelper.close();
         return chats;
     }
 

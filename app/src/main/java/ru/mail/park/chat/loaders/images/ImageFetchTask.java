@@ -45,8 +45,10 @@ public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
             bm = manager.getBitmapFromMemoryCache(url, size);
             if (bm == null) {
                 bm = manager.getBitmapFromDiskCache(url, size);
-                if (bm != null)
+                if (bm != null) {
                     Log.v(ImageFetchTask.class.getSimpleName(), "Fetching an image from disk");
+                    manager.addBitmapToMemCache(url, bm, size);
+                }
             } else {
                 Log.v(ImageFetchTask.class.getSimpleName(), "Fetching an image from cache");
             }

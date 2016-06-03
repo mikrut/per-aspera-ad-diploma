@@ -39,6 +39,8 @@ public class Message implements Comparable<Message> {
     private long uniqueID;
     private List<AttachedFile> files = new ArrayList<AttachedFile>();
 
+    private @Nullable String imageURL;
+
     public Message(String messageBody, Context context) {
         this.messageBody = messageBody;
         OwnerProfile owner = new OwnerProfile(context);
@@ -90,6 +92,7 @@ public class Message implements Comparable<Message> {
             }
             Contact user = new Contact(userJSON, context);
             title = user.getContactTitle();
+            imageURL = user.getImg();
         } catch (ParseException e) {
             e.printStackTrace();
             throw new JSONException("Invalid USER field in JSON for message");
@@ -232,6 +235,15 @@ public class Message implements Comparable<Message> {
 
     public void setUniqueID(long uniqueID) {
         this.uniqueID = uniqueID;
+    }
+
+    @Nullable
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(@Nullable String imageURL) {
+        this.imageURL = imageURL;
     }
 
     @Override

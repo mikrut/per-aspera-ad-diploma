@@ -124,8 +124,8 @@ public class Chats extends ApiSection {
     }
 
     @NonNull
-    public ChatInfo getChatInfo(String cid) throws IOException {
-        ChatInfo chatInfo;
+    public Chat getChatInfo(String cid) throws IOException {
+        Chat chat;
         final String requestURL = "get";
         final String requestMethod = "POST";
 
@@ -139,7 +139,7 @@ public class Chats extends ApiSection {
             final int status = result.getInt("status");
             if(status == 200) {
                 JSONObject ci = result.getJSONObject("data");
-                chatInfo = new ChatInfo(ci, getContext());
+                chat = new Chat(ci, getContext());
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
@@ -149,7 +149,7 @@ public class Chats extends ApiSection {
             throw new IOException("Server error", e);
         }
 
-        return chatInfo;
+        return chat;
     }
 
     @NonNull

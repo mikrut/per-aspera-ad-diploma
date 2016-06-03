@@ -1,41 +1,65 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    xmlns:tools="http://schemas.android.com/tools"
     android:background="#000000">
 
-    <ImageView
+    <ImageButton
         android:id="@+id/small_dialog_user_icon"
+        android:background="@color/actionBarColor"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_margin="10dp"
         android:src="@drawable/ic_keyboard_backspace_white_24dp" />
 
-        <ProgressBar
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/progressBar"
-            android:visibility="visible"
-            android:layout_toRightOf="@+id/small_dialog_user_icon"
-            android:layout_centerVertical="true"
-            android:layout_margin="10dp"
-            />
+    <ProgressBar
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/progressBar"
+        android:visibility="visible"
+        android:layout_toRightOf="@+id/small_dialog_user_icon"
+        android:layout_centerVertical="true"
+        android:layout_margin="10dp"
+        />
+
+    <RelativeLayout
+        android:id="@+id/imageLayout"
+        android:visibility="gone"
+        android:layout_toRightOf="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" >
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/CircularImageView1"
-            android:visibility="gone"
+            android:id="@+id/image"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_toRightOf="@+id/progressBar"
-            android:layout_centerVertical="true"
             android:src="@drawable/ic_user_picture"/>
+
+        <TextView
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/imageText"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignLeft="@+id/image"
+            android:layout_alignTop="@+id/image"
+            android:layout_alignRight="@+id/image"
+            android:layout_alignBottom="@+id/image"
+            android:layout_margin="1dp"
+            android:gravity="center"
+            tools:text="UN"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginLeft="10dp"
-        android:layout_toRightOf="@+id/CircularImageView1"
+        android:layout_toRightOf="@+id/imageLayout"
         android:orientation="vertical">
 
         <TextView
@@ -45,7 +69,7 @@
             android:textAllCaps="true"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#fff"
-            android:text="любовь и вечность"
+            tools:text="любовь и вечность"
             android:textStyle="bold" />
 
         <TextView
@@ -54,9 +78,9 @@
             android:layout_height="wrap_content"
             style="@style/OnlineStatusAppBar"
             android:textColor="#fff"
-            android:text="любовь и вечность"
+            tools:text="любовь и вечность"
             android:textStyle="bold"/>
 
     </LinearLayout>
 
-</RelativeLayout>
+</merge>

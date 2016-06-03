@@ -10,12 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.media.Image;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -24,10 +18,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -54,11 +48,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -69,21 +60,20 @@ import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.FilesAdapter;
 import ru.mail.park.chat.activities.adapters.MessagesAdapter;
-import ru.mail.park.chat.activities.interfaces.IActionBarListener;
+import ru.mail.park.chat.activities.views.DialogActionBar;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
-import ru.mail.park.chat.api.Chats;
-import ru.mail.park.chat.api.ChatInfo;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
-import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.loaders.ChatInfoLoader;
+import ru.mail.park.chat.loaders.ChatInfoWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
@@ -92,15 +82,13 @@ import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
-// TODO: emoticons
-// TODO: send message
+// FIXME: god-class???
 public class DialogActivity
-        extends AppCompatActivity
+        extends AImageDownloadServiceBindingActivity
         implements IChatListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
-        HttpFileUpload.IUploadListener,
-        IActionBarListener {
+        HttpFileUpload.IUploadListener {
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int REQUEST_WRITE_STORAGE = 112;
     private static final int CODE_FILE_SELECTED = 3;
@@ -116,16 +104,14 @@ public class DialogActivity
     protected ImageButton sendMessage;
     protected RecyclerView attachments;
     protected ImageButton buttonDown;
-    protected ActionBar mActionBar;
 
-    protected ProgressBar progressBar;
-    protected ImageView chatImage;
+    protected ActionBar mActionBar;
+    private DialogActionBar dialogActionBar;
 
     private String chatID;
     private String userID;
     private String ownerID;
     private String accessToken;
-    private ChatInfo chatInfo;
     private Chat thisChat;
 
     private Timer schedulerTimer;
@@ -150,6 +136,8 @@ public class DialogActivity
 
     public static final int MESSAGES_DB_LOADER = 0;
     public static final int MESSAGES_WEB_LOADER = 1;
+    public static final int CHAT_DB_LOADER = 2;
+    public static final int CHAT_WEB_LOADER = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +159,6 @@ public class DialogActivity
         OwnerProfile ownerProfile = new OwnerProfile(this);
         ownerID = ownerProfile.getUid();
         accessToken = ownerProfile.getAuthToken();
-        chatInfo = null;
         thisChat = null;
 
         initMessagesList();
@@ -184,26 +171,6 @@ public class DialogActivity
             onUpdateChatID();
         }
 
-        mActionBar = getSupportActionBar();
-        mActionBar.setDisplayShowHomeEnabled(false);
-        mActionBar.setDisplayShowTitleEnabled(false);
-        LayoutInflater mInflater = LayoutInflater.from(this);
-
-        View mCustomView = mInflater.inflate(R.layout.actionbar_dialog, null);
-        mCustomView.findViewById(R.id.small_dialog_user_icon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        progressBar = (ProgressBar) mCustomView.findViewById(R.id.progressBar);
-        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-        chatImage = (ImageView) mCustomView.findViewById(R.id.CircularImageView1);
-
-        mActionBar.setCustomView(mCustomView);
-        mActionBar.setDisplayShowCustomEnabled(true);
-        new InitActionBarTask(this,  mActionBar, chatID).execute();
-
         boolean hasPermission = (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
         boolean hasWPermission = (ContextCompat.checkSelfPermission(this,
@@ -215,29 +182,6 @@ public class DialogActivity
         }
     }
 
-/*    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_dialog, menu);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                super.onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }*/
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -248,36 +192,12 @@ public class DialogActivity
         if (chatID != null) {
             ChatsHelper ch = new ChatsHelper(this);
             thisChat = (thisChat == null) ? ch.getChat(chatID) : thisChat;
+            ch.close();
         }
 
-        if(thisChat != null) {
-            Log.d("[TP-diploma]", "DialogActivity.onResume thisChat != null");
-            CircleImageView smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
-            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + thisChat.getCompanionId() + ".bmp";
-            File file = new File(filePath);
-
-            Log.d("[TP-diploma]", "img path: " + filePath);
-            if(file.exists()) {
-                smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
-            }
-            onLoadInfoCompleted(mActionBar, chatInfo);
+        if(thisChat != null && thisChat.getImagePath() != null && getImageDownloadManager() != null) {
+            dialogActionBar.setChatData(thisChat, getImageDownloadManager());
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        LayoutInflater mInflater = LayoutInflater.from(this);
-
-        View mCustomView = mInflater.inflate(R.layout.actionbar_dialog, null);
-        mCustomView.findViewById(R.id.small_dialog_user_icon).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
-        mActionBar.setCustomView(mCustomView);
     }
 
     private void initViews() {
@@ -290,6 +210,11 @@ public class DialogActivity
         emojicons = (FrameLayout) findViewById(R.id.emojicons);
         attachments = (RecyclerView) findViewById(R.id.attachments_recycler_view);
         buttonDown = (ImageButton) findViewById(R.id.buttonDown);
+
+        RecyclerView.ItemAnimator animator = messagesList.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
 
         globalLayout.setOnKeyboardEventListener(new KeyboardDetectingLinearLayout.OnKeyboardEventListener() {
             @Override
@@ -305,6 +230,15 @@ public class DialogActivity
                 emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
             }
         });
+
+        mActionBar = getSupportActionBar();
+        if (mActionBar != null) {
+            mActionBar.setDisplayShowHomeEnabled(false);
+            mActionBar.setDisplayShowTitleEnabled(false);
+            dialogActionBar = new DialogActionBar(this);
+            mActionBar.setCustomView(dialogActionBar);
+            mActionBar.setDisplayShowCustomEnabled(true);
+        }
     }
 
     private void initAttachments() {
@@ -340,7 +274,7 @@ public class DialogActivity
                 String writersConcatenated = "";
                 if (writers.size() > 0) {
                     writersString = "%s %s typing...";
-                    if(writers.size() <= 2) {
+                    if (writers.size() <= 2) {
                         for (Pair<Long, Contact> writer : writers) {
                             writersConcatenated = writersConcatenated +
                                     writer.second.getFirstName().charAt(0) + ". " + writer.second.getLastName() + ", ";
@@ -398,12 +332,11 @@ public class DialogActivity
                         if (chatID != null && !messages.isConnected()) {
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
-                            getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, listener).forceLoad();
+                            getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
                         boolean ok = messages.isConnected();
-                        progressBar.setVisibility(ok ? View.GONE : View.VISIBLE);
-                        chatImage.setVisibility(ok ? View.VISIBLE : View.GONE);
+                        dialogActionBar.setProgress(!ok);
 
                         if (undeliveredMessages.size() == 0)
                             messages.reconnect();
@@ -516,8 +449,10 @@ public class DialogActivity
     private void onUpdateChatID() {
         Bundle args = new Bundle();
         args.putString(MessagesLoader.CID_ARG, chatID);
+        args.putString(ChatInfoLoader.CID_ARG, chatID);
         args.putString(MessagesLoader.UID_ARG, userID);
-        getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, listener);
+        getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, messagesLoaderListener);
+        getLoaderManager().initLoader(CHAT_DB_LOADER, args, chatLoaderListener);
     }
 
     private void sendMessage() {
@@ -702,80 +637,6 @@ public class DialogActivity
     }
 
     @Override
-    public void onLoadInfoCompleted(ActionBar mActionBar, ChatInfo chatInfo) {
-        CircleImageView smallUserPic;
-        TextView dialogTitle;
-        TextView dialogLastSeen;
-
-        smallUserPic = (CircleImageView) mActionBar.getCustomView().findViewById(R.id.CircularImageView1);
-        dialogTitle = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_title);
-        dialogLastSeen = (TextView) mActionBar.getCustomView().findViewById(R.id.dialog_last_seen);
-
-        Log.d("[TP-diploma]", "onLoadInfoCompleted step I");
-
-        if(chatInfo == null)
-            return;
-
-        Log.d("[TP-diploma]", "onLoadInfoCompleted step II");
-
-        Contact companion = chatInfo.getFirst();
-        if(companion != null && companion.getUid().equals(ownerID)) {
-            companion = chatInfo.getSecond();
-
-            if(companion.getUid().equals(ownerID)) {
-                companion = null;
-            }
-        }
-
-        if(companion == null)
-            return;
-
-        final Contact finalComp = companion;
-
-        Log.d("[TP-diploma]", "onLoadInfoCompleted step III");
-
-//        companion = new ContactsHelper(this).getContact(companion.getUid());
-
-        dialogTitle.setText(companion.getContactTitle());
-//        if (companion.isOnline())
-//            dialogLastSeen.setText("online");
-//        else if(companion.getLastSeen() != null)
-//            dialogLastSeen.setText(companion.getLastSeen().getTime().toGMTString());
-//        else
-//            dialogLastSeen.setText("offline");
-
-        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + companion.getUid() + ".bmp";
-        File file = new File(filePath);
-
-        if(file.exists()) {
-            smallUserPic.setImageBitmap(BitmapFactory.decodeFile(filePath));
-        }
-
-        mActionBar.getCustomView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DialogActivity.this, ProfileViewActivity.class);
-                intent.putExtra(ProfileViewActivity.UID_EXTRA, finalComp.getUid());
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        ChatsHelper ch = new ChatsHelper(DialogActivity.this);
-        Chat currentChat = ch.getChat(chatID);
-
-        try {
-            currentChat.setCompanionId(companion.getUid());
-            ch.saveChat(currentChat);
-            thisChat = currentChat;
-        } catch(NullPointerException e) {
-
-        }
-
-        Log.d("[TP-diploma]", "onLoadInfoCompleted done");
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         if (messages != null) {
@@ -821,7 +682,7 @@ public class DialogActivity
 
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Message>> listener = new LoaderManager.LoaderCallbacks<List<Message>>() {
+    private final LoaderManager.LoaderCallbacks<List<Message>> messagesLoaderListener = new LoaderManager.LoaderCallbacks<List<Message>>() {
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
             Log.d("[TP-diploma]", "creating MessagesListener");
@@ -864,66 +725,43 @@ public class DialogActivity
         }
     };
 
-    private class InitActionBarTask extends AsyncTask<Void, Void, ChatInfo> {
-        IActionBarListener listener;
-        ActionBar mActionBar;
-        String chatID;
-
-        public InitActionBarTask(IActionBarListener listener, ActionBar mActionBar, String chatID) {
-            this.listener = listener;
-            this.mActionBar = mActionBar;
-            this.chatID = chatID;
+    private final LoaderManager.LoaderCallbacks<Chat> chatLoaderListener =
+            new LoaderManager.LoaderCallbacks<Chat>() {
+        @Override
+        public Loader<Chat> onCreateLoader(int id, Bundle args) {
+            switch (id) {
+                case MESSAGES_WEB_LOADER:
+                    return new ChatInfoWebLoader(DialogActivity.this, args);
+                case MESSAGES_DB_LOADER:
+                default:
+                    return new ChatInfoLoader(DialogActivity.this, args);
+            }
         }
 
-        protected ChatInfo doInBackground(Void... urls) {
-            Chats chatsAPI = new Chats(DialogActivity.this);
-            Log.d("[TP-diploma]", "InitActionBarTask started");
-
-            try {
-                chatInfo = chatsAPI.getChatInfo(chatID);
-            } catch (IOException e) {
-                Log.d("[TP-diploma]", "getChatInfo Exception:" + e.getMessage());
-                return null;
+        @Override
+        public void onLoadFinished(Loader<Chat> loader, Chat data) {
+            if (data != null) {
+                dialogActionBar.setChatData(data, getImageDownloadManager());
+                thisChat = data;
             }
 
-            try {
-                checkUserData(chatInfo.getFirst());
-                checkUserData(chatInfo.getSecond());
-            } catch(IOException e) {
-                Log.d("[TP-diploma]", "CheckUserData Exception:" + e.getMessage());
-                return null;
+            if (loader.getId() == CHAT_DB_LOADER) {
+                Bundle args = new Bundle();
+                args.putString(ChatInfoLoader.CID_ARG, chatID);
+                getLoaderManager().restartLoader(CHAT_WEB_LOADER, args, this);
             }
-
-            return chatInfo;
         }
 
-        protected void onPostExecute(ChatInfo chatInfo) {
-            listener.onLoadInfoCompleted(mActionBar, chatInfo);
+        @Override
+        public void onLoaderReset(Loader<Chat> loader) {
+            // TODO: something
         }
-    }
+    };
 
-    private void checkUserData(Contact user) throws IOException {
-        if(user == null)
-            return;
-
-        ContactsHelper contactsHelper = new ContactsHelper(DialogActivity.this);
-        Contact userFromBase = contactsHelper.getContact(user.getUid());
-
-        if(userFromBase != null && !user.getImg().equals("false")) {
-            String requestPath = SERVER_URL + user.getImg();
-            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + user.getUid() + ".bmp";
-
-            File file = new File(localPath);
-
-            if(!file.exists()) {
-                InputStream in = new java.net.URL(requestPath).openStream();
-                Bitmap bm = BitmapFactory.decodeStream(in);
-
-                FileOutputStream fos = new FileOutputStream(file);
-                bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                fos.close();
-            }
-
+    @Override
+    protected void setImageManager(ImageDownloadManager mgr) {
+        if (messagesAdapter != null) {
+            messagesAdapter.setImageDownloadManager(mgr);
         }
     }
 }

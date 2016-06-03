@@ -157,4 +157,8 @@ public class ChatsHelper {
             return 0;
         }
     }
+
+    public void close() {
+        dbHelper.close();
+    }
 }
