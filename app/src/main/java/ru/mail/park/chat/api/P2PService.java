@@ -17,9 +17,13 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
+
+import javax.net.ssl.SSLContext;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
@@ -43,8 +47,8 @@ public class P2PService extends Service implements IMessageSender {
     private final Object inputSynchronizer = new Object();
     private final Object outputSynchronizer = new Object();
 
-    private volatile DataInputStream input;
-    private volatile DataOutputStream output;
+    private volatile ObjectInputStream input;
+    private volatile ObjectOutputStream output;
 
     private volatile IChatListener chatListener;
     private volatile boolean noStop = true;
@@ -74,19 +78,15 @@ public class P2PService extends Service implements IMessageSender {
             synchronized (outputSynchronizer) {
                 if (output != null) {
                     try {
-                        OwnerProfile owner = new OwnerProfile(this);
-                        JSONObject msg = Jsonifier.jsonifyForRecieve(message, owner);
-                        msg.put("idMessage", String.valueOf(System.currentTimeMillis()));
-
                         if (output != null) {
                             synchronized (outputSynchronizer) {
                                 if (output != null) {
-                                    output.writeUTF(msg.toString());
-                                    acknowledgeOutgoingMessage(msg);
+                                    output.writeObject(message);
+                                    acknowledgeOutgoingMessage(message);
                                 }
                             }
                         }
-                    } catch (IOException | JSONException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -149,10 +149,10 @@ public class P2PService extends Service implements IMessageSender {
             Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
 
             synchronized (outputSynchronizer) {
-                output = new DataOutputStream(socket.getOutputStream());
+                output = new ObjectOutputStream(socket.getOutputStream());
             }
             synchronized (inputSynchronizer) {
-                input = new DataInputStream(socket.getInputStream());
+                input = new ObjectInputStream(socket.getInputStream());
             }
             Log.i(P2PService.class.getSimpleName(), "got a connection");
             Log.i(P2PService.class.getSimpleName(), destination);
@@ -164,16 +164,17 @@ public class P2PService extends Service implements IMessageSender {
     public void handleActionStartServer(int port) {
         try {
             closeStreams();
+            // FIXME: use SSLContext and security over TLS
             serverSocket = new ServerSocket(port);
             Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
             Socket socket = serverSocket.accept();
             Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
 
             synchronized (inputSynchronizer) {
-                input = new DataInputStream(socket.getInputStream());
+                input = new ObjectInputStream(socket.getInputStream());
             }
             synchronized (outputSynchronizer) {
-                output = new DataOutputStream(socket.getOutputStream());
+                output = new ObjectOutputStream(socket.getOutputStream());
             }
             Log.i(P2PService.class.getSimpleName(), "connection finished!");
         } catch (IOException e) {
@@ -181,32 +182,42 @@ public class P2PService extends Service implements IMessageSender {
         }
     }
 
-    private void handleIncomingMessage(final String message) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
+    // TODO: это тоже бред, переделать интерфейс с JSONObject на Message
+    private void handleIncomingMessage(final Message message) {
+        try {
+            OwnerProfile owner = new OwnerProfile(this);
+            final JSONObject messageJSON = Jsonifier.jsonifyForRecieve(message, owner);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
                     if (chatListener != null) {
-                        chatListener.onIncomeMessage(new JSONObject(message));
+                        chatListener.onIncomeMessage(messageJSON);
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
-            }
-        });
+            });
+        } catch (JSONException e)  {
+            e.printStackTrace();
+        }
     }
 
-    private void acknowledgeOutgoingMessage(final JSONObject message) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (chatListener != null) {
-                    chatListener.onAcknowledgeSendMessage(message);
+    // TODO: это бред, надо переделать реакцию с JSONObject на Message
+    private void acknowledgeOutgoingMessage(final Message message) {
+        OwnerProfile owner = new OwnerProfile(this);
+        try {
+            final JSONObject messageJSON = Jsonifier.jsonifyForRecieve(message, owner);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (chatListener != null) {
+                        chatListener.onAcknowledgeSendMessage(messageJSON);
+                    }
                 }
-            }
-        });
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private class Server extends Thread {
@@ -214,21 +225,24 @@ public class P2PService extends Service implements IMessageSender {
         public void run() {
             try {
                 while (noStop) {
-                    String message = null;
+                    Message message = null;
                     if (input != null) {
                         synchronized (inputSynchronizer) {
                             if (input != null) {
-                                message = input.readUTF();
+                                Object object = input.readObject();
+                                if (object instanceof Message) {
+                                    message = (Message) object;
+                                }
                             }
                         }
                     }
 
                     if (message != null) {
-                        Log.i(P2PService.class.getSimpleName() + " IN message", message);
+                        Log.i(P2PService.class.getSimpleName() + " IN message", message.toString());
                         handleIncomingMessage(message);
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
