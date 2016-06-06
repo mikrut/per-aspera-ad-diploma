@@ -25,6 +25,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Map;
@@ -200,9 +202,15 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         String email = mEmailView.getText().toString();
         boolean imageFound = true;
 
-        File file = new File(selectedFilePath);
-        if(!file.exists())
+        File file;
+        try {
+            file = new File(selectedFilePath);
+
+            if(!file.exists())
+                imageFound = false;
+        } catch(NullPointerException e) {
             imageFound = false;
+        }
 
         if(checkRegistrationInfo(login, firstName, lastName, password, confirmPassword, email))
             task.execute(login, firstName, lastName, password, email, imageFound ? selectedFilePath : null);

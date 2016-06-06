@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -100,7 +101,7 @@ public class Auth extends ApiSection {
                 }
                 throw new SignUpException(message, errorsMap);
             }
-        } catch (JSONException | ParseException e) {
+        } catch (RuntimeException | JSONException | ParseException e) {
             throw new IOException("Server error");
         }
 
