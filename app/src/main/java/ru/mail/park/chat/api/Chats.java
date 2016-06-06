@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,14 +44,21 @@ public class Chats extends ApiSection {
     }
 
     @NonNull
+    @Deprecated
     public List<Message> getMessages(String cid) throws IOException {
+        return getMessages(cid, 1);
+    }
+
+    @NonNull
+    public List<Message> getMessages(String cid, int page) throws IOException {
         final String requestURL = "messages";
         final String requestMethod = "POST";
 
         Log.d("[TP-diploma]", "inside getMessages");
 
-        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        List<Pair<String, String>> parameters = new ArrayList<>(3);
         parameters.add(new Pair<>("idRoom", cid));
+        parameters.add(new Pair<>("page", String.valueOf(page)));
 
         List<Message> messagesList = new LinkedList<>();
         try {
@@ -60,8 +68,8 @@ public class Chats extends ApiSection {
             if (result.has("status"))
                 status = result.getInt("status");
             if (status == 200) {
-                // JSONObject data = result.getJSONObject("data");
-                JSONArray messages = result.getJSONArray("data");
+                JSONObject data = result.getJSONObject("data");
+                JSONArray messages = data.getJSONArray("listMessages");
 
                 for (int i = 0; i < messages.length(); i++) {
                     Message message = new Message(messages.getJSONObject(i), getContext(), cid);
@@ -71,7 +79,7 @@ public class Chats extends ApiSection {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
-        } catch (JSONException e) {
+        } catch (JSONException | NullPointerException e) {
             throw new IOException("Server error", e);
         }
 

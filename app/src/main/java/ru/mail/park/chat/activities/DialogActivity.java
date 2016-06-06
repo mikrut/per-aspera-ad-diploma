@@ -69,8 +69,10 @@ import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.helpers.ScrollEnlessPagination;
 import ru.mail.park.chat.loaders.ChatInfoLoader;
 import ru.mail.park.chat.loaders.ChatInfoWebLoader;
+import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
@@ -127,6 +129,7 @@ public class DialogActivity
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
+    private ScrollEnlessPagination<Message> pagination;
     protected IMessageSender messages;
 
     private boolean receivedFromWeb = false;
@@ -358,6 +361,8 @@ public class DialogActivity
         layoutManager.setStackFromEnd(true);
         messagesList.setLayoutManager(layoutManager);
 
+        pagination = new ScrollEnlessPagination<>(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager());
+        messagesList.addOnScrollListener(pagination);
         messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -679,10 +684,25 @@ public class DialogActivity
                 }
             }
         }
-
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Message>> messagesLoaderListener = new LoaderManager.LoaderCallbacks<List<Message>>() {
+    private final MessagesLoaderListener messagesLoaderListener = new MessagesLoaderListener();
+    private class MessagesLoaderListener implements ScrollEnlessPagination.EndlessLoaderListener<Message> {
+        private boolean endReached = false;
+
+        @Override
+        public boolean isEndReached() {
+            return endReached;
+        }
+
+        @Override
+        public Bundle getBundle() {
+            Bundle args = new Bundle();
+            args.putString(MessagesLoader.CID_ARG, chatID);
+            args.putString(MessagesLoader.UID_ARG, userID);
+            return args;
+        }
+
         @Override
         public Loader<List<Message>> onCreateLoader(int id, Bundle args) {
             Log.d("[TP-diploma]", "creating MessagesListener");
@@ -697,19 +717,30 @@ public class DialogActivity
 
         @Override
         public void onLoadFinished(Loader<List<Message>> loader, List<Message> data) {
+            endReached = false;
             if (data != null) {
-                Log.d("[TP-diploma]", "messages count: " + data.size());
                 int oldSize = receivedMessageList.size();
                 for (Message message : data) {
                     addMessage(message);
                 }
+
                 if (!receivedFromWeb && receivedMessageList.size() != oldSize)
                     messagesList.scrollToPosition(receivedMessageList.size() - 1);
                 if (loader.getId() == MESSAGES_WEB_LOADER) {
                     receivedFromWeb = true;
+
+                    if (data.size() < pagination.getPageSize()) {
+                        endReached = true;
+                    } else {
+                        Bundle args = new Bundle();
+                        args.putString(MessagesLoader.CID_ARG, chatID);
+                        args.putString(MessagesLoader.UID_ARG, userID);
+                        args.putInt(MessagesLoader.ARG_PAGE, receivedMessageList.size() / pagination.getPageSize() + 1);
+                        getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, this).forceLoad();
+                    }
                 }
             } else {
-                Log.d("[TP-diploma]", "empty list");
+                Toast.makeText(DialogActivity.this, "Connection error", Toast.LENGTH_SHORT).show();
             }
 
             if (loader.getId() == MESSAGES_DB_LOADER) {
