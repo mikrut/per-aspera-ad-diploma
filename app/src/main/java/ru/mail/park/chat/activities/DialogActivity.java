@@ -221,7 +221,7 @@ public class DialogActivity
             public void onSoftKeyboardShown() {
                 isSoftKeyboardShown = true;
                 isEmojiFragmentShown = false;
-                emojicons.setVisibility(isEmojiFragmentShown ? View.VISIBLE : View.GONE);
+                emojicons.setVisibility(View.GONE);
             }
 
             @Override

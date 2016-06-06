@@ -79,23 +79,31 @@ public class Chats extends ApiSection {
     }
 
     @NonNull
+    @Deprecated
     public List<Chat> getChats() throws IOException {
+        return getChats(1);
+    }
+
+    @NonNull
+    public List<Chat> getChats(int page) throws IOException {
         final String requestURL = "list";
         final String requestMethod = "POST";
 
+        List<Pair<String, String>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<>("page", String.valueOf(page)));
+
         List<Chat> chatsList;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod));
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             final int status = result.getInt("status");
-            if(status == 200) {
-                JSONArray chats = result.getJSONArray("data");
-
+            if (status == 200) {
+                JSONArray chats = result.getJSONObject("data").getJSONArray("listChats");
                 chatsList = chatsFrom(chats);
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
-        } catch (JSONException e) {
+        } catch (NullPointerException | JSONException e) {
             throw new IOException("Server error", e);
         }
 

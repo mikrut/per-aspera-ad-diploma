@@ -31,6 +31,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
 
@@ -42,7 +43,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import ru.mail.park.chat.R;
@@ -54,6 +58,7 @@ import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.helpers.UniqueArrayList;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
@@ -70,10 +75,13 @@ public class ChatsActivity
     private SwipeRefreshLayout swipeContainer;
     private ProgressBar pbChats;
 
+    private LinearLayoutManager liman;
+
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
     private Toolbar toolbar;
     private Bitmap bmBlurred;
+
     private String uid;
 
     public static final int CHAT_WEB_LOADER = 0;
@@ -81,7 +89,7 @@ public class ChatsActivity
     public static final int CHAT_DB_LOADER = 2;
 
     private static final String CHATS_DATA = ChatsActivity.class.getCanonicalName() + ".CHATS_DATA";
-    private List<Chat> chatsData;
+    private UniqueArrayList<Chat> chatsData = new UniqueArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,10 +123,11 @@ public class ChatsActivity
         });
 
         chatsList = (RecyclerView) findViewById(R.id.chatsList);
-        LinearLayoutManager liman = new LinearLayoutManager(this);
+        liman = new LinearLayoutManager(this);
         liman.setReverseLayout(true);
         liman.setStackFromEnd(true);
         chatsList.setLayoutManager(liman);
+        chatsList.addOnScrollListener(new ScrollEnlessPagination());
 
         // TODO: real menu options
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
@@ -355,8 +364,10 @@ public class ChatsActivity
         Log.d("[TechMail]", "calling onLogoutFail");
     }
 
-    private final LoaderManager.LoaderCallbacks<List<Chat>> chatsLoaderListener =
-            new LoaderManager.LoaderCallbacks<List<Chat>>() {
+    private final EnlessLoader chatsLoaderListener = new EnlessLoader();
+    class EnlessLoader implements LoaderManager.LoaderCallbacks<List<Chat>> {
+                boolean listEndReached = false;
+
                 @Override
                 public Loader<List<Chat>> onCreateLoader(int id, Bundle args) {
                     switch (id) {
@@ -365,7 +376,7 @@ public class ChatsActivity
                             searchLoader.setQueryString(searchView.getQuery().toString());
                             return searchLoader;
                         case CHAT_WEB_LOADER:
-                            return new ChatWebLoader(ChatsActivity.this);
+                            return new ChatWebLoader(ChatsActivity.this, args);
                         case CHAT_DB_LOADER:
                         default:
                             return new ChatLoader(ChatsActivity.this);
@@ -382,11 +393,34 @@ public class ChatsActivity
                         chatsHelper.updateChatList(data);
                     }
 
+                    listEndReached = false;
                     if (data != null) {
-                        chatsData = data;
-                        ChatsAdapter adapter = new ChatsAdapter(data);
-                        adapter.setDownloadManager(getImageDownloadManager());
-                        chatsList.setAdapter(adapter);
+                        int oldLength = chatsData.size();
+                        for (Chat chat : data) {
+                            if (!chatsData.contains(chat)) {
+                                chatsData.add(chatsData.size(), chat);
+                            }
+                        }
+                        ChatsAdapter adapter = (ChatsAdapter) chatsList.getAdapter();
+                        if (adapter == null) {
+                            adapter = new ChatsAdapter(chatsData);
+                            adapter.setDownloadManager(getImageDownloadManager());
+                            chatsList.setAdapter(adapter);
+                        } else if (data.size() > 0) {
+                            adapter.notifyItemRangeInserted(oldLength, data.size());
+                        }
+
+                        if (loader.getId() == CHAT_WEB_LOADER) {
+                            if (oldLength == chatsData.size()) {
+                                listEndReached = true;
+                            } else {
+                                Bundle args = new Bundle();
+                                args.putInt(ChatWebLoader.ARG_PAGE, chatsData.size() / ScrollEnlessPagination.PAGE_SIZE + 1);
+                                getLoaderManager().restartLoader(CHAT_WEB_LOADER, args, this).forceLoad();
+                            }
+                        }
+                    } else {
+                        Toast.makeText(ChatsActivity.this, "Load failed", Toast.LENGTH_SHORT).show();
                     }
                     swipeContainer.setRefreshing(false);
                     pbChats.setVisibility(View.GONE);
@@ -405,7 +439,7 @@ public class ChatsActivity
     private final SwipeRefreshLayout.OnRefreshListener refreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
-            getLoaderManager().restartLoader(0, null, chatsLoaderListener).forceLoad();
+            getLoaderManager().restartLoader(CHAT_WEB_LOADER, null, chatsLoaderListener).forceLoad();
         }
     };
 
@@ -550,11 +584,28 @@ public class ChatsActivity
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        chatsData = (List<Chat>) savedInstanceState.getSerializable(CHATS_DATA);
+        chatsData = (UniqueArrayList<Chat>) savedInstanceState.getSerializable(CHATS_DATA);
         if (chatsData != null) {
             ChatsAdapter adapter = new ChatsAdapter(chatsData);
             adapter.setDownloadManager(getImageDownloadManager());
             chatsList.setAdapter(adapter);
+        }
+    }
+
+    public class ScrollEnlessPagination extends RecyclerView.OnScrollListener {
+        public static final int PAGE_SIZE = 4;
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            // we try to download more pages
+            if (!chatsLoaderListener.listEndReached &&
+                    liman.findLastVisibleItemPosition() == liman.getItemCount() - 1) {
+                int nextPage = (liman.getItemCount() / PAGE_SIZE) + 1;
+                Bundle args = new Bundle();
+                args.putInt(ChatWebLoader.ARG_PAGE, nextPage);
+                getLoaderManager().restartLoader(CHAT_WEB_LOADER, args, chatsLoaderListener);
+            }
         }
     }
 }

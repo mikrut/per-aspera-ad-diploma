@@ -7,7 +7,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.ChatsContract;
@@ -242,5 +245,30 @@ public class Chat implements Serializable {
         if(companion_id != null)
             contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_COMPANION_ID, companion_id);
         return contentValues;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o != null && o instanceof Chat) {
+            Chat c = (Chat) o;
+            return ObjectUtils.equals(cid, c.cid) &&
+                    ObjectUtils.equals(name, c.name) &&
+                    ObjectUtils.equals(description, c.description) &&
+                    ObjectUtils.equals(dateTime, c.dateTime) &&
+                    ObjectUtils.equals(type, c.type) &&
+                    ObjectUtils.equals(imagePath, c.imagePath);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(cid)
+                .append(name)
+                .append(description)
+                .append(dateTime)
+                .append(type)
+                .append(imagePath).build();
     }
 }

@@ -69,6 +69,7 @@ public class Contact implements Comparable<Contact>, Serializable {
             if (context != null) {
                 ContactsHelper helper = new ContactsHelper(context);
                 Contact c = helper.getContact(uid);
+                helper.close();
                 if (c != null) {
                     init(c);
                 }

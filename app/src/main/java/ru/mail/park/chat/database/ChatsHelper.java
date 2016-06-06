@@ -130,20 +130,13 @@ public class ChatsHelper {
 
     public void updateChatList(@NonNull List<Chat> chatList) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Log.d(LOG_TAG, "updateChatList");
 
         db.beginTransaction();
         try {
-            Log.d(LOG_TAG, "try deleteAll");
-            deleteAll(db);
-            Log.d(LOG_TAG, "try to saveChat for " + chatList.size() + " elements");
             for (Chat chat : chatList) {
                 saveChat(chat);
             }
-            Log.d(LOG_TAG, "done");
             db.setTransactionSuccessful();
-        //} catch() {
-        //    Log.d(LOG_TAG, "exception caught");
         } finally {
             db.endTransaction();
         }

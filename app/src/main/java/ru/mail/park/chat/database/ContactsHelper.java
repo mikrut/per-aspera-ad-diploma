@@ -117,4 +117,8 @@ public class ContactsHelper {
         String[] selectionArgs = { cid };
         return db.delete(ContactsContract.ContactsEntry.TABLE_NAME, selection, selectionArgs);
     }
+
+    public void close() {
+        dbHelper.close();
+    }
 }
