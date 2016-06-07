@@ -47,6 +47,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <EditText
+        android:id="@+id/onion_address"
+        android:hint="abcd1234.onion"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
         android:id="@+id/contacts_fragment"
         android:layout_width="match_parent"

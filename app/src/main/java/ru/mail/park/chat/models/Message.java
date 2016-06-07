@@ -13,7 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.acl.Owner;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,7 +27,7 @@ import ru.mail.park.chat.database.PreferenceConstants;
 /**
  * Created by Михаил on 26.03.2016.
  */
-public class Message implements Comparable<Message> {
+public class Message implements Comparable<Message>, Serializable {
     private @Nullable String mid;
     private @NonNull String messageBody;
     private @Nullable String cid;

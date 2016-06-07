@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
@@ -86,19 +87,23 @@ public class Auth extends ApiSection {
         OwnerProfile user;
         try {
             JSONObject result = executeSignUpRequest(ApiSection.SERVER_URL + "auth/signUp", parameters);//new JSONObject(executeRequest(requestURL, requestMethod, parameters));
-            final int status = result.getInt("status");
-            if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                user = new OwnerProfile(data);
-            } else {
-                String message = result.getString("message");
-                Map<IRegisterCallbacks.ErrorType, String> errorsMap = new HashMap<>();
-                JSONObject errors = result.getJSONObject("errors");
-                for (IRegisterCallbacks.ErrorType errorType : IRegisterCallbacks.ErrorType.values()) {
-                    if (errors.has(errorType.toString()))
-                        errorsMap.put(errorType, errors.getJSONArray(errorType.toString()).getString(0));
+            if (result != null) {
+                final int status = result.getInt("status");
+                if (status == 200) {
+                    JSONObject data = result.getJSONObject("data");
+                    user = new OwnerProfile(data);
+                } else {
+                    String message = result.getString("message");
+                    Map<IRegisterCallbacks.ErrorType, String> errorsMap = new HashMap<>();
+                    JSONObject errors = result.getJSONObject("errors");
+                    for (IRegisterCallbacks.ErrorType errorType : IRegisterCallbacks.ErrorType.values()) {
+                        if (errors.has(errorType.toString()))
+                            errorsMap.put(errorType, errors.getJSONArray(errorType.toString()).getString(0));
+                    }
+                    throw new SignUpException(message, errorsMap);
                 }
-                throw new SignUpException(message, errorsMap);
+            } else {
+                throw new IOException("Server error");
             }
         } catch (JSONException | ParseException e) {
             throw new IOException("Server error");
@@ -107,6 +112,7 @@ public class Auth extends ApiSection {
         return user;
     }
 
+    @Nullable
     private JSONObject executeSignUpRequest(String uploadPath, List<Pair<String, String>> parameters) {
         URL connectURL = null;
         try {
