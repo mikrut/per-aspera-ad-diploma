@@ -23,14 +23,15 @@ public class GroupDialogEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group_dialog_edit);
 
         CollapsingToolbarLayout collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        collapsingToolbar.setTitle("hello");
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
         }
+
+        collapsingToolbar.setTitleEnabled(false);
     }
 }
