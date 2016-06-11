@@ -384,6 +384,17 @@ public class DialogActivity
     }
 
     private void initActionListeners() {
+        dialogActionBar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (thisChat != null && thisChat.getType() == Chat.GROUP_TYPE) {
+                    Intent intent = new Intent(DialogActivity.this, GroupDialogEditActivity.class);
+                    intent.putExtra(GroupDialogEditActivity.ARG_CID, chatID);
+                    startActivity(intent);
+                }
+            }
+        });
+
         inputMessage.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

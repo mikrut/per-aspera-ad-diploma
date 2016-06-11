@@ -54,7 +54,7 @@
                 android:layout_alignStart="@+id/user_title"
                 android:layout_alignLeft="@+id/user_title"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_camera_enhance_black_48dp"
+                android:src="@drawable/ic_photo_camera_black_48dp"
                 android:tint="@color/textColorPrimary"/>
 
             <ImageButton
