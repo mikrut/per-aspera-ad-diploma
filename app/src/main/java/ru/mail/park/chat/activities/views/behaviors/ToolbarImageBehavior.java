@@ -60,24 +60,16 @@ public class ToolbarImageBehavior extends CoordinatorLayout.Behavior<ImageView> 
     public boolean onDependentViewChanged(CoordinatorLayout parent, ImageView child, View dependency) {
         final ImageView image = child;
 
+        Log.d("image", "behavior");
+
         initImageProperties(image, dependency);
 
         final float maxScrollDistance = Math.abs(imageFinalYPosition - imageStartYPosition);
-        final float expandedPercentageFactor = Math.abs(dependency.getY() + dependency.getHeight() - finalBottom) / Math.abs(startBottom - finalBottom);
+        final float expandedPercentageFactor = Math.abs(dependency.getY() + dependency.getLayoutParams().height - finalBottom) / Math.abs(startBottom - finalBottom);
 
         animateImage(image, expandedPercentageFactor);
 
         return true;
-    }
-
-    private void animateLayout(RelativeLayout child, View dependency) {
-        child.setX(dependency.getX());
-        child.setY(0);
-
-        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
-        lp.height = (int) Math.max(dependency.getBottom(), topOffset + actionBarSize);
-        lp.width  = dependency.getWidth();
-        child.setLayoutParams(lp);
     }
 
     private void animateImage(ImageView image, float percentage) {

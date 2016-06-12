@@ -82,10 +82,11 @@
         android:padding="20dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:text="@string/large_text"
+        <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
+            android:id="@+id/contacts_fragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            tools:layout="@layout/fragment_contacts" />
 
     </android.support.v4.widget.NestedScrollView>
 

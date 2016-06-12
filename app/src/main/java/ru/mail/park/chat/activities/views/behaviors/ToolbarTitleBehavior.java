@@ -6,6 +6,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -49,7 +50,7 @@ public class ToolbarTitleBehavior extends CoordinatorLayout.Behavior<TextView> {
     }
 
     private void animateTitle(TextView child, View dependency) {
-        child.setX(dependency.getX() + dependency.getWidth());
+        child.setX(dependency.getX() + dependency.getLayoutParams().width + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, dm));
         child.setY(dependency.getY());
     }
 }
