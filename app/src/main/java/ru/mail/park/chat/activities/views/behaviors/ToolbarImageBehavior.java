@@ -60,8 +60,6 @@ public class ToolbarImageBehavior extends CoordinatorLayout.Behavior<ImageView> 
     public boolean onDependentViewChanged(CoordinatorLayout parent, ImageView child, View dependency) {
         final ImageView image = child;
 
-        Log.d("image", "behavior");
-
         initImageProperties(image, dependency);
 
         final float maxScrollDistance = Math.abs(imageFinalYPosition - imageStartYPosition);
@@ -76,11 +74,6 @@ public class ToolbarImageBehavior extends CoordinatorLayout.Behavior<ImageView> 
         float x = (imageStartXPosition - imageFinalXPosition) * percentage + imageFinalXPosition;
         float y = (imageStartYPosition - imageFinalYPosition) * percentage + imageFinalYPosition;
         float h = (imageStartSize - imageFinalSize) * percentage + imageFinalSize;
-
-        Log.d("yf", String.valueOf(imageFinalYPosition));
-        Log.d("ys", String.valueOf(imageStartYPosition));
-        Log.d("pe", String.valueOf(percentage));
-        Log.d("y ", String.valueOf(y));
 
         image.setX(x);
         image.setY(y);

@@ -10,6 +10,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ public class ContactsFragment extends Fragment {
     private ProgressBar spinner;
     private ContactAdapter contactAdapter;
     private RecyclerView contactsView;
+    @Nullable
     private SwipeRefreshLayout swipeRefreshLayout;
 
     protected final static int DB_LOADER = 0;
@@ -84,12 +86,14 @@ public class ContactsFragment extends Fragment {
         contactsView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
-            }
-        });
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    getLoaderManager().restartLoader(WEB_LOADER, null, contactsLoaderListener);
+                }
+            });
+        }
     }
 
     @Override
@@ -160,7 +164,8 @@ public class ContactsFragment extends Fragment {
 
         @Override
         public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
-            swipeRefreshLayout.setRefreshing(false);
+            if (swipeRefreshLayout != null)
+                swipeRefreshLayout.setRefreshing(false);
 
             if (data != null) {
                 spinner.setVisibility(View.GONE);

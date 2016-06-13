@@ -27,6 +27,8 @@
 
     <TextView
         android:id="@+id/toolbar_title"
+        android:textSize="30sp"
+        android:fontFamily="sans-serif-medium"
         app:layout_behavior="ru.mail.park.chat.activities.views.behaviors.ToolbarTitleBehavior"
         android:textColor="@color/actionBarTextColor"
         android:text="Title"
@@ -38,8 +40,9 @@
 
     <TextView
         android:id="@+id/toolbar_subtitle"
+        android:textSize="20sp"
         app:layout_behavior="ru.mail.park.chat.activities.views.behaviors.ToolbarSubtitleBehavior"
-        android:textColor="@color/actionBarTextColor"
+        android:textColor="@color/textColorSecondaryInverse"
         android:text="Title"
         android:layout_toRightOf="@+id/toolbar_image"
         android:layout_toEndOf="@+id/toolbar_image"
@@ -53,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/header_height"
         android:fitsSystemWindows="true"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:background="@android:color/transparent"
@@ -70,7 +73,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
-                app:layout_collapseMode="pin" />
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -79,14 +83,30 @@
         android:id="@+id/scrollableview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="20dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <fragment android:name="ru.mail.park.chat.activities.fragments.ContactsFragment"
-            android:id="@+id/contacts_fragment"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:layout="@layout/fragment_contacts" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:background="@color/colorAccent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="16dp"
+                android:paddingLeft="20dp"
+                android:drawableLeft="@drawable/ic_person_add_black_24dp"
+                android:text="Add member" />
+
+            <fragment
+                android:name="ru.mail.park.chat.activities.fragments.ContactsFragmentNoSwipe"
+                android:id="@+id/contacts_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout="@layout/fragment_contacts_no_swipe" />
+        </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
 

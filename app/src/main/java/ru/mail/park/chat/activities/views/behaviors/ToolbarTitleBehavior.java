@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.v8.renderscript.Type;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -20,6 +21,12 @@ import ru.mail.park.chat.R;
 public class ToolbarTitleBehavior extends CoordinatorLayout.Behavior<TextView> {
     Context mContext;
     final DisplayMetrics dm;
+
+    float startFontSize;
+    float finalFontSize;
+
+    float startYPos;
+    float finalYPos;
 
     float actionBarSize;
     float topOffset;
@@ -45,12 +52,31 @@ public class ToolbarTitleBehavior extends CoordinatorLayout.Behavior<TextView> {
 
     @Override
     public boolean onDependentViewChanged(CoordinatorLayout parent, TextView child, View dependency) {
-        animateTitle(child, dependency);
+        initProperties(child, dependency);
+        float percentage = Math.abs(dependency.getY() - finalYPos) / Math.abs(startYPos - finalYPos);
+        animateTitle(child, dependency, percentage);
         return true;
     }
 
-    private void animateTitle(TextView child, View dependency) {
+    private void initProperties(TextView child, View dependency) {
+        if (startFontSize == 0)
+            startFontSize = child.getTextSize();
+
+        if (finalFontSize == 0)
+            finalFontSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 18, dm);
+
+        if (startYPos == 0 || startYPos < dependency.getY())
+            startYPos = dependency.getY();
+
+        float imageFinalSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, dm);
+        if (finalYPos == 0)
+            finalYPos = topOffset + (actionBarSize - imageFinalSize) / 2;
+    }
+
+    private void animateTitle(TextView child, View dependency, float percentage) {
         child.setX(dependency.getX() + dependency.getLayoutParams().width + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, dm));
         child.setY(dependency.getY());
+
+        child.setTextSize(TypedValue.COMPLEX_UNIT_PX, (startFontSize - finalFontSize) * percentage + finalFontSize);
     }
 }
