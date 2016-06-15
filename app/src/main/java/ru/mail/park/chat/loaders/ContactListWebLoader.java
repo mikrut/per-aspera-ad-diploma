@@ -27,19 +27,19 @@ public class ContactListWebLoader extends ContactListDBLoader {
     @Override
     public @Nullable List<Contact> loadInBackground() {
         Contacts contactsAPI = new Contacts(getContext());
-        List<Contact> contactList = null;
+        contacts = null;
         try {
             Pair<List<Contact>, Integer> result = contactsAPI.getContacts(activated, my);
-            contactList = result.first;
+            contacts = result.first;
             if (activated) {
                 ContactsHelper contactsHelper = new ContactsHelper(getContext());
-                contactsHelper.updateContactsList(contactList);
+                contactsHelper.updateContactsList(contacts);
             }
             Log.v(getClass().getSimpleName(), String.valueOf(result.first.size()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return contactList;
+        return contacts;
     }
 
     public void setMy(boolean my) {

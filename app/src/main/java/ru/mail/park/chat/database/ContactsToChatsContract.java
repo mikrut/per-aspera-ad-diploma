@@ -10,7 +10,7 @@ public class ContactsToChatsContract {
 
     static final String CREATE_TABLE =
             "CREATE TABLE " + ContactsToChatsEntry.TABLE_NAME + " (" +
-                    ContactsToChatsEntry.COLUMN_NAME_UID + " TEXT NOT NULL" + COMMA_SEP +
+                    ContactsToChatsEntry.COLUMN_NAME_UID + " INT NOT NULL" + COMMA_SEP +
                     ContactsToChatsEntry.COLUMN_NAME_CID + " TEXT NOT NULL" +
                     ")";
 

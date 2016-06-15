@@ -801,7 +801,7 @@ public class DialogActivity
     };
 
     @Override
-    protected void setImageManager(ImageDownloadManager mgr) {
+    protected void onSetImageManager(ImageDownloadManager mgr) {
         if (messagesAdapter != null) {
             messagesAdapter.setImageDownloadManager(mgr);
         }

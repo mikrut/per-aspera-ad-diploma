@@ -86,11 +86,13 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
+            android:id="@+id/main_container"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <Button
+                android:id="@+id/add_member_button"
                 android:background="@color/colorAccent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,17 +102,13 @@
                 android:drawableLeft="@drawable/ic_person_add_black_24dp"
                 android:text="Add member" />
 
-            <fragment
-                android:name="ru.mail.park.chat.activities.fragments.ContactsFragmentNoSwipe"
-                android:id="@+id/contacts_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:layout="@layout/fragment_contacts_no_swipe" />
+            <!-- Contacts fragment -->
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/button_set_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"

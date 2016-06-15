@@ -66,10 +66,7 @@ class ServerConnection {
 
     private void setUrl(URL url) throws IOException {
         // TODO: check tor status properly
-        boolean torStart = OrbotHelper.isOrbotRunning(context);
-        if (!torStart) {
-            torStart = OrbotHelper.requestStartTor(context);
-        }
+        boolean torStart = OrbotHelper.requestStartTor(context);
 
         try {
             if (torStart) {

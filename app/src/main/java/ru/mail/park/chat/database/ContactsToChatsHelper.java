@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +50,39 @@ public class ContactsToChatsHelper {
 
     private static Cursor getChatUsersCursor(@NonNull String cid, @NonNull SQLiteDatabase db) {
         String rawQuery = "SELECT " + usersSelection +
-                " FROM " + linkTable + " LEFT JOIN " + contactTable +
+                " FROM " + linkTable + " JOIN " + contactTable +
                 " ON " + linkTable + "." + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_UID +
                 " = " + contactTable + "." + ContactsContract.ContactsEntry.COLUMN_NAME_UID +
                 " WHERE " + linkTable + "." + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_CID +
                 " = ?";
         String[] queryArgs = {cid};
 
-        return db.rawQuery(
+        //return
+        Cursor result = db.rawQuery(
                 rawQuery,
                 queryArgs
         );
+
+        Cursor cur2 = db.rawQuery(
+                "SELECT " + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_UID + " FROM "
+                        + ContactsToChatsContract.ContactsToChatsEntry.TABLE_NAME +
+                        " WHERE " + linkTable + "." + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_CID +
+                        " = ?",
+                queryArgs
+        );
+
+        for (cur2.moveToFirst(); !cur2.isAfterLast(); cur2.moveToNext()) {
+            Log.d("UID", cur2.getString(0));
+        }
+
+        for (result.moveToFirst(); !result.isAfterLast(); result.moveToNext()) {
+            if (result.isNull(0))
+            Log.d("UID =", "null");
+            else
+            Log.d("UID =", String.valueOf(result.getInt(0)));
+        }
+
+        return result;
     }
 
     public static List<Contact> getChatUsers(@NonNull String cid, @NonNull SQLiteDatabase db) {
@@ -116,5 +139,12 @@ public class ContactsToChatsHelper {
             return chat;
         }
         return null;
+    }
+
+    public List<Contact> getContacts(@NonNull String cid) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<Contact> contacts = getChatUsers(cid, db);
+        db.close();
+        return contacts;
     }
 }

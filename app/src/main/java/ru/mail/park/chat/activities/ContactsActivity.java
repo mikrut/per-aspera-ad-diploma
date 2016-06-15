@@ -49,7 +49,7 @@ public class ContactsActivity
     }
 
     @Override
-    protected void setImageManager(ImageDownloadManager mgr) {
+    protected void onSetImageManager(ImageDownloadManager mgr) {
         if (pagerAdapter != null) {
             pagerAdapter.setImageManager(mgr);
         }

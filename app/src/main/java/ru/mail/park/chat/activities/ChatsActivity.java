@@ -235,7 +235,7 @@ public class ChatsActivity
     }
 
     @Override
-    protected void setImageManager(ImageDownloadManager mgr) {
+    protected void onSetImageManager(ImageDownloadManager mgr) {
         if (chatsList != null && chatsList.getAdapter() != null) {
             ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
         }

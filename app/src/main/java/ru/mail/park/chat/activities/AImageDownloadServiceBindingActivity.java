@@ -45,7 +45,7 @@ public abstract class AImageDownloadServiceBindingActivity extends AppCompatActi
             ImageDownloadManager.ImageDownloadBinder binder =
                     (ImageDownloadManager.ImageDownloadBinder) service;
             imageDownloadManager = binder.getService();
-            setImageManager(imageDownloadManager);
+            onSetImageManager(imageDownloadManager);
             bound = true;
         }
 
@@ -55,7 +55,7 @@ public abstract class AImageDownloadServiceBindingActivity extends AppCompatActi
         }
     };
 
-    protected abstract void setImageManager(ImageDownloadManager mgr);
+    protected abstract void onSetImageManager(ImageDownloadManager mgr);
 
     protected ImageDownloadManager getImageDownloadManager() {
         return imageDownloadManager;
