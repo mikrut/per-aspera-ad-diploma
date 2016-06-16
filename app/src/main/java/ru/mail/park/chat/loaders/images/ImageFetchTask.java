@@ -58,7 +58,9 @@ public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
                 Log.v(ImageFetchTask.class.getSimpleName(), "Fetching an image from web");
                 try {
                     InputStream in = url.openStream();
-                    bm = BitmapFactory.decodeStream(in);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.RGB_565;
+                    bm = BitmapFactory.decodeStream(in, null, options);
 
                     if (bm != null) {
                         for (ImageDownloadManager.Size size : sizes) {

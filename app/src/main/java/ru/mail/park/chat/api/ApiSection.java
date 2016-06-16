@@ -32,31 +32,39 @@ public class ApiSection {
         AUTH_TOKEN = preferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
     }
 
-    String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
-                          @Nullable List<Pair<String, String>> parameters, boolean addToken) throws IOException {
+    /*static <T> List<Pair<String, Object>> reformList(List<Pair<String, T>> parameters) {
+        if (parameters.get(0).second.getClass().equals(String.class)) {
+
+            List<Pair<String, Object>> list = new ArrayList<>(parameters.size());
+            for (Pair<String, T> p : parameters) {
+                list.add(new Pair<String, Object>(p.first, p.second));
+            }
+
+            return list;
+        } else {
+            return (List) parameters;
+        }
+    }*/
+
+    <T> String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
+                          @Nullable List<Pair<String, T>> parameters, boolean addToken) throws IOException {
 
         if (parameters == null)
             parameters = new ArrayList<>(1);
-        if (addToken)
-            parameters.add(new Pair<>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
 
-        if (requestMethod.equals("GET")) {
-                requestURL += "?" + getQuery(parameters);
-        }
+        List<Pair<String, Object>> right = (List) parameters;
+        if (addToken)
+            right.add(new Pair<String, Object>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
 
         ServerConnection serverConnection = new ServerConnection(context, getUrlAddition() + requestURL);
+        serverConnection.setParameters(right);
         serverConnection.setRequestMethod(requestMethod);
-        Log.d("[TP-diploma]", "Requestiong URL " + getUrlAddition() + requestURL);
-
-        if (!requestMethod.equals("GET")) {
-            serverConnection.setParameters(getQuery(parameters));
-        }
 
         return serverConnection.getResponse();
     }
 
-    String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
-                          @Nullable List<Pair<String, String>> parameters) throws IOException {
+    <T> String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
+                          @Nullable List<Pair<String, T>> parameters) throws IOException {
         return executeRequest(requestURL, requestMethod, parameters, true);
     }
 
@@ -74,29 +82,5 @@ public class ApiSection {
 
     String getUrlAddition() {
         return SERVER_URL;
-    }
-
-    private String getQuery(List<Pair<String, String>> params)
-    {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-
-        for (Pair<String, String> pair : params)
-        {
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            try {
-                result.append(URLEncoder.encode(String.valueOf(pair.first), "UTF-8"));
-                result.append("=");
-                result.append(URLEncoder.encode(String.valueOf(pair.second), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return result.toString();
     }
 }
