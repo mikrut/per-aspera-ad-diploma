@@ -405,15 +405,20 @@ public class ChatsActivity
             }
 
             listEndReached = false;
+            boolean changes = false;
             if (data != null) {
                 for (Chat chat : data) {
                     if (!chatsData.contains(chat)) {
                         chatsData.add(chatsData.size(), chat);
+                        changes = true;
                     } else {
                         boolean inserted = false;
                         for (int i = 0; i < chatsData.size() && !inserted; i++) {
                             if (chatsData.get(i).getCid().equals(chat.getCid())) {
-                                chatsData.set(i, chat);
+                                if (!chatsData.get(i).equals(chat)) {
+                                    chatsData.set(i, chat);
+                                    changes = true;
+                                }
                                 inserted = true;
                             }
                         }
@@ -424,7 +429,7 @@ public class ChatsActivity
                     adapter = new ChatsAdapter(chatsData);
                     adapter.setDownloadManager(getImageDownloadManager());
                     chatsList.setAdapter(adapter);
-                } else if (data.size() > 0) {
+                } else if (data.size() > 0 && changes) {
                     adapter.notifyDataSetChanged();
                 }
 
