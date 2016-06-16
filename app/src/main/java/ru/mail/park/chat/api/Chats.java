@@ -1,5 +1,6 @@
 package ru.mail.park.chat.api;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,12 +12,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 
 /**
@@ -33,20 +40,6 @@ public class Chats extends ApiSection {
 
     public Chats(@NonNull Context context) {
         super(context);
-    }
-
-    // TODO: think about chat creation, write code
-    public void createChat() {
-        final String requestURL = "dialogs";
-        final String requestMethod = "PUT";
-
-        JSONObject result = null;
-    }
-
-    @NonNull
-    @Deprecated
-    public List<Message> getMessages(String cid) throws IOException {
-        return getMessages(cid, 1);
     }
 
     @NonNull
@@ -118,27 +111,6 @@ public class Chats extends ApiSection {
         return chatsList;
     }
 
-    enum DialogPrivilege {
-        USER, ADMIN;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case USER:
-                    return "USER";
-                case ADMIN:
-                    return "ADMIN";
-                default:
-                    return super.toString();
-            }
-        }
-    }
-
-    @NonNull
-    public Chat addUser(@NonNull String cid, @NonNull String uid) throws IOException {
-        return addUser(cid, uid, null);
-    }
-
     @NonNull
     public Chat getChatInfo(String cid) throws IOException {
         Chat chat;
@@ -168,66 +140,42 @@ public class Chats extends ApiSection {
         return chat;
     }
 
-    @NonNull
-    public Chat addUser(@NonNull String cid, @NonNull String uid,
-                         @Nullable DialogPrivilege privilege) throws IOException {
-        final String requestURL = "user";
-        final String requestMethod = "POST";
-
-        List<Pair<String, String>> parameters = new ArrayList<>(3 + (privilege != null ? 1 : 0));
-        parameters.add(new Pair<>("cid", cid));
-        parameters.add(new Pair<>("uid", uid));
-        if (privilege != null) {
-            parameters.add(new Pair<>("grant", privilege.toString()));
-        }
-
-        Chat chat;
-        try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
-            final int status = result.getInt("status");
-            if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                JSONObject dialog = data.getJSONObject("dialog");
-
-                chat = new Chat(dialog, getContext());
-            } else {
-                String message = result.getString("message");
-                throw new IOException(message);
-            }
-        } catch (JSONException e) {
-            throw new IOException("Server error");
-        }
-
-        return chat;
+    public class ImageUpdateResult {
+        public Contact user;
+        public URL image;
     }
 
     @NonNull
-    public Chat deleteUser(String cid, String uid) throws IOException {
-        final String requestURL = "user";
-        final String requestMethod = "DELETE";
+    public ImageUpdateResult updateImage(String cid, File image) throws IOException {
+        final String requestURL = "updateImg";
+        final String requestMethod = "POST";
 
-        List<Pair<String, String>> parameters = new ArrayList<>(3);
-        parameters.add(new Pair<>("cid", cid));
-        parameters.add(new Pair<>("uid", uid));
+        List<Pair<String, Object>> parameters = new ArrayList<>(2);
+        parameters.add(new Pair<String, Object>("idRoom", cid));
+        parameters.add(new Pair<String, Object>("img", image));
 
-        Chat chat;
         try {
-            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            String response = executeRequest(requestURL, requestMethod, parameters);
+
+            JSONObject result = new JSONObject(response);
             final int status = result.getInt("status");
             if(status == 200) {
-                JSONObject data = result.getJSONObject("data");
-                JSONObject dialog = data.getJSONObject("dialog");
+                JSONObject data = result;//result.getJSONObject("data");
+                JSONObject user = data.getJSONObject("user");
+                JSONObject img = data.getJSONObject("img");
 
-                chat = new Chat(dialog, getContext());
+                ImageUpdateResult retval = new ImageUpdateResult();
+                retval.user = new Contact(user, getContext());
+                retval.image = new URL(super.getUrlAddition() + img.getString("img"));
+                return retval;
             } else {
                 String message = result.getString("message");
                 throw new IOException(message);
             }
-        } catch (JSONException e) {
-            throw new IOException("Server error");
+        } catch (MalformedURLException | ParseException | JSONException e) {
+            Log.d("[TP-diploma]", e.getMessage());
+            throw new IOException("Server error", e);
         }
-
-        return chat;
     }
 
     private List<Chat> chatsFrom(JSONArray chats) throws JSONException {

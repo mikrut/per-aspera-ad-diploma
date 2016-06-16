@@ -4,15 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.Pair;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.mail.park.chat.api.network.ServerConnection;
 import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
@@ -31,20 +29,6 @@ public class ApiSection {
         SharedPreferences preferences = context.getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, Context.MODE_PRIVATE);
         AUTH_TOKEN = preferences.getString(PreferenceConstants.AUTH_TOKEN_N, null);
     }
-
-    /*static <T> List<Pair<String, Object>> reformList(List<Pair<String, T>> parameters) {
-        if (parameters.get(0).second.getClass().equals(String.class)) {
-
-            List<Pair<String, Object>> list = new ArrayList<>(parameters.size());
-            for (Pair<String, T> p : parameters) {
-                list.add(new Pair<String, Object>(p.first, p.second));
-            }
-
-            return list;
-        } else {
-            return (List) parameters;
-        }
-    }*/
 
     <T> String executeRequest(@NonNull String requestURL, @NonNull String requestMethod,
                           @Nullable List<Pair<String, T>> parameters, boolean addToken) throws IOException {

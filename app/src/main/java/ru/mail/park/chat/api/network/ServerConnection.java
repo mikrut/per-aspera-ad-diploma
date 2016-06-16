@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.network;
 
 import android.content.Context;
 import android.preference.PreferenceManager;
@@ -11,9 +11,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -44,13 +41,12 @@ import ru.mail.park.chat.database.PreferenceConstants;
 
 // FIXME: don't trust everyone!
 // TODO: check security
-class ServerConnection {
+public class ServerConnection {
     private final Context context;
 
     private String requestURL;
     private String method = "GET";
     private List<Pair<String, Object>> parameters = null;
-    private boolean multipart = false;
 
     public ServerConnection(Context context, String url) throws IOException {
         this.context = context;
@@ -129,15 +125,18 @@ class ServerConnection {
         this.method = method;
     }
 
-    public boolean isMultipart() {
-        return multipart;
-    }
-
-    public void setMultipart(boolean multipart) {
-        this.multipart = multipart;
+    private static boolean isMultipart(List<Pair<String, Object>> parameters) {
+        boolean haveFile = false;
+        if (parameters != null) {
+            for (int i = 0; i < parameters.size() && !haveFile; i++) {
+                haveFile = parameters.get(i).second instanceof File;
+            }
+        }
+        return haveFile;
     }
 
     public String getResponse() {
+        final boolean multipart = isMultipart(parameters);
         if (!multipart) {
             return getSimpleResponse();
         } else {
@@ -146,6 +145,8 @@ class ServerConnection {
     }
 
     private String getSimpleResponse() {
+        final String tag = ServerConnection.class.getSimpleName() + ".getResponse";
+
         String reply = "";
         try {
             // AFAIK everything except GET sends parameters the same way
@@ -161,23 +162,23 @@ class ServerConnection {
             if (!httpURLConnection.getRequestMethod().equals("GET")) {
                 final String postParameters = buildParameterString(parameters);
 
-                Log.d("[TP-diploma]", "parameters in request: " + postParameters);
+                Log.d(tag, "parameters in request: " + postParameters);
                 byte[] postData = postParameters.getBytes(Charset.forName("UTF-8"));
-                Log.w(ServerConnection.class.getSimpleName() + ".getResponse", postParameters);
+                Log.w(tag, postParameters);
 
                 httpURLConnection.setDoOutput(true);
                 httpURLConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 httpURLConnection.setRequestProperty("charset", "utf-8");
                 httpURLConnection.setRequestProperty("Content-Length", Integer.toString(postData.length));
 
-                Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "going to write");
+                Log.d(tag, "going to write");
                 OutputStream wr = httpURLConnection.getOutputStream();
                 wr.write(postData);
                 wr.flush();
                 wr.close();
             }
 
-            reply = getResponse(httpURLConnection);
+            reply = getServerResponse(httpURLConnection);
         } catch (IOException e) {
             Log.v(ServerConnection.class.getSimpleName() + ".getResponse", "Exception: " + e.getMessage());
             e.printStackTrace();
@@ -187,7 +188,7 @@ class ServerConnection {
         return reply;
     }
     
-    private static String getResponse(HttpURLConnection httpURLConnection) throws IOException {
+    private static String getServerResponse(HttpURLConnection httpURLConnection) throws IOException {
         StringBuilder responseBuilder = new StringBuilder();
         BufferedReader rd;
         Log.d(ServerConnection.class.getSimpleName() + ".getResponse", "Result code: " + Integer.toString(httpURLConnection.getResponseCode()));
@@ -239,7 +240,7 @@ class ServerConnection {
             }
             
             // retrieve the response from server
-            response = getResponse(conn);
+            response = getServerResponse(conn);
         } catch (IOException e) {
             Log.e(tag, "Exception: " + e.getLocalizedMessage());
         }
