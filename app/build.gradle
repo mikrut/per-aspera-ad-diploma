@@ -19,6 +19,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    // Had some bugs with bouncycastle build so have to add these lines
+    /*packagingOptions {
+        pickFirst 'META-INF/BCKEY.SF'
+        pickFirst 'META-INF/BCKEY.DSA'
+    }*/
 }
 
 dependencies {
@@ -51,7 +56,7 @@ dependencies {
 
     // Cryptographic libraries
     compile 'info.guardianproject.netcipher:netcipher:1.2'
-    compile 'org.bouncycastle:bcprov-jdk15on:1.54'
+    compile 'com.madgag.spongycastle:pkix:1.54.0.0'
 
     // Cache libraries
     compile 'com.jakewharton:disklrucache:2.0.2'

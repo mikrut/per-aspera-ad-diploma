@@ -180,7 +180,7 @@ public class Message implements Comparable<Message>, Serializable {
         this.messageBody = messageBody;
     }
 
-    @NonNull
+    @Nullable
     public String getCid() {
         return cid;
     }

@@ -11,25 +11,35 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.jivesoftware.smack.proxy.ProxyInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Random;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
-import ru.mail.park.chat.message_interfaces.Jsonifier;
 import ru.mail.park.chat.models.Message;
-import ru.mail.park.chat.models.OwnerProfile;
+import ru.mail.park.chat.security.SSLServerStuffFactory;
 
 // TODO: review flow and architecture in context of security
 // TODO: consider using java NIO
@@ -143,10 +153,28 @@ public class P2PService extends Service implements IMessageSender {
         Log.d(P2PService.class.getSimpleName(), "Destination " + destination);
         Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
 
+        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy orbotProxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+      /*  try {
+            closeStreams();
+
+            Socket underlying = new Socket(orbotProxy);
+            underlying.connect(new InetSocketAddress(destination, port));
+
+            SSLContext sslContext = getSSLContext(new TrustManager[] {getTrustManager()});
+            Socket socket = sslContext.getSocketFactory().createSocket(underlying, proxyHost, proxyPort, true);
+*/
         ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
         try {
             closeStreams();
-            Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
+            Socket underlying = proxyInfo.getSocketFactory().createSocket(destination, port);
+            SSLContext sslContext = getSSLContext(null, new TrustManager[] {getTrustManager()});
+            SSLSocketFactory factory = sslContext.getSocketFactory();
+
+            SSLSocket socket = (SSLSocket) factory.createSocket(underlying, proxyHost, proxyPort, true);
+            socket.setEnabledCipherSuites(socket.getSupportedCipherSuites());
+            socket.setEnabledProtocols(socket.getSupportedProtocols());
+            socket.startHandshake();
 
             synchronized (outputSynchronizer) {
                 output = new ObjectOutputStream(socket.getOutputStream());
@@ -156,18 +184,60 @@ public class P2PService extends Service implements IMessageSender {
             }
             Log.i(P2PService.class.getSimpleName(), "got a connection");
             Log.i(P2PService.class.getSimpleName(), destination);
-        } catch (IOException e) {
+        } catch (KeyManagementException | NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }
     }
 
+    @NonNull
+    private static SSLContext getSSLContext(KeyManager[] km, TrustManager[] trustManagers) throws KeyManagementException, NoSuchAlgorithmException {
+        SecureRandom secureRandom = new SecureRandom();
+        SSLContext sslContext = SSLContext.getInstance("TLSv1");
+        sslContext.init(km, trustManagers, secureRandom);
+        return sslContext;
+    }
+
+    /**
+     * @return Insecure dummy TrustManager which trusts everyone
+     */
+    @Deprecated
+    private TrustManager getTrustManager() {
+        return new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+    }
+
+    // TODO: implement error dispatch
+    // TODO: move generation methods to (?) subclass
     public void handleActionStartServer(int port) {
         try {
             closeStreams();
-            // FIXME: use SSLContext and security over TLS
-            serverSocket = new ServerSocket(port);
+
+            byte[] nonce = SSLServerStuffFactory.generateNonce();
+            KeyPair keyPair = SSLServerStuffFactory.generateKeyPair();
+            X509Certificate cert = SSLServerStuffFactory.createCACert(keyPair.getPublic(), keyPair.getPrivate());
+            KeyStore keyStore = SSLServerStuffFactory.generateKeyStore(nonce, keyPair, cert);
+            byte[] keyData = SSLServerStuffFactory.generateKeyData(keyStore, nonce);
+            KeyStore finalKeyStore = SSLServerStuffFactory.generateFinalKeyStore(keyData, nonce);
+            KeyManager[] km = SSLServerStuffFactory.getKeyManagers(nonce, finalKeyStore);
+
+            SSLContext sslContext = getSSLContext(km, new TrustManager[]{getTrustManager()});
+            SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
+            serverSocket = SSLServerStuffFactory.getServerSocket(factory, port, keyData, nonce);
+
             Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
-            Socket socket = serverSocket.accept();
+            SSLSocket socket = (SSLSocket) serverSocket.accept();
+            socket.setEnabledCipherSuites(socket.getSupportedCipherSuites());
+            socket.setEnabledProtocols(socket.getSupportedProtocols());
+            socket.startHandshake();
             Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
 
             synchronized (inputSynchronizer) {
@@ -177,7 +247,7 @@ public class P2PService extends Service implements IMessageSender {
                 output = new ObjectOutputStream(socket.getOutputStream());
             }
             Log.i(P2PService.class.getSimpleName(), "connection finished!");
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

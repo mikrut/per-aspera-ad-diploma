@@ -557,7 +557,7 @@ public class DialogActivity
             onUpdateChatID();
         }
 
-        if (!chatID.equals(newChatID)) {
+        if (chatID != null && !chatID.equals(newChatID)) {
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 
             notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
