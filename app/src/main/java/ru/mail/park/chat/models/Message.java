@@ -48,6 +48,17 @@ public class Message implements Comparable<Message>, Serializable {
         title = owner.getContactTitle();
     }
 
+    public Message(@NonNull JSONObject message, @NonNull Context context) throws JSONException {
+        this(message, context, null);
+    }
+
+    /**
+     *
+     * @param message the JSON object from server reply
+     * @param context some Android context
+     * @param cid chat ID to use if none was specified by server
+     * @throws JSONException the format of reply is wrong
+     */
     public Message(@NonNull JSONObject message, @NonNull Context context, @Nullable String cid) throws JSONException {
         String uid;
         if (message.has("user")) {
@@ -68,15 +79,17 @@ public class Message implements Comparable<Message>, Serializable {
         if (messageBodyParamName != null) {
             messageBody = StringEscapeUtils.unescapeJava(message.getString(messageBodyParamName));
         } else {
-            throw new JSONException("No textMessage or text parameter is JSON");
+            throw new JSONException("No textMessage or text parameter in JSON");
         }
 
         if (message.has("uniqueId")) {
             uniqueID = message.getLong("uniqueId");
         }
 
-        if (cid == null && message.has("idRoom"))
+        if (message.has("idRoom"))
             this.cid = message.getString("idRoom");
+        else if (cid != null)
+            this.cid = cid;
         this.uid = uid;
 
         if (message.has("idMessage")) {

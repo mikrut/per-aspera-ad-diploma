@@ -182,42 +182,28 @@ public class P2PService extends Service implements IMessageSender {
         }
     }
 
-    // TODO: это тоже бред, переделать интерфейс с JSONObject на Message
     private void handleIncomingMessage(final Message message) {
-        try {
-            OwnerProfile owner = new OwnerProfile(this);
-            final JSONObject messageJSON = Jsonifier.jsonifyForRecieve(message, owner);
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (chatListener != null) {
-                        chatListener.onIncomeMessage(messageJSON);
-                    }
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (chatListener != null) {
+                    chatListener.onIncomeMessage(message);
                 }
-            });
-        } catch (JSONException e)  {
-            e.printStackTrace();
-        }
+            }
+        });
     }
 
-    // TODO: это бред, надо переделать реакцию с JSONObject на Message
     private void acknowledgeOutgoingMessage(final Message message) {
-        OwnerProfile owner = new OwnerProfile(this);
-        try {
-            final JSONObject messageJSON = Jsonifier.jsonifyForRecieve(message, owner);
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (chatListener != null) {
-                        chatListener.onAcknowledgeSendMessage(messageJSON);
-                    }
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (chatListener != null) {
+                    chatListener.onAcknowledgeSendMessage(message);
                 }
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            }
+        });
     }
 
     private class Server extends Thread {

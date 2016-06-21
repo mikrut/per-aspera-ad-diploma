@@ -191,25 +191,18 @@ public class Messages extends ApiSection implements IMessageSender {
 
     private void dispatchSend(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
-
-        String message = data.getString("textMessage");
-        String cid = data.getString("idMessage");
-        String creationDate = data.getString("dtCreate");
+        Message incomeMessage = new Message(data, getContext());
 
         if (chatListener != null)
-            chatListener.onAcknowledgeSendMessage(data);
+            chatListener.onAcknowledgeSendMessage(incomeMessage);
     }
 
     private void dispatchNewMessage(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
-
-        String message = data.getString("textMessage");
-        JSONObject user = data.getJSONObject("user");
-        String cid = data.getString("idRoom");
-        String creationDate = data.getString("dtCreate");
+        Message message = new Message(data, getContext());
 
         if (chatListener != null)
-            chatListener.onIncomeMessage(data);
+            chatListener.onIncomeMessage(message);
     }
 
     private void dispatchDelete(JSONObject income) throws JSONException {

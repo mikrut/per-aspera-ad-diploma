@@ -544,50 +544,46 @@ public class DialogActivity
         }
     }
 
+    /**
+     *
+     * @param message new message for dispatch
+     * @return Returns whether the message belongs to this chat or not
+     */
     @Nullable
-    private Message dispatchNewMessage(JSONObject message) {
-        try {
-            String newChatID = null;
-            if (message.has("idRoom")) {
-                newChatID = message.getString("idRoom");
-                if (chatID == null) {
-                    chatID = newChatID;
-                    onUpdateChatID();
-                }
-            }
-
-            Message incomeMsg = new Message(message, this, chatID);
-
-            if (newChatID != null && chatID != null && !chatID.equals(newChatID)) {
-                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-
-                notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
-                        .setContentTitle(incomeMsg.getTitle())
-                        .setContentText(incomeMsg.getMessageBody());
-
-                Intent intent = new Intent(this, DialogActivity.class);
-                intent.putExtra(CHAT_ID, newChatID);
-                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                notificationBuilder.setContentIntent(pendingIntent);
-
-                Notification notification = notificationBuilder.build();
-                notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.notify(0, notification);
-            } else {
-                return incomeMsg;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+    private boolean dispatchNewMessage(Message message) {
+        String newChatID = message.getCid();
+        if (chatID == null) {
+            chatID = newChatID;
+            onUpdateChatID();
         }
-        return null;
+
+        if (!chatID.equals(newChatID)) {
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+
+            notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
+                    .setContentTitle(message.getTitle())
+                    .setContentText(message.getMessageBody());
+
+            Intent intent = new Intent(this, DialogActivity.class);
+            intent.putExtra(CHAT_ID, newChatID);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            notificationBuilder.setContentIntent(pendingIntent);
+
+            Notification notification = notificationBuilder.build();
+            notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.notify(0, notification);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     @Override
-    public void onIncomeMessage(JSONObject message){
-        Message incomeMsg = dispatchNewMessage(message);
-        if (incomeMsg != null)
-            addMessage(incomeMsg);
+    public void onIncomeMessage(Message message){
+        boolean belongs = dispatchNewMessage(message);
+        if (belongs)
+            addMessage(message);
     }
 
     @Override
@@ -596,23 +592,10 @@ public class DialogActivity
     }
 
     @Override
-    public void onAcknowledgeSendMessage(JSONObject msg){
-        try {
-            Message incomeMsg = dispatchNewMessage(msg);
-            if (incomeMsg != null)
-                addMessage(incomeMsg);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onGetHistoryMessages(ArrayList<Message> msg_list) {
-        receivedMessageList.clear();
-        receivedMessageList.addAll(msg_list);
-        Collections.sort(receivedMessageList);
-
-        messagesAdapter.notifyDataSetChanged();
+    public void onAcknowledgeSendMessage(Message message){
+        boolean belongs = dispatchNewMessage(message);
+        if (belongs)
+            addMessage(message);
     }
 
     @Override

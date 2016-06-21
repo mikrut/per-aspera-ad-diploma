@@ -12,9 +12,8 @@ import ru.mail.park.chat.models.Message;
  * Created by 1запуск BeCompact on 27.03.2016.
  */
 public interface IChatListener {
-    void onIncomeMessage(JSONObject message);
-    void onAcknowledgeSendMessage(JSONObject message);
+    void onIncomeMessage(Message message);
+    void onAcknowledgeSendMessage(Message message);
     void onActionDeleteMessage(int mid);
-    void onGetHistoryMessages(ArrayList<Message> msg_list);
     void onWrite(String cid, Contact user);
 }

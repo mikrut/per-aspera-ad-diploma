@@ -75,11 +75,7 @@ public class P2PServerListener extends Thread implements IMessageSender {
     }
 
     protected void onProgressUpdate(String... values) {
-        try {
-            messageListener.onIncomeMessage(new JSONObject(values[0]));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        messageListener.onIncomeMessage(new Message(values[0], activity));
     }
 
     public void sendMessage(String chatID, Message message) {
@@ -100,7 +96,7 @@ public class P2PServerListener extends Thread implements IMessageSender {
                 msg.put("idMessage", String.valueOf(System.currentTimeMillis()));
                 output.writeUTF(msg.toString());
                 if (messageListener != null) {
-                    messageListener.onAcknowledgeSendMessage(msg);
+                    messageListener.onAcknowledgeSendMessage(message);
                 }
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
