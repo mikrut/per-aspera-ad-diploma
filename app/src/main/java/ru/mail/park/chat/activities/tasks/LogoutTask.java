@@ -14,8 +14,11 @@ import ru.mail.park.chat.api.Auth;
  */
 public class LogoutTask extends AsyncTask<String, Void, Boolean> {
     private final IAuthLogout listener;
-    private Auth auth;
     private final Context context;
+
+    public LogoutTask(Context context) {
+        this(context, null);
+    }
 
     public LogoutTask(Context context, IAuthLogout listener) {
         this.context = context;
@@ -27,7 +30,7 @@ public class LogoutTask extends AsyncTask<String, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(String... params) {
-        auth = new Auth(context);
+        Auth auth = new Auth(context);
         Log.d("[TechMail]", "calling doInBackground");
         String token = params[0];
 

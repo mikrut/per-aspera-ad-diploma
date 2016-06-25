@@ -33,6 +33,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.models.OwnerProfile;
 
 import java.util.List;
 
@@ -208,6 +209,17 @@ public class SettingsActivity extends PreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return SecurityPreferenceFragment.class.getName().equals(fragmentName);
+    }
+
+    @Override
+    public void onHeaderClick(Header header, int position) {
+        if (header.id == R.id.action_logout) {
+            OwnerProfile ownerProfile = new OwnerProfile(this);
+            ownerProfile.logout(this);
+            finish();
+        } else {
+            super.onHeaderClick(header, position);
+        }
     }
 
     /**

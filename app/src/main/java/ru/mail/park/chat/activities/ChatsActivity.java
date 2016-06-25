@@ -65,8 +65,7 @@ import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ChatsActivity
-        extends AImageDownloadServiceBindingActivity
-        implements IAuthLogout {
+        extends AImageDownloadServiceBindingActivity {
     private FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
@@ -168,17 +167,9 @@ public class ChatsActivity
            new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("[TechMail]", "starting LogoutTask");
-                    OwnerProfile owner = new OwnerProfile(ChatsActivity.this);
-                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(owner.getAuthToken());
-
-                    owner.removeFromPreferences(ChatsActivity.this);
-                    MessengerDBHelper dbHelper = new MessengerDBHelper(ChatsActivity.this);
-                    dbHelper.clearDatabase();
-
-                    Intent intent = new Intent(ChatsActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
+                    OwnerProfile ownerProfile = new OwnerProfile(ChatsActivity.this);
+                    ownerProfile.logout(ChatsActivity.this);
+                    ChatsActivity.this.finish();
                 }
             }
         };
@@ -347,21 +338,6 @@ public class ChatsActivity
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onStartLogout() {
-        Log.d("[TechMail]", "calling onStartLogout");
-    }
-
-    @Override
-    public void onLogoutSuccess() {
-        Log.d("[TechMail]", "calling onLogoutSuccess");
-    }
-
-    @Override
-    public void onLogoutFail() {
-        Log.d("[TechMail]", "calling onLogoutFail");
     }
 
     private final EnlessLoader chatsLoaderListener = new EnlessLoader();
