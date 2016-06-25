@@ -34,6 +34,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import ru.mail.park.chat.AnalyticsApplication;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
@@ -235,6 +239,13 @@ public class ChatsActivity
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.v("GAv4", "Resume");
+        Tracker t = ((AnalyticsApplication) getApplication()).getDefaultTracker();
+        t.setScreenName("hello");
+        t.send(new HitBuilders.AppViewBuilder().build());
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+
         CircleImageView civ = null;
         getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
         if(uid != null) {
