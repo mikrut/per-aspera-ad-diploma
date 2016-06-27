@@ -64,7 +64,7 @@ public class ApiSection {
         return context;
     }
 
-    String getUrlAddition() {
-        return SERVER_URL;
+    protected String getUrlAddition() {
+        return SERVER_URL + "api/";
     }
 }

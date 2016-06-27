@@ -457,7 +457,7 @@ public class DialogActivity
     }
 
     protected IMessageSender getMessageSender() throws IOException {
-        Messages messages = new Messages(this);
+        Messages messages = new Messages(this, new Handler());
         messages.setChatListener(this);
         return messages;
     }

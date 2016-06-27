@@ -151,7 +151,7 @@ public class ServerConnection {
         try {
             // AFAIK everything except GET sends parameters the same way
             HttpURLConnection httpURLConnection = getUrl();
-            Log.w("url", httpURLConnection.getURL().toString());
+            Log.w(tag + "_url", httpURLConnection.getURL().toString());
 
             httpURLConnection.setInstanceFollowRedirects(true);
             httpURLConnection.setConnectTimeout(10000);
