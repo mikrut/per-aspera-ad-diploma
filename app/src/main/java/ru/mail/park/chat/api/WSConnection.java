@@ -116,7 +116,7 @@ public class WSConnection extends ApiSection {
             Log.v(Messages.class.getSimpleName(), message);
             JSONObject jsonIncome = new JSONObject(message);
 
-            String method = jsonIncome.getString("method");
+            String method = jsonIncome.getString(jsonIncome.has("method") ? "method" : "typePush");
             int status = jsonIncome.getInt("status");
 
             if (status != 200)

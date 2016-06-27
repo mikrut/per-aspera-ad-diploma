@@ -14,6 +14,7 @@ import java.util.List;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
+import ru.mail.park.chat.message_interfaces.IGroupEditListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
@@ -28,8 +29,13 @@ import org.json.JSONObject;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Messages extends WSConnection implements IMessageSender {
-    private @Nullable IChatListener chatListener;
-    private @Nullable IGroupCreateListener groupCreateListener;
+    @Nullable
+    private  IChatListener chatListener;
+    @Nullable
+    private IGroupCreateListener groupCreateListener;
+    @Nullable
+    private IGroupEditListener groupEditListener;
+
     private final @NonNull Handler uiHandler;
 
     public Messages(@NonNull final Context context, @NonNull Handler uiHandler) throws IOException {
@@ -59,12 +65,23 @@ public class Messages extends WSConnection implements IMessageSender {
                                 break;
                             case "writeMessage":
                                 dispatchWriteMessage(jsonIncome);
+                                break;
                         }
                     }
                     if (groupCreateListener != null) {
                         switch (method) {
                             case "createChats":
                                 dispatchCreateChats(jsonIncome);
+                                break;
+                        }
+                    }
+                    if (groupEditListener != null) {
+                        switch (method) {
+                            case "addUser":
+                                dispatchAddUser(jsonIncome);
+                                break;
+                            case "updateName":
+                                dispatchUpdateName(jsonIncome);
                                 break;
                         }
                     }
@@ -121,11 +138,41 @@ public class Messages extends WSConnection implements IMessageSender {
 
         String cid = data.getString("idChat");
         JSONObject user = data.getJSONObject("user");
-        try {
-            Contact contact = new Contact(user, getContext());
-            chatListener.onWrite(cid, contact);
-        } catch (ParseException e) {
-            e.printStackTrace();
+
+        if (chatListener != null) {
+            try {
+                Contact contact = new Contact(user, getContext());
+                chatListener.onWrite(cid, contact);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void dispatchAddUser(JSONObject income) throws JSONException {
+        JSONObject data = income.getJSONObject("data");
+
+        JSONObject user = data.getJSONObject("userNew");
+        String cid = data.getString("idRoom");
+
+        if (groupEditListener != null) {
+            try {
+                Contact contact = new Contact(user, getContext());
+                groupEditListener.onAddUser(cid, contact);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void dispatchUpdateName(JSONObject income) throws JSONException {
+        JSONObject data = income.getJSONObject("data");
+
+        String cid = data.getString("idRoom");
+        String name = data.getString("user");
+
+        if (groupEditListener != null) {
+            groupEditListener.onUpdateName(cid, name);
         }
     }
 
@@ -244,35 +291,42 @@ public class Messages extends WSConnection implements IMessageSender {
         ws.sendText(jsonRequest.toString());
     }
 
-    public void deleteMessage(int mid, String cid) {
+    public void addUser(String uid, String cid) {
         reconnect();
-
-        JSONObject jsonData = new JSONObject();
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
 
         try {
-            jsonData.put("method", "DELETE");
-            jsonData.put("mid", mid);
-            jsonData.put("cid", cid);
-        } catch(JSONException e) {
+            jsonRequest.put("controller", "Chat");
+            jsonRequest.put("method", "addUser");
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            data.put("idRoom", cid);
+            data.put("idUser", uid);
+            jsonRequest.put("data", data);
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-    //    ws.sendText(jsonData.toString());
+        ws.sendText(jsonRequest.toString());
     }
 
-    public void getHistory(String cid) {
+    public void updateName(String cid, String chatName) {
         reconnect();
-
-        JSONObject jsonData = new JSONObject();
+        JSONObject jsonRequest = new JSONObject();
+        JSONObject data = new JSONObject();
 
         try {
-            jsonData.put("method", "GET");
-            jsonData.put("cid", cid);
-        } catch(JSONException e) {
+            jsonRequest.put("controller", "Chat");
+            jsonRequest.put("method", "updateName");
+            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
+            data.put("idRoom", cid);
+            data.put("nameChat", chatName);
+            jsonRequest.put("data", data);
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-     //   ws.sendText(jsonData.toString());
+        ws.sendText(jsonRequest.toString());
     }
 
     public void disconnect() {
@@ -306,5 +360,9 @@ public class Messages extends WSConnection implements IMessageSender {
 
     public void setChatListener(IChatListener chatListener) {
         this.chatListener = chatListener;
+    }
+
+    public void setGroupEditListener(@Nullable IGroupEditListener groupEditListener) {
+        this.groupEditListener = groupEditListener;
     }
 }

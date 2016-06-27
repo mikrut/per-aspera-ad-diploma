@@ -18,8 +18,10 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
@@ -110,6 +112,14 @@ public class ContactsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(DB_LOADER, null, contactsLoaderListener);
+    }
+
+    public List<Contact> getData() {
+        return contactAdapter.getData();
+    }
+
+    public void setData(@NonNull List<Contact> data) {
+        contactsView.setAdapter(onCreateContactAdapter(data));
     }
 
     protected AContactAdapter onCreateContactAdapter(@NonNull List<Contact> data) {

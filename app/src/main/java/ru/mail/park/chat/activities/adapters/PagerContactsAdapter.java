@@ -17,18 +17,34 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
     private static final int ADDIBLE_CONTACTS_POSITION = 1;
     private static final int SUBSCRIPTIONS_CONTACTS_POSITION = 2;
 
-    ContactsCurrentFragment currentFragment = new ContactsCurrentFragment();
-    ContactsSubscribersFragment addibleFragment = new ContactsSubscribersFragment();
-    ContactsSubscribersFragment subscriptionsFragment = new ContactsSubscribersFragment();
+    final ContactsCurrentFragment currentFragment = new ContactsCurrentFragment();
+    final ContactsSubscribersFragment addibleFragment;
+    final ContactsSubscribersFragment subscriptionsFragment;
+
+    private final boolean pickContacts;
+
+    public PagerContactsAdapter(FragmentManager fm, boolean pickContacts) {
+        super(fm);
+        this.pickContacts = pickContacts;
+
+        if (!pickContacts) {
+            Bundle args = new Bundle();
+
+            subscriptionsFragment = new ContactsSubscribersFragment();
+            args.putBoolean(ContactsSubscribersFragment.MY_ARG, false);
+            subscriptionsFragment.setArguments(args);
+
+            addibleFragment = new ContactsSubscribersFragment();
+            args.putBoolean(ContactsSubscribersFragment.MY_ARG, true);
+            addibleFragment.setArguments(args);
+        } else {
+            subscriptionsFragment = null;
+            addibleFragment = null;
+        }
+    }
 
     public PagerContactsAdapter(FragmentManager fm) {
-        super(fm);
-        Bundle args = new Bundle();
-        args.putBoolean(ContactsSubscribersFragment.MY_ARG, false);
-        subscriptionsFragment.setArguments(args);
-
-        args.putBoolean(ContactsSubscribersFragment.MY_ARG, true);
-        addibleFragment.setArguments(args);
+        this(fm, false);
     }
 
     @Override
@@ -53,7 +69,7 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return pickContacts ? 1 : 3;
     }
 
     // FIXME: use resource strings

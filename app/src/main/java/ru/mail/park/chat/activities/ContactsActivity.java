@@ -1,6 +1,7 @@
 package ru.mail.park.chat.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -22,12 +23,15 @@ public class ContactsActivity
     ViewPager viewPager;
     PagerContactsAdapter pagerAdapter;
 
+    public static final String RESULT_CONTACT = ContactsActivity.class.getCanonicalName() + ".RESULT_CONTACT";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
-        pagerAdapter = new PagerContactsAdapter(getSupportFragmentManager());
+        pagerAdapter = new PagerContactsAdapter(getSupportFragmentManager(),
+                getCallingActivity() != null);
         viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(pagerAdapter);
 
@@ -62,8 +66,15 @@ public class ContactsActivity
 
     @Override
     public void onContactClicked(Contact contact) {
-        Intent intent = new Intent(this, ProfileViewActivity.class);
-        intent.putExtra(ProfileViewActivity.UID_EXTRA, contact.getUid());
-        startActivity(intent);
+        if (getCallingActivity() == null) {
+            Intent intent = new Intent(this, ProfileViewActivity.class);
+            intent.putExtra(ProfileViewActivity.UID_EXTRA, contact.getUid());
+            startActivity(intent);
+        } else {
+            Intent result = new Intent();
+            result.putExtra(RESULT_CONTACT, contact);
+            setResult(RESULT_OK, result);
+            finish();
+        }
     }
 }
