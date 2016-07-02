@@ -29,6 +29,8 @@ import org.json.JSONObject;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Messages extends WSConnection implements IMessageSender {
+    private static final String TAG = Messages.class.getSimpleName();
+
     @Nullable
     private  IChatListener chatListener;
     @Nullable
@@ -86,7 +88,7 @@ public class Messages extends WSConnection implements IMessageSender {
                         }
                     }
                 } catch (JSONException e) {
-                    Log.w(Messages.class.getSimpleName() + ".dispatchJSON", e.getLocalizedMessage());
+                    Log.w(TAG + ".dispatchJSON", e.getLocalizedMessage());
                 }
             }
         });
@@ -203,7 +205,7 @@ public class Messages extends WSConnection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.d(Messages.class.getSimpleName(), jsonRequest.toString());
+        Log.d(TAG, jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -242,7 +244,7 @@ public class Messages extends WSConnection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
+        Log.v(TAG, jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -267,7 +269,7 @@ public class Messages extends WSConnection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
+        Log.v(TAG, jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -287,7 +289,7 @@ public class Messages extends WSConnection implements IMessageSender {
             e.printStackTrace();
         }
 
-        Log.v(Messages.class.getSimpleName(), jsonRequest.toString());
+        Log.v(TAG, jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -297,7 +299,7 @@ public class Messages extends WSConnection implements IMessageSender {
         JSONObject data = new JSONObject();
 
         try {
-            jsonRequest.put("controller", "Chat");
+            jsonRequest.put("controller", "Chats");
             jsonRequest.put("method", "addUser");
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
@@ -316,7 +318,7 @@ public class Messages extends WSConnection implements IMessageSender {
         JSONObject data = new JSONObject();
 
         try {
-            jsonRequest.put("controller", "Chat");
+            jsonRequest.put("controller", "Chats");
             jsonRequest.put("method", "updateName");
             data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
             data.put("idRoom", cid);
@@ -326,6 +328,7 @@ public class Messages extends WSConnection implements IMessageSender {
             e.printStackTrace();
         }
 
+        Log.v(TAG + ".updateName", jsonRequest.toString());
         ws.sendText(jsonRequest.toString());
     }
 
@@ -351,7 +354,7 @@ public class Messages extends WSConnection implements IMessageSender {
                 e.printStackTrace();
             }
         }
-        Log.d(Messages.class.getSimpleName(), ws.getState().toString());
+        Log.d(TAG, ws.getState().toString());
     }
 
     public void setGroupCreateListener(IGroupCreateListener groupCreateListener) {

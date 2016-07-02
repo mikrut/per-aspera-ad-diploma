@@ -210,12 +210,13 @@ public class GroupDialogEditActivity
         switch (item.getItemId()) {
             case R.id.action_edit_name:
                 final EditTextDialogBuilder builder = new EditTextDialogBuilder(this);
-                builder
+                AlertDialog dialog = builder
                 .setTitle("Edit name")
                 .setMessage("Input name")
-                .setIcon(R.drawable.ic_edit_white_24dp)
+                .setIcon(R.drawable.ic_edit_black_24dp)
                 .setPositiveButton(
-                        getString(R.string.action_save),
+                        // TODO: localised strings
+                        "Save",//getString(R.string.action_save),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -224,9 +225,11 @@ public class GroupDialogEditActivity
                             }
                         }
                 ).setNegativeButton(
-                        getString(R.string.cancel),
+                        "Cancel",//getString(R.string.cancel),
                         null
-                ).create().show();
+                ).create();
+                dialog.show();
+                //dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(getColor(R.color.blue));
                 break;
             case R.id.action_delete:
                 // TODO: Delete and leave group

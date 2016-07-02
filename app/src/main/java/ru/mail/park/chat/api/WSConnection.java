@@ -104,7 +104,6 @@ public class WSConnection extends ApiSection {
             Log.e(TAG + ".onSendError", cause.getLocalizedMessage());
         }
 
-
         @Override
         public void onTextMessage(WebSocket websocket, final String message) {
             dispatchTextMessage(websocket, message);

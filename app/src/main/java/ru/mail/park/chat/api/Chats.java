@@ -166,7 +166,7 @@ public class Chats extends ApiSection {
 
                 ImageUpdateResult retval = new ImageUpdateResult();
                 retval.user = new Contact(user, getContext());
-                retval.image = new URL(super.getUrlAddition() + img.getString("img"));
+                retval.image = new URL(ApiSection.SERVER_URL + img.getString("img"));
                 return retval;
             } else {
                 String message = result.getString("message");
