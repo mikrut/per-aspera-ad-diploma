@@ -215,8 +215,7 @@ public class GroupDialogEditActivity
                 .setMessage("Input name")
                 .setIcon(R.drawable.ic_edit_black_24dp)
                 .setPositiveButton(
-                        // TODO: localised strings
-                        "Save",//getString(R.string.action_save),
+                        getString(R.string.action_save),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -225,7 +224,7 @@ public class GroupDialogEditActivity
                             }
                         }
                 ).setNegativeButton(
-                        "Cancel",//getString(R.string.cancel),
+                        getString(R.string.cancel),
                         null
                 ).create();
                 dialog.show();

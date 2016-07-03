@@ -12,14 +12,14 @@ import java.util.List;
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.api.Chats;
 import ru.mail.park.chat.database.MessagesHelper;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.models.Message;
 
 /**
  * Created by mikrut on 10.04.16.
  */
 public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
-    public static final String ARG_PAGE = ScrollEnlessPagination.ARG_PAGE;
+    public static final String ARG_PAGE = ScrollEndlessPagination.ARG_PAGE;
     public static final String CID_ARG = MessagesLoader.class.getCanonicalName() + ".CID_ARG";
     public static final String UID_ARG = MessagesLoader.class.getCanonicalName() + ".UID_ARG";
 

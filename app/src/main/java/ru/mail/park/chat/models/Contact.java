@@ -54,7 +54,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     }
 
     public Contact(JSONObject contact, Context context) throws JSONException, ParseException {
-        Log.d(Contact.class.getSimpleName() + ".new", contact.toString());
+        // Log.d(Contact.class.getSimpleName() + ".new", contact.toString());
 
         String idParameterName = "";
         if (contact.has("id"))

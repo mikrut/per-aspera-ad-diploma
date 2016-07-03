@@ -1,6 +1,5 @@
 package ru.mail.park.chat.activities;
 
-import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -54,13 +53,10 @@ import ru.mail.park.chat.AnalyticsApplication;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
-import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
-import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatsHelper;
-import ru.mail.park.chat.database.MessengerDBHelper;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
@@ -77,7 +73,7 @@ public class ChatsActivity
     private ProgressBar pbChats;
 
     private LinearLayoutManager liman;
-    private ScrollEnlessPagination pagination;
+    private ScrollEndlessPagination pagination;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
@@ -128,7 +124,7 @@ public class ChatsActivity
         liman.setReverseLayout(true);
         liman.setStackFromEnd(true);
         chatsList.setLayoutManager(liman);
-        pagination = new ScrollEnlessPagination<>(liman, chatsLoaderListener, CHAT_WEB_LOADER, getLoaderManager());
+        pagination = new ScrollEndlessPagination<>(liman, chatsLoaderListener, CHAT_WEB_LOADER, getLoaderManager());
         pagination.setPageSize(4);
         chatsList.addOnScrollListener(pagination);
 
@@ -352,7 +348,7 @@ public class ChatsActivity
     }
 
     private final EnlessLoader chatsLoaderListener = new EnlessLoader();
-    class EnlessLoader implements ScrollEnlessPagination.EndlessLoaderListener<Chat> {
+    class EnlessLoader implements ScrollEndlessPagination.EndlessLoaderListener<Chat> {
         boolean listEndReached = false;
         private ArrayList<Chat> chatsData = new ArrayList<>();
 
