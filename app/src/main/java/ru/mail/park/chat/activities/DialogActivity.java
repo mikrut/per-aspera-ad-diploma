@@ -336,9 +336,6 @@ public class DialogActivity
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        boolean ok = messages.isConnected();
-                        dialogActionBar.setProgress(!ok);
-
                         if (undeliveredMessages.size() == 0)
                             messages.reconnect();
 
@@ -612,6 +609,26 @@ public class DialogActivity
         Collections.sort(receivedMessageList);
 
         messagesAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onUpdateChatStatus(boolean isOnline) {
+        // TODO: use Android string resources
+        if (isOnline) {
+            if (thisChat != null) {
+                if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {
+
+                } else {
+                    dialogActionBar.setSubtitle(thisChat.getChatUsers().size() + " members");
+                }
+            } else {
+                dialogActionBar.setSubtitle("Connected");
+            }
+        } else {
+            dialogActionBar.setSubtitle("Not connected");
+        }
+        // TODO: consider using another type of status indication (as proposed by Anton)
+        dialogActionBar.setProgress(!isOnline);
     }
 
     @Override

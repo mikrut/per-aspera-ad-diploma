@@ -54,6 +54,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         private final TextView messageText;
         private final ListView attachments;
         public final ImageView clockImageView;
+        private final TextView messageTime;
+
         private String authorUID;
 
         public ViewHolder(View itemView) {
@@ -61,6 +63,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             clockImageView = (ImageView) itemView.findViewById(R.id.clockImageView);
             messageText = (TextView) itemView.findViewById(R.id.messageText);
             attachments = (ListView) itemView.findViewById(R.id.attachments_list_view);
+            messageTime = (TextView) itemView.findViewById(R.id.messageTime);
         }
 
         public void setMessage(@NonNull final Message message) {
@@ -110,6 +113,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                 attachments.setVisibility(View.VISIBLE);
             } else {
                 attachments.setVisibility(View.GONE);
+            }
+
+            // TODO: message time
+            if (false) {
+                messageTime.setText("Message time text");
             }
         }
     }

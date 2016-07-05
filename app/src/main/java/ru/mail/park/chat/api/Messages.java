@@ -38,11 +38,26 @@ public class Messages extends WSConnection implements IMessageSender {
     @Nullable
     private IGroupEditListener groupEditListener;
 
+    private String anotherSideStatus = null;
+
     private final @NonNull Handler uiHandler;
 
     public Messages(@NonNull final Context context, @NonNull Handler uiHandler) throws IOException {
         super(context);
         this.uiHandler = uiHandler;
+    }
+
+    @Override
+    protected void dispatchNewState(WebSocketState newState) {
+        super.dispatchNewState(newState);
+        if (chatListener != null) {
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    chatListener.onUpdateChatStatus(isConnected());
+                }
+            });
+        }
     }
 
     @Override
@@ -354,7 +369,6 @@ public class Messages extends WSConnection implements IMessageSender {
                 e.printStackTrace();
             }
         }
-        Log.d(TAG, ws.getState().toString());
     }
 
     public void setGroupCreateListener(IGroupCreateListener groupCreateListener) {

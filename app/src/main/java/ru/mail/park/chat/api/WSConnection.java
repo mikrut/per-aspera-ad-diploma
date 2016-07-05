@@ -108,6 +108,12 @@ public class WSConnection extends ApiSection {
         public void onTextMessage(WebSocket websocket, final String message) {
             dispatchTextMessage(websocket, message);
         }
+
+        @Override
+        public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
+            Log.v(TAG + ".onStateChanged", newState.toString());
+            dispatchNewState(newState);
+        }
     };
 
     private void dispatchTextMessage(WebSocket webSocket, final String message) {
@@ -128,6 +134,10 @@ public class WSConnection extends ApiSection {
     }
 
     protected void dispatchJSON(@NonNull final String method, JSONObject jsonIncome) {
+
+    }
+
+    protected void dispatchNewState(WebSocketState newState) {
 
     }
 }
