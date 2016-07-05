@@ -50,16 +50,32 @@ public class ScrollEndlessPagination<T> extends RecyclerView.OnScrollListener {
         Log.d(TAG + ".onScrolled", "Item count: " + String.valueOf(liman.getItemCount()));
         if (!loader.isEndReached() &&
                 lastVisible == liman.getItemCount() - 1) {
-            Log.d(TAG + ".onScrolled", "Loading...");
-            int nextPage = (liman.getItemCount() / pageSize) + 1;
-            Bundle args = loader.getBundle();
-            args.putInt(ARG_PAGE, nextPage);
-            manager.restartLoader(loaderID, args, loader).forceLoad();
+            loadMore();
         }
     }
 
     public interface EndlessLoaderListener <T> extends LoaderManager.LoaderCallbacks<List<T>> {
         boolean isEndReached();
         Bundle getBundle();
+    }
+
+    protected void loadMore() {
+        Log.d(TAG + ".onScrolled", "Loading...");
+        int nextPage = (liman.getItemCount() / pageSize) + 1;
+        Bundle args = loader.getBundle();
+        args.putInt(ARG_PAGE, nextPage);
+        manager.restartLoader(loaderID, args, loader).forceLoad();
+    }
+
+    protected EndlessLoaderListener<T> getLoader() {
+        return loader;
+    }
+
+    protected LoaderManager getManager() {
+        return manager;
+    }
+
+    protected int getLoaderID() {
+        return loaderID;
     }
 }

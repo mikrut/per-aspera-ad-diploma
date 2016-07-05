@@ -67,6 +67,7 @@ import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
+import ru.mail.park.chat.helpers.DialogEndlessPagination;
 import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.loaders.ChatInfoLoader;
 import ru.mail.park.chat.loaders.ChatInfoWebLoader;
@@ -332,7 +333,7 @@ public class DialogActivity
                         if (chatID != null && !messages.isConnected()) {
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
-                            // getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
+                            getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
                         boolean ok = messages.isConnected();
@@ -358,7 +359,7 @@ public class DialogActivity
         layoutManager.setStackFromEnd(true);
         messagesList.setLayoutManager(layoutManager);
 
-        pagination = new ScrollEndlessPagination<>(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager());
+        pagination = new DialogEndlessPagination(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager(), receivedMessageList);
         messagesList.addOnScrollListener(pagination);
         messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
