@@ -117,7 +117,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
             // TODO: message time
             if (false) {
+                messageTime.setVisibility(View.VISIBLE);
                 messageTime.setText("Message time text");
+            } else {
+                messageTime.setVisibility(View.GONE);
             }
         }
     }

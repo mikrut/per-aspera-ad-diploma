@@ -109,7 +109,7 @@ public class GroupDialogEditActivity
         ChatsHelper helper = new ChatsHelper(this);
         chat = helper.getChat(cid);
         toolbarTitle.setText(chat.getName());
-        toolbarSubtitle.setText(chat.getChatUsers().size() + " user" + (chat.getChatUsers().size() > 1 ? "s" : ""));
+        toolbarSubtitle.setText(chat.getMembersCount() + " user" + (chat.getMembersCount() > 1 ? "s" : ""));
 
         fragment = new ContactsGroupFragment();
         Bundle args = new Bundle();

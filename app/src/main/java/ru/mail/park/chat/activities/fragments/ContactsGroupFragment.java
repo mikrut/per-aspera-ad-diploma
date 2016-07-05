@@ -11,7 +11,10 @@ import android.widget.Toast;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.loaders.ContactListDBLoader;
+import ru.mail.park.chat.loaders.ContactListWebLoader;
 import ru.mail.park.chat.loaders.GroupContactsLoader;
+import ru.mail.park.chat.loaders.GroupContactsWebLoader;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
@@ -42,10 +45,15 @@ public class ContactsGroupFragment extends ContactsFragment {
     private class GroupContactsLoaderCallbacks extends ContactsLoaderCallbacks {
         @Override
         public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
-            if (cid != null)
-                return new GroupContactsLoader(getContext(), id, cid);
-            else
-                return null;
+            if (cid != null) {
+                switch (id) {
+                    case DB_LOADER:
+                        return new GroupContactsLoader(getContext(), id, cid);
+                    case WEB_LOADER:
+                        return new GroupContactsWebLoader(getContext(), id, cid);
+                }
+            }
+            return null;
         }
     }
 }

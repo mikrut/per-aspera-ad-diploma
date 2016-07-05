@@ -619,7 +619,7 @@ public class DialogActivity
                 if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {
 
                 } else {
-                    dialogActionBar.setSubtitle(thisChat.getChatUsers().size() + " members");
+                    dialogActionBar.setSubtitle(thisChat.getMembersCount() + " members");
                 }
             } else {
                 dialogActionBar.setSubtitle("Connected");
