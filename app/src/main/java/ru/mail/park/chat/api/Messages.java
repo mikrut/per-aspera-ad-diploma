@@ -186,7 +186,7 @@ public class Messages extends WSConnection implements IMessageSender {
         JSONObject data = income.getJSONObject("data");
 
         String cid = data.getString("idRoom");
-        String name = data.getString("user");
+        String name = data.getString("name");
 
         if (groupEditListener != null) {
             groupEditListener.onUpdateName(cid, name);

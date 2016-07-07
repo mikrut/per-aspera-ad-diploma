@@ -26,7 +26,7 @@ import ru.mail.park.chat.models.Contact;
  * Created by Михаил on 24.04.2016.
  */
 public class DialogCreateActivity
-        extends AppCompatActivity
+        extends AImageDownloadServiceBindingActivity
         implements ContactsFragment.OnPickEventListener {
     TextView newGroupClickable;
     TextView newP2PClickable;

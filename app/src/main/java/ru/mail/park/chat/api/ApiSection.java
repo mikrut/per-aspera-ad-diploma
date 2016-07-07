@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
@@ -19,7 +20,7 @@ import ru.mail.park.chat.database.PreferenceConstants;
 public class ApiSection {
     public final static String AUTH_TOKEN_PARAMETER_NAME = "accessToken";
     // FIXME: use SSL connection
-    public final static String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
+    public final static Uri SERVER_URL = new Uri.Builder().scheme("http").authority("p30480.lab1.stud.tech-mail.ru").build();
 
     private final String AUTH_TOKEN;
     private final Context context;
@@ -40,7 +41,7 @@ public class ApiSection {
         if (addToken)
             right.add(new Pair<String, Object>(AUTH_TOKEN_PARAMETER_NAME, AUTH_TOKEN));
 
-        ServerConnection serverConnection = new ServerConnection(context, getUrlAddition() + requestURL);
+        ServerConnection serverConnection = new ServerConnection(context, getUrlAddition().buildUpon().appendPath(requestURL).build().toString());
         serverConnection.setParameters(right);
         serverConnection.setRequestMethod(requestMethod);
 
@@ -64,7 +65,7 @@ public class ApiSection {
         return context;
     }
 
-    protected String getUrlAddition() {
-        return SERVER_URL + "api/";
+    protected Uri getUrlAddition() {
+        return SERVER_URL.buildUpon().appendPath("api").build();
     }
 }

@@ -10,21 +10,17 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.AImageDownloadServiceBindingActivity;
 import ru.mail.park.chat.activities.adapters.AContactAdapter;
 import ru.mail.park.chat.activities.adapters.ContactAdapter;
 import ru.mail.park.chat.loaders.ContactListDBLoader;
@@ -35,7 +31,9 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by Михаил on 23.04.2016.
  */
-public class ContactsFragment extends Fragment {
+public class ContactsFragment
+        extends Fragment
+        implements AImageDownloadServiceBindingActivity.IImageDownloadManagerBinderSubscriber {
     public static final String IS_MULTICHOICE = ContactsFragment.class.getCanonicalName() + ".IS_MULTICHOICE";
     public static final String PICKED_CONTACTS = ContactsFragment.class.getCanonicalName() + ".PICKED_CONTACTS";
 
@@ -106,6 +104,9 @@ public class ContactsFragment extends Fragment {
             onPickEventListener = (OnPickEventListener) context;
             onPickEventListener.onContactSetChanged(chosenContacts);
         }
+        if (context instanceof AImageDownloadServiceBindingActivity) {
+            ((AImageDownloadServiceBindingActivity) context).subscribe(this);
+        }
     }
 
     @Override
@@ -149,7 +150,7 @@ public class ContactsFragment extends Fragment {
         if (multichoice) {
             contactAdapter.setMultichoice(chosenContacts);
         }
-        contactAdapter.setImageManager(manager);
+        contactAdapter.onImageDownloadManagerAvailable(manager);
         return contactAdapter;
     }
 
@@ -211,9 +212,11 @@ public class ContactsFragment extends Fragment {
 
 
     private ImageDownloadManager manager;
-    public void setImageManager(ImageDownloadManager manager) {
+
+    @Override
+    public void onImageDownloadManagerAvailable(ImageDownloadManager manager) {
         if (contactAdapter != null)
-            contactAdapter.setImageManager(manager);
+            contactAdapter.onImageDownloadManagerAvailable(manager);
         this.manager = manager;
     }
 }

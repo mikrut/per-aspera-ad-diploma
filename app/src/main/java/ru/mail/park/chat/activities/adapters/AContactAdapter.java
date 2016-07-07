@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Calendar;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.AImageDownloadServiceBindingActivity;
 import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.api.ApiSection;
@@ -30,7 +31,9 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by Михаил on 12.03.2016.
  */
-public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class AContactAdapter
+        extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+        implements AImageDownloadServiceBindingActivity.IImageDownloadManagerBinderSubscriber {
     static final int CONTACT = 1;
 
     private Drawable contactActionDrawable;
@@ -203,7 +206,8 @@ public abstract class AContactAdapter extends RecyclerView.Adapter<RecyclerView.
         this.contactActionListener = listener;
     }
 
-    public void setImageManager(ImageDownloadManager imageManager) {
+    @Override
+    public void onImageDownloadManagerAvailable(ImageDownloadManager imageManager) {
         ImageDownloadManager old = this.imageManager;
         this.imageManager = imageManager;
         if (old == null && imageManager != null) {

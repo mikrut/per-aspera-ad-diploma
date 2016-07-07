@@ -53,13 +53,6 @@ public class ContactsActivity
     }
 
     @Override
-    protected void onSetImageManager(ImageDownloadManager mgr) {
-        if (pagerAdapter != null) {
-            pagerAdapter.setImageManager(mgr);
-        }
-    }
-
-    @Override
     public void onContactSetChanged(TreeSet<Contact> chosenContacts) {
 
     }

@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -21,6 +22,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Proxy;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.List;
 
@@ -44,9 +46,15 @@ public class WSConnection extends ApiSection {
     protected WebSocket ws;
     protected OwnerProfile profile;
 
+    private static final String URL_ADDITION = "ws/";
+
     @Override
-    public String getUrlAddition() {
-        return SERVER_URL + "ws/";
+    public Uri getUrlAddition() {
+        return SERVER_URL.buildUpon().appendPath(URL_ADDITION).build();
+    }
+
+    private Uri formUrl() {
+        return getUrlAddition().buildUpon().scheme("http").appendQueryParameter(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken()).build();
     }
 
     private WebSocket createWebSocket() throws IOException {
@@ -72,9 +80,11 @@ public class WSConnection extends ApiSection {
             }
         }
 
+        Log.w("formUrl", formUrl().toString());
+
         return wsFactory
                 .setConnectionTimeout(TIMEOUT)
-                .createSocket(getUrlAddition())
+                .createSocket(formUrl().toString())
                 .addListener(wsAdapter)
                 .connectAsynchronously();
     }

@@ -35,7 +35,7 @@ import ru.mail.park.chat.models.Message;
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity
-        extends AppCompatActivity
+        extends AImageDownloadServiceBindingActivity
         implements IGroupCreateListener, ContactsFragment.OnPickEventListener {
     private EditText chosenContactsList;
     private EditText groupChat;

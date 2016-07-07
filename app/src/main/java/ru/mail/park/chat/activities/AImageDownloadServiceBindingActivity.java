@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 
@@ -16,6 +20,11 @@ import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 
 // TODO: think about using composition instead of inheritance
 public abstract class AImageDownloadServiceBindingActivity extends AppCompatActivity {
+    private List<IImageDownloadManagerBinderSubscriber> subscribers = new ArrayList<>();
+
+    public interface IImageDownloadManagerBinderSubscriber {
+        void onImageDownloadManagerAvailable(@NonNull ImageDownloadManager idm);
+    }
 
     @Override
     protected void onStart() {
@@ -45,7 +54,7 @@ public abstract class AImageDownloadServiceBindingActivity extends AppCompatActi
             ImageDownloadManager.ImageDownloadBinder binder =
                     (ImageDownloadManager.ImageDownloadBinder) service;
             imageDownloadManager = binder.getService();
-            onSetImageManager(imageDownloadManager);
+            nonOverridableOnSetImageManager(imageDownloadManager);
             bound = true;
         }
 
@@ -55,9 +64,26 @@ public abstract class AImageDownloadServiceBindingActivity extends AppCompatActi
         }
     };
 
-    protected abstract void onSetImageManager(ImageDownloadManager mgr);
+    private void nonOverridableOnSetImageManager(ImageDownloadManager mgr) {
+        for (IImageDownloadManagerBinderSubscriber subscriber : subscribers) {
+            subscriber.onImageDownloadManagerAvailable(mgr);
+        }
+
+        onSetImageManager(mgr);
+    }
+
+    protected void onSetImageManager(ImageDownloadManager mgr) {
+
+    }
 
     protected ImageDownloadManager getImageDownloadManager() {
         return imageDownloadManager;
+    }
+
+    public void subscribe(IImageDownloadManagerBinderSubscriber subscriber) {
+        subscribers.add(subscriber);
+        if (imageDownloadManager != null) {
+            subscriber.onImageDownloadManagerAvailable(imageDownloadManager);
+        }
     }
 }

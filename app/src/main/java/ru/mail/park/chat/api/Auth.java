@@ -1,6 +1,7 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -35,8 +36,8 @@ public class Auth extends ApiSection {
     private static final String URL_ADDITION = "auth/";
 
     @Override
-    protected String getUrlAddition() {
-        return super.getUrlAddition() + URL_ADDITION;
+    protected Uri getUrlAddition() {
+        return super.getUrlAddition().buildUpon().appendPath(URL_ADDITION).build();
     }
 
     private String login;

@@ -61,12 +61,6 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
         }
     }
 
-    public void setImageManager(ImageDownloadManager manager) {
-        currentFragment.setImageManager(manager);
-        addibleFragment.setImageManager(manager);
-        subscriptionsFragment.setImageManager(manager);
-    }
-
     @Override
     public int getCount() {
         return pickContacts ? 1 : 3;
