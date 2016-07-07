@@ -7,4 +7,9 @@
         android:title="@string/pref_header_security"
         android:icon="@drawable/ic_security_black_24dp" />
 
+    <header
+        android:id="@+id/action_logout"
+        android:icon="@drawable/ic_lock_black_24dp"
+        android:title="@string/action_log_out" />
+
 </preference-headers>

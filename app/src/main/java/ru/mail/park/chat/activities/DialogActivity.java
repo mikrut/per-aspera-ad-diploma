@@ -26,7 +26,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -34,7 +33,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -69,10 +67,10 @@ import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.helpers.DialogEndlessPagination;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.loaders.ChatInfoLoader;
 import ru.mail.park.chat.loaders.ChatInfoWebLoader;
-import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
@@ -129,7 +127,7 @@ public class DialogActivity
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
-    private ScrollEnlessPagination<Message> pagination;
+    private ScrollEndlessPagination<Message> pagination;
     protected IMessageSender messages;
 
     private boolean receivedFromWeb = false;
@@ -338,9 +336,6 @@ public class DialogActivity
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        boolean ok = messages.isConnected();
-                        dialogActionBar.setProgress(!ok);
-
                         if (undeliveredMessages.size() == 0)
                             messages.reconnect();
 
@@ -361,7 +356,7 @@ public class DialogActivity
         layoutManager.setStackFromEnd(true);
         messagesList.setLayoutManager(layoutManager);
 
-        pagination = new ScrollEnlessPagination<>(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager());
+        pagination = new DialogEndlessPagination(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager(), receivedMessageList);
         messagesList.addOnScrollListener(pagination);
         messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -379,8 +374,6 @@ public class DialogActivity
                 }
             }
         });
-
-
     }
 
     private void initActionListeners() {
@@ -457,7 +450,7 @@ public class DialogActivity
     }
 
     protected IMessageSender getMessageSender() throws IOException {
-        Messages messages = new Messages(this);
+        Messages messages = new Messages(this, new Handler());
         messages.setChatListener(this);
         return messages;
     }
@@ -495,40 +488,43 @@ public class DialogActivity
     }
 
     private void addMessage(@NonNull Message message) {
+        int itemCount = receivedMessageList.size();
         boolean atBottom =
                 (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
 
-        boolean inserted = false;
         boolean isDifferent = true;
-        for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
+        Integer insertedPosition = null;
+
+        for (int position = 0; position < receivedMessageList.size() && insertedPosition == null; position++) {
             int comp = message.compareTo(receivedMessageList.get(position));
             if (comp < 0) {
                 receivedMessageList.add(position, message);
-                messagesAdapter.notifyItemInserted(position);
-                inserted = true;
+                messagesAdapter.notifyItemInserted(insertedPosition = position);
             } else if (comp == 0) {
                 Message mess = receivedMessageList.get(position);
                 if (mess.getFiles() != null && mess.getFiles().size() > 0) {
                     message.setFiles(mess.getFiles());
                 }
                 undeliveredMessages.remove(mess);
-                if (mess.getMessageBody().equals(message.getMessageBody())) {
+                if (mess.getMid() == null && mess.getMessageBody().equals(message.getMessageBody()) || mess.getMid() != null && mess.getMid().equals(message.getMid())) {
                     isDifferent = false;
+                    Log.v(DialogActivity.class.getSimpleName(), "MID1: " + mess.getMid() + ", MID2: " + message.getMid());
                 }
                 receivedMessageList.set(position, message);
-                messagesAdapter.notifyItemChanged(position);
-                inserted = true;
+                messagesAdapter.notifyItemChanged(insertedPosition = position);
             }
         }
 
-        if (!inserted) {
+        if (insertedPosition == null) {
             receivedMessageList.add(message);
-            messagesAdapter.notifyItemInserted(receivedMessageList.size() - 1);
+            messagesAdapter.notifyItemInserted(insertedPosition = receivedMessageList.size() - 1);
         }
+
+        Log.v(DialogActivity.class.getSimpleName() + ".addMessage", "Position: " + insertedPosition + ", mid: " + message.getMid() + ", diff: " + isDifferent + ", size: " + receivedMessageList.size());
 
         if (atBottom) {
             messagesList.scrollToPosition(receivedMessageList.size() - 1);
-        } else if (isDifferent) {
+        } else if (isDifferent && insertedPosition >= itemCount - 1) {
             buttonDown.setVisibility(View.VISIBLE);
         }
     }
@@ -616,6 +612,26 @@ public class DialogActivity
     }
 
     @Override
+    public void onUpdateChatStatus(boolean isOnline) {
+        // TODO: use Android string resources
+        if (isOnline) {
+            if (thisChat != null) {
+                if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {
+
+                } else {
+                    dialogActionBar.setSubtitle(thisChat.getMembersCount() + " members");
+                }
+            } else {
+                dialogActionBar.setSubtitle("Connected");
+            }
+        } else {
+            dialogActionBar.setSubtitle("Not connected");
+        }
+        // TODO: consider using another type of status indication (as proposed by Anton)
+        dialogActionBar.setProgress(!isOnline);
+    }
+
+    @Override
     public void onWrite(String cid, Contact user) {
         if (ObjectUtils.compare(cid, chatID) == 0) {
             for (int i = 0; i < writers.size(); i++) {
@@ -698,7 +714,7 @@ public class DialogActivity
     }
 
     private final MessagesLoaderListener messagesLoaderListener = new MessagesLoaderListener();
-    private class MessagesLoaderListener implements ScrollEnlessPagination.EndlessLoaderListener<Message> {
+    private class MessagesLoaderListener implements ScrollEndlessPagination.EndlessLoaderListener<Message> {
         private boolean endReached = false;
 
         @Override
@@ -742,12 +758,10 @@ public class DialogActivity
 
                     if (data.size() < pagination.getPageSize()) {
                         endReached = true;
-                    } else {
-                        Bundle args = new Bundle();
-                        args.putString(MessagesLoader.CID_ARG, chatID);
-                        args.putString(MessagesLoader.UID_ARG, userID);
-                        args.putInt(MessagesLoader.ARG_PAGE, receivedMessageList.size() / pagination.getPageSize() + 1);
-                        getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, this).forceLoad();
+
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Not full data set");
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Fetched: " + data.size());
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Required: " + pagination.getPageSize());
                     }
                 }
             } else {

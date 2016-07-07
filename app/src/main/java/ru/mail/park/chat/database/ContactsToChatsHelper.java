@@ -57,32 +57,10 @@ public class ContactsToChatsHelper {
                 " = ?";
         String[] queryArgs = {cid};
 
-        //return
-        Cursor result = db.rawQuery(
+        return db.rawQuery(
                 rawQuery,
                 queryArgs
         );
-
-        Cursor cur2 = db.rawQuery(
-                "SELECT " + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_UID + " FROM "
-                        + ContactsToChatsContract.ContactsToChatsEntry.TABLE_NAME +
-                        " WHERE " + linkTable + "." + ContactsToChatsContract.ContactsToChatsEntry.COLUMN_NAME_CID +
-                        " = ?",
-                queryArgs
-        );
-
-        for (cur2.moveToFirst(); !cur2.isAfterLast(); cur2.moveToNext()) {
-            Log.d("UID", cur2.getString(0));
-        }
-
-        for (result.moveToFirst(); !result.isAfterLast(); result.moveToNext()) {
-            if (result.isNull(0))
-            Log.d("UID =", "null");
-            else
-            Log.d("UID =", String.valueOf(result.getInt(0)));
-        }
-
-        return result;
     }
 
     public static List<Contact> getChatUsers(@NonNull String cid, @NonNull SQLiteDatabase db) {

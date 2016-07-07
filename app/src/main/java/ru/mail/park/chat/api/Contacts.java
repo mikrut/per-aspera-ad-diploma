@@ -1,6 +1,7 @@
 package ru.mail.park.chat.api;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Pair;
@@ -21,11 +22,11 @@ import ru.mail.park.chat.models.OwnerProfile;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Contacts extends ApiSection {
-    private static final String URL_ADDITION = "contacts/";
+    private static final String URL_ADDITION = "contacts";
 
     @Override
-    protected String getUrlAddition() {
-        return super.getUrlAddition() + URL_ADDITION;
+    protected Uri getUrlAddition() {
+        return super.getUrlAddition().buildUpon().appendPath(URL_ADDITION).build();
     }
 
     public Contacts(@NonNull Context context) {

@@ -114,7 +114,7 @@ public class DialogActionBar
 
         switch (chat.getType()) {
             case Chat.INDIVIDUAL_TYPE:
-                String companionID = chat.getCompanionId();
+                String companionID = chat.getCompanionId(getContext());
                 if (companionID != null) {
                     Intent intent = new Intent(getContext(), ProfileViewActivity.class);
                     intent.putExtra(ProfileViewActivity.UID_EXTRA, companionID);

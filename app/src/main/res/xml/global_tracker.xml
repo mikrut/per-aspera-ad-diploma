@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ga_trackingId">UA-79898654-1</string>
+
+    <integer name="ga_dispatchPeriod">1</integer>
+    <string name="ga_logLevel">verbose</string>
+</resources>

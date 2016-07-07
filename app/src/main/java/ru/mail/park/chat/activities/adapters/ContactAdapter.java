@@ -33,6 +33,7 @@ public class ContactAdapter extends AContactAdapter {
     private TreeSet<Contact> choosenContacts;
 
     private final Map<Character, List<Contact>> contactGroups;
+    private List<Contact> contacts;
     private ContactHolder.OnContactClickListener contactClickListener;
     private int itemCount;
 
@@ -45,6 +46,7 @@ public class ContactAdapter extends AContactAdapter {
     }
 
     public ContactAdapter(@NonNull List<Contact> contactList) {
+        contacts = contactList;
         contactGroups = new TreeMap<>();
         Collections.sort(contactList);
         itemCount = contactList.size();
@@ -179,5 +181,9 @@ public class ContactAdapter extends AContactAdapter {
 
     public void setSinglechoice() {
         choosenContacts = null;
+    }
+
+    public List<Contact> getData() {
+        return contacts;
     }
 }

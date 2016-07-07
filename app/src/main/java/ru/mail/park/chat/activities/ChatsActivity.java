@@ -1,6 +1,5 @@
 package ru.mail.park.chat.activities;
 
-import android.app.LoaderManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +33,9 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.balysv.materialmenu.MaterialMenuDrawable;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -47,16 +49,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import ru.mail.park.chat.AnalyticsApplication;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
-import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
-import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatsHelper;
-import ru.mail.park.chat.database.MessengerDBHelper;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.loaders.ChatLoader;
 import ru.mail.park.chat.loaders.ChatSearchLoader;
 import ru.mail.park.chat.loaders.ChatWebLoader;
@@ -65,8 +65,7 @@ import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ChatsActivity
-        extends AImageDownloadServiceBindingActivity
-        implements IAuthLogout {
+        extends AImageDownloadServiceBindingActivity {
     private FloatingActionButton fab;
     private RecyclerView chatsList;
     private SearchView searchView;
@@ -74,7 +73,7 @@ public class ChatsActivity
     private ProgressBar pbChats;
 
     private LinearLayoutManager liman;
-    private ScrollEnlessPagination pagination;
+    private ScrollEndlessPagination pagination;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
@@ -125,7 +124,7 @@ public class ChatsActivity
         liman.setReverseLayout(true);
         liman.setStackFromEnd(true);
         chatsList.setLayoutManager(liman);
-        pagination = new ScrollEnlessPagination<>(liman, chatsLoaderListener, CHAT_WEB_LOADER, getLoaderManager());
+        pagination = new ScrollEndlessPagination<>(liman, chatsLoaderListener, CHAT_WEB_LOADER, getLoaderManager());
         pagination.setPageSize(4);
         chatsList.addOnScrollListener(pagination);
 
@@ -168,17 +167,9 @@ public class ChatsActivity
            new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("[TechMail]", "starting LogoutTask");
-                    OwnerProfile owner = new OwnerProfile(ChatsActivity.this);
-                    new LogoutTask(ChatsActivity.this, ChatsActivity.this).execute(owner.getAuthToken());
-
-                    owner.removeFromPreferences(ChatsActivity.this);
-                    MessengerDBHelper dbHelper = new MessengerDBHelper(ChatsActivity.this);
-                    dbHelper.clearDatabase();
-
-                    Intent intent = new Intent(ChatsActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
+                    OwnerProfile ownerProfile = new OwnerProfile(ChatsActivity.this);
+                    ownerProfile.logout(ChatsActivity.this);
+                    ChatsActivity.this.finish();
                 }
             }
         };
@@ -244,6 +235,13 @@ public class ChatsActivity
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.v("GAv4", "Resume");
+        Tracker t = ((AnalyticsApplication) getApplication()).getDefaultTracker();
+        t.setScreenName("hello");
+        t.send(new HitBuilders.AppViewBuilder().build());
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+
         CircleImageView civ = null;
         getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
         if(uid != null) {
@@ -349,23 +347,8 @@ public class ChatsActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onStartLogout() {
-        Log.d("[TechMail]", "calling onStartLogout");
-    }
-
-    @Override
-    public void onLogoutSuccess() {
-        Log.d("[TechMail]", "calling onLogoutSuccess");
-    }
-
-    @Override
-    public void onLogoutFail() {
-        Log.d("[TechMail]", "calling onLogoutFail");
-    }
-
     private final EnlessLoader chatsLoaderListener = new EnlessLoader();
-    class EnlessLoader implements ScrollEnlessPagination.EndlessLoaderListener<Chat> {
+    class EnlessLoader implements ScrollEndlessPagination.EndlessLoaderListener<Chat> {
         boolean listEndReached = false;
         private ArrayList<Chat> chatsData = new ArrayList<>();
 

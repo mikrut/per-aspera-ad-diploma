@@ -23,7 +23,7 @@ import ru.mail.park.chat.activities.adapters.ContactSearchAdapter;
 import ru.mail.park.chat.loaders.ContactsSearchLoader;
 import ru.mail.park.chat.models.Contact;
 
-public class ContactSearchActivity extends AppCompatActivity {
+public class ContactSearchActivity extends AImageDownloadServiceBindingActivity {
     private SearchView searchView;
     private RecyclerView contactsView;
 

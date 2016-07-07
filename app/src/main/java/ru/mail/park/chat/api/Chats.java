@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -31,11 +32,11 @@ import ru.mail.park.chat.models.Message;
  */
 
 public class Chats extends ApiSection {
-    private static final String URL_ADDITION = "chats/";
+    private static final String URL_ADDITION = "chats";
 
     @Override
-    protected String getUrlAddition() {
-        return super.getUrlAddition() + URL_ADDITION;
+    protected Uri getUrlAddition() {
+        return super.getUrlAddition().buildUpon().appendPath(URL_ADDITION).build();
     }
 
     public Chats(@NonNull Context context) {
@@ -43,7 +44,7 @@ public class Chats extends ApiSection {
     }
 
     @NonNull
-    public List<Message> getMessages(String cid, int page) throws IOException {
+    public List<Message> getMessages(String cid, @Nullable String lastReceivedMID) throws IOException {
         final String requestURL = "messages";
         final String requestMethod = "POST";
 
@@ -51,7 +52,8 @@ public class Chats extends ApiSection {
 
         List<Pair<String, String>> parameters = new ArrayList<>(3);
         parameters.add(new Pair<>("idRoom", cid));
-        parameters.add(new Pair<>("page", String.valueOf(page)));
+        if (lastReceivedMID != null)
+            parameters.add(new Pair<>("idMessage", lastReceivedMID));
 
         List<Message> messagesList = new LinkedList<>();
         try {
@@ -166,7 +168,7 @@ public class Chats extends ApiSection {
 
                 ImageUpdateResult retval = new ImageUpdateResult();
                 retval.user = new Contact(user, getContext());
-                retval.image = new URL(super.getUrlAddition() + img.getString("img"));
+                retval.image = new URL(ApiSection.SERVER_URL + img.getString("img"));
                 return retval;
             } else {
                 String message = result.getString("message");

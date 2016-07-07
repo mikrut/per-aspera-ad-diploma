@@ -27,4 +27,8 @@ public class GroupContactsLoader extends ContactListDBLoader {
         contacts = helper.getContacts(cid);
         return contacts;
     }
+
+    public String getCid() {
+        return cid;
+    }
 }

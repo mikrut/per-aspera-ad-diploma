@@ -2,6 +2,7 @@ package ru.mail.park.chat.models;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.ChatsContract;
 import ru.mail.park.chat.database.MessengerDBHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 
 /**
@@ -37,14 +39,13 @@ public class Chat implements Serializable {
     private String cid;
     @NonNull
     private String name;
-    @NonNull
+    @Nullable
     private Calendar lastSeen;
     @Nullable
     private String description;
     @Nullable
     private Calendar dateTime;
-    @Nullable
-    private String companion_id;
+    private int membersCount;
 
     private int type;
     private List<Contact> chatUsers = new ArrayList<>();
@@ -72,6 +73,7 @@ public class Chat implements Serializable {
                 e.printStackTrace();
             }
         }
+        membersCount = cursor.getInt(ChatsContract.PROJECTION_MEMBERS_COUNT_INDEX);
     }
 
     public static final int GROUP_TYPE = 1;
@@ -88,11 +90,11 @@ public class Chat implements Serializable {
             cidParameterName = "id";
         if (chat.has("idRoom"))
             cidParameterName = "idRoom";
-        setCid(chat.getString(cidParameterName));
+        cid = chat.getString(cidParameterName);
 
         switch (type) {
             case GROUP_TYPE:
-                setName(chat.getString("name"));
+                name = chat.getString("name");
                 break;
             case INDIVIDUAL_TYPE:
                 JSONArray listUser = chat.getJSONArray("listUser");
@@ -102,11 +104,16 @@ public class Chat implements Serializable {
                     if (!currentUID.equals(uid)) {
                         String firstName = user.getString("firstName");
                         String lastName = user.getString("lastName");
-                        setName(firstName + " " + lastName);
+                        name = firstName + " " + lastName;
                         break;
                     }
                 }
+                if (name == null)
+                    throw new JSONException("Inconsistent JSON data");
+                membersCount = 2;
                 break;
+            default:
+                throw new JSONException("Incorrect chat type");
         }
         if (chat.has("text")) {
             if (chat.isNull("text")) {
@@ -128,9 +135,10 @@ public class Chat implements Serializable {
                     Contact contact = new Contact(user, context);
                     chatUsers.add(contact);
                 } catch (ParseException e) {
-                    Log.w(Chat.class.getSimpleName() + ".new", "New Contact: " + e.getLocalizedMessage());
+                    Log.e(Chat.class.getSimpleName() + ".new", "New Contact: " + e.getLocalizedMessage());
                 }
             }
+            membersCount = chatUsers.size();
         }
 
         String img = null;
@@ -179,15 +187,6 @@ public class Chat implements Serializable {
     }
 
     @Nullable
-    public String getCompanionId() {
-        return companion_id;
-    }
-
-    public void setCompanionId(@Nullable String companion_id) {
-        this.companion_id = companion_id;
-    }
-
-    @Nullable
     public String getDescription() {
         return description;
     }
@@ -198,6 +197,10 @@ public class Chat implements Serializable {
 
     public int getType() {
         return type;
+    }
+
+    public int getMembersCount() {
+        return membersCount;
     }
 
     @Nullable
@@ -241,9 +244,8 @@ public class Chat implements Serializable {
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_DATETIME, dateTime != null ? dateTime.getTimeInMillis() / 1000L : null);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_TYPE, type);
         contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_IMAGE_URL, imagePath != null ? imagePath.toString() : null);
+        contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_MEMBERS_COUNT, membersCount);
 
-        if(companion_id != null)
-            contentValues.put(ChatsContract.ChatsEntry.COLUMN_NAME_COMPANION_ID, companion_id);
         return contentValues;
     }
 
@@ -256,6 +258,7 @@ public class Chat implements Serializable {
                     ObjectUtils.equals(description, c.description) &&
                     ObjectUtils.equals(dateTime, c.dateTime) &&
                     ObjectUtils.equals(type, c.type) &&
+                    ObjectUtils.equals(membersCount, c.membersCount) &&
                     ObjectUtils.equals(imagePath, c.imagePath);
         }
         return false;
@@ -269,6 +272,19 @@ public class Chat implements Serializable {
                 .append(description)
                 .append(dateTime)
                 .append(type)
+                .append(membersCount)
                 .append(imagePath).build();
+    }
+
+    public String getCompanionId(Context context) {
+        if (type == INDIVIDUAL_TYPE) {
+            for (Contact user : getChatUsers()) {
+                String ownerUID = new OwnerProfile(context).getUid();
+                if (!user.getUid().equals(ownerUID)) {
+                    return user.getUid();
+                }
+            }
+        }
+        return null;
     }
 }

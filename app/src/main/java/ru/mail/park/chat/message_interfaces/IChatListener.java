@@ -17,4 +17,5 @@ public interface IChatListener {
     void onActionDeleteMessage(int mid);
     void onGetHistoryMessages(ArrayList<Message> msg_list);
     void onWrite(String cid, Contact user);
+    void onUpdateChatStatus(boolean isOnline);
 }

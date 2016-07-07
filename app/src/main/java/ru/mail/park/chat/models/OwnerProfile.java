@@ -1,6 +1,7 @@
 package ru.mail.park.chat.models;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.support.annotation.Nullable;
@@ -11,6 +12,10 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 
+import ru.mail.park.chat.activities.LoginActivity;
+import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
+import ru.mail.park.chat.activities.tasks.LogoutTask;
+import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 
 /**
@@ -119,5 +124,17 @@ public class OwnerProfile extends Contact {
                     TextUtils.equals(getAbout(), other.getAbout());
         }
         return super.equals(o);
+    }
+
+    public void logout(Context context) {
+        new LogoutTask(context).execute(authToken);
+
+        removeFromPreferences(context);
+        MessengerDBHelper dbHelper = new MessengerDBHelper(context);
+        dbHelper.clearDatabase();
+
+        Intent intent = new Intent(context, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 }

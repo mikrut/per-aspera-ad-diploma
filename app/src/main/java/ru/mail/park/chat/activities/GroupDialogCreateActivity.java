@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -34,7 +35,7 @@ import ru.mail.park.chat.models.Message;
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity
-        extends AppCompatActivity
+        extends AImageDownloadServiceBindingActivity
         implements IGroupCreateListener, ContactsFragment.OnPickEventListener {
     private EditText chosenContactsList;
     private EditText groupChat;
@@ -51,7 +52,7 @@ public class GroupDialogCreateActivity
         setContentView(R.layout.activity_group_dialog_create);
 
         try {
-            messages = new Messages(this);
+            messages = new Messages(this, new Handler());
             messages.setGroupCreateListener(this);
         } catch (IOException e) {
             e.printStackTrace();
@@ -128,7 +129,7 @@ public class GroupDialogCreateActivity
             case R.id.action_create:
                 if (messages == null) {
                     try {
-                        messages = new Messages(this);
+                        messages = new Messages(this, new Handler());
                         messages.setGroupCreateListener(this);
                     } catch (IOException e) {
                         e.printStackTrace();
