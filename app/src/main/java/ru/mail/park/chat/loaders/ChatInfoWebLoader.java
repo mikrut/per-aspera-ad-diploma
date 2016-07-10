@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import java.io.IOException;
 
 import ru.mail.park.chat.activities.DialogActivity;
-import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.api.rest.Chats;
 import ru.mail.park.chat.models.Chat;
 
 /**

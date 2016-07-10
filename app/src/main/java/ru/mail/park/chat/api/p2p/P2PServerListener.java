@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.p2p;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;

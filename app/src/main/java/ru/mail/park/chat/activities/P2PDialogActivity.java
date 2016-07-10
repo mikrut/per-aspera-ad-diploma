@@ -13,11 +13,9 @@ import android.widget.TextView;
 
 import java.io.IOException;
 
-import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.api.P2PServerListener;
-import ru.mail.park.chat.api.P2PService;
+import ru.mail.park.chat.api.p2p.P2PService;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.Message;
 

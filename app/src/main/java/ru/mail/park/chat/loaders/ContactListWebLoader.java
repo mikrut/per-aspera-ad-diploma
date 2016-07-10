@@ -9,7 +9,7 @@ import android.util.Pair;
 import java.io.IOException;
 import java.util.List;
 
-import ru.mail.park.chat.api.Contacts;
+import ru.mail.park.chat.api.rest.Contacts;
 import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.models.Contact;
 

@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.p2p;
 
 import android.app.Service;
 import android.content.Intent;
@@ -14,16 +14,12 @@ import org.jivesoftware.smack.proxy.ProxyInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
-
-import javax.net.ssl.SSLContext;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;

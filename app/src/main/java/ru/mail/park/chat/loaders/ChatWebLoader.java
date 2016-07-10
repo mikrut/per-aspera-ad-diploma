@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 import ru.mail.park.chat.activities.ChatsActivity;
-import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.api.rest.Chats;
 import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.models.Chat;
 

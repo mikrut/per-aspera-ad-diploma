@@ -64,7 +64,7 @@ import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.DialogActionBar;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
-import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.api.websocket.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.helpers.DialogEndlessPagination;

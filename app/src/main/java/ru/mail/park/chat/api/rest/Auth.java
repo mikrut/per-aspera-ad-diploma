@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.rest;
 
 import android.content.Context;
 import android.net.Uri;
@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.mail.park.chat.api.ApiSection;
+import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.auth_signup.IRegisterCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 

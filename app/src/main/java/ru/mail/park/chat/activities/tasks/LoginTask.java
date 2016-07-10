@@ -6,7 +6,7 @@ import android.util.Pair;
 
 import java.io.IOException;
 
-import ru.mail.park.chat.api.Auth;
+import ru.mail.park.chat.api.rest.Auth;
 import ru.mail.park.chat.auth_signup.IAuthCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 

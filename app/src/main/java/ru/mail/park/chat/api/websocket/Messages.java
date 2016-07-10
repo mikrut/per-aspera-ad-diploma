@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.websocket;
 
 import android.content.Context;
 import android.os.Handler;
@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
 import ru.mail.park.chat.message_interfaces.IGroupEditListener;
