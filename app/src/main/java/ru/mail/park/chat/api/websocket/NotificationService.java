@@ -6,6 +6,10 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 /**
  * Created by Михаил on 10.07.2016.
  */
@@ -24,5 +28,19 @@ public class NotificationService extends Service {
         return mBinder;
     }
 
+    private WSConnection wsConnection;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        try {
+            wsConnection = new WSConnection(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private interface DispatchMethod {
+        void dispatchMethod(JSONObject income);
+    }
 }

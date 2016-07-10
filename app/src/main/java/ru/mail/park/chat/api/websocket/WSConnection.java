@@ -138,4 +138,25 @@ public class WSConnection extends ApiSection {
     protected void dispatchNewState(WebSocketState newState) {
 
     }
+
+    public boolean isStateOK() {
+        return !(ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING));
+    }
+
+    public void reconnect() {
+        if (!isStateOK()) {
+            try {
+                ws = ws.recreate();
+                ws.connectAsynchronously();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void sendRequest(WebSocketRequest request) {
+        reconnect();
+        Log.v(TAG + "." + request.getMethod(), request.toString());
+        ws.sendText(request.toString());
+    }
 }

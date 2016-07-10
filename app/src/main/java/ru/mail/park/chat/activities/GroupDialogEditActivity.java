@@ -41,7 +41,7 @@ import ru.mail.park.chat.api.rest.Chats;
 import ru.mail.park.chat.api.websocket.Messages;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.message_interfaces.IGroupEditListener;
+import ru.mail.park.chat.api.websocket.IGroupEditListener;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 

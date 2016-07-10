@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.jivesoftware.smack.proxy.ProxyInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,12 +11,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Random;
 
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
-import ru.mail.park.chat.message_interfaces.Jsonifier;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 

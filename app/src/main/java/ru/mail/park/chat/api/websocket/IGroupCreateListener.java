@@ -1,4 +1,4 @@
-package ru.mail.park.chat.message_interfaces;
+package ru.mail.park.chat.api.websocket;
 
 import ru.mail.park.chat.models.Chat;
 

@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.neovisionaries.ws.client.WebSocketState;
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
@@ -65,6 +66,7 @@ import ru.mail.park.chat.activities.views.DialogActionBar;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.WSStatusListener;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.helpers.DialogEndlessPagination;
@@ -74,8 +76,8 @@ import ru.mail.park.chat.loaders.ChatInfoWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
@@ -86,6 +88,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 public class DialogActivity
         extends AImageDownloadServiceBindingActivity
         implements IChatListener,
+        WSStatusListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         HttpFileUpload.IUploadListener {
@@ -452,6 +455,7 @@ public class DialogActivity
     protected IMessageSender getMessageSender() throws IOException {
         Messages messages = new Messages(this, new Handler());
         messages.setChatListener(this);
+        messages.setWsStatusListener(this);
         return messages;
     }
 
@@ -612,8 +616,9 @@ public class DialogActivity
     }
 
     @Override
-    public void onUpdateChatStatus(boolean isOnline) {
+    public void onUpdateWSStatus(WebSocketState state) {
         // TODO: use Android string resources
+        boolean isOnline = state.equals(WebSocketState.OPEN);
         if (isOnline) {
             if (thisChat != null) {
                 if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {

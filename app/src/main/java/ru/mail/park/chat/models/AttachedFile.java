@@ -90,4 +90,9 @@ public class AttachedFile {
 
         return contentValues;
     }
+
+    @Override
+    public String toString() {
+        return getFileID();
+    }
 }

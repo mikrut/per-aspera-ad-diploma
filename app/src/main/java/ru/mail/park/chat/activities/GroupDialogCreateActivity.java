@@ -22,7 +22,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsSimpleListFragment;
 import ru.mail.park.chat.api.websocket.Messages;
-import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
+import ru.mail.park.chat.api.websocket.IGroupCreateListener;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 

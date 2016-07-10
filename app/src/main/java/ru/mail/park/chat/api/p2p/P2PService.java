@@ -21,9 +21,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
-import ru.mail.park.chat.message_interfaces.Jsonifier;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 

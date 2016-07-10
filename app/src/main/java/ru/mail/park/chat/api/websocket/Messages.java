@@ -10,13 +10,10 @@ import com.neovisionaries.ws.client.WebSocketState;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.mail.park.chat.api.ApiSection;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
-import ru.mail.park.chat.message_interfaces.IGroupEditListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
@@ -33,29 +30,29 @@ public class Messages extends WSConnection implements IMessageSender {
     private static final String TAG = Messages.class.getSimpleName();
 
     @Nullable
-    private  IChatListener chatListener;
+    private WSStatusListener wsStatusListener;
     @Nullable
     private IGroupCreateListener groupCreateListener;
     @Nullable
     private IGroupEditListener groupEditListener;
 
-    private String anotherSideStatus = null;
-
     private final @NonNull Handler uiHandler;
+    private final @NonNull DialogDispatcher dialogDispatcher;
 
     public Messages(@NonNull final Context context, @NonNull Handler uiHandler) throws IOException {
         super(context);
         this.uiHandler = uiHandler;
+        dialogDispatcher = new DialogDispatcher(context);
     }
 
     @Override
-    protected void dispatchNewState(WebSocketState newState) {
+    protected void dispatchNewState(final WebSocketState newState) {
         super.dispatchNewState(newState);
-        if (chatListener != null) {
+        if (wsStatusListener != null) {
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    chatListener.onUpdateChatStatus(isConnected());
+                    wsStatusListener.onUpdateWSStatus(newState);
                 }
             });
         }
@@ -66,26 +63,10 @@ public class Messages extends WSConnection implements IMessageSender {
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
+
                 try {
-                    if (chatListener != null) {
-                        switch (method) {
-                            case "SEND":
-                                dispatchSend(jsonIncome);
-                                break;
-                            case "newMessage":
-                                dispatchNewMessage(jsonIncome);
-                                break;
-                            case "DELETE":
-                                dispatchDelete(jsonIncome);
-                                break;
-                            case "GET":
-                                dispatchGet(jsonIncome);
-                                break;
-                            case "writeMessage":
-                                dispatchWriteMessage(jsonIncome);
-                                break;
-                        }
-                    }
+                    dialogDispatcher.dispatchJSON(method, jsonIncome);
+
                     if (groupCreateListener != null) {
                         switch (method) {
                             case "createChats":
@@ -118,54 +99,7 @@ public class Messages extends WSConnection implements IMessageSender {
         }
     }
 
-    private void dispatchSend(JSONObject income) throws JSONException {
-        JSONObject data = income.getJSONObject("data");
 
-        String message = data.getString("textMessage");
-        String cid = data.getString("idMessage");
-        String creationDate = data.getString("dtCreate");
-
-        if (chatListener != null)
-            chatListener.onAcknowledgeSendMessage(data);
-    }
-
-    private void dispatchNewMessage(JSONObject income) throws JSONException {
-        JSONObject data = income.getJSONObject("data");
-
-        String message = data.getString("textMessage");
-        JSONObject user = data.getJSONObject("user");
-        String cid = data.getString("idRoom");
-        String creationDate = data.getString("dtCreate");
-
-        if (chatListener != null)
-            chatListener.onIncomeMessage(data);
-    }
-
-    private void dispatchDelete(JSONObject income) throws JSONException {
-        int mid = income.getInt("mid");
-        if (chatListener != null)
-            chatListener.onActionDeleteMessage(mid);
-    }
-
-    private void dispatchGet(JSONObject income) {
-
-    }
-
-    private void dispatchWriteMessage(JSONObject income) throws JSONException {
-        JSONObject data = income.getJSONObject("data");
-
-        String cid = data.getString("idChat");
-        JSONObject user = data.getJSONObject("user");
-
-        if (chatListener != null) {
-            try {
-                Contact contact = new Contact(user, getContext());
-                chatListener.onWrite(cid, contact);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public void dispatchAddUser(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
@@ -226,8 +160,6 @@ public class Messages extends WSConnection implements IMessageSender {
     }
 
     public void sendFirstMessage(String uid, Message message) {
-        reconnect();
-
         StringBuilder b = new StringBuilder();
         for (char c : message.getMessageBody().toCharArray()) {
             if (c >= 128)
@@ -236,6 +168,19 @@ public class Messages extends WSConnection implements IMessageSender {
                 b.append(c);
         }
         String messageBody = b.toString();
+
+        List<AttachedFile> files = message.getFiles();
+        Object[] filesParams = (files != null && files.size() > 0) ? {"listIdFile", message.getFiles()} : {};
+        WebSocketRequest request =
+                new WebSocketRequest("Messages", "sendFirst", profile.getAuthToken(),
+                        new Object[][] {
+                                {"idUser", uid},
+                                {"textMessage", messageBody},
+                                ,
+                        })
+        reconnect();
+
+
 
         JSONObject jsonRequest = new JSONObject();
         JSONObject data = new JSONObject();
@@ -266,94 +211,55 @@ public class Messages extends WSConnection implements IMessageSender {
 
     public void createGroupChat(String title, List<String> userIDs) {
         reconnect();
-        JSONObject jsonRequest = new JSONObject();
-        JSONObject data = new JSONObject();
-        JSONArray idUsers = new JSONArray();
 
-        try {
-            jsonRequest.put("controller", "Chats");
-            jsonRequest.put("method", "create");
-            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
-            data.put("nameChat", title);
-            data.put("idUsers", idUsers);
-            jsonRequest.put("data", data);
-            for (String uid : userIDs) {
-                idUsers.put(Integer.valueOf(uid));
-            }
-            idUsers.put(Integer.valueOf(profile.getUid()));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        List<Integer> myUserIDs = new ArrayList(userIDs.size());
+        for (String uid: userIDs) {
+            myUserIDs.add(Integer.valueOf(uid));
         }
+        myUserIDs.add(Integer.valueOf(profile.getUid()));
 
-        Log.v(TAG, jsonRequest.toString());
-        ws.sendText(jsonRequest.toString());
+        WebSocketRequest webSocketRequest =
+                new WebSocketRequest("Chats", "create", profile.getAuthToken(),
+                        new Object[][]{
+                                {"nameChat", title},
+                                {"idUsers", myUserIDs}
+                        });
+
+        sendRequest(webSocketRequest);
     }
 
     @Override
     public void write(@NonNull String cid) {
-        reconnect();
-        JSONObject jsonRequest = new JSONObject();
-        JSONObject data = new JSONObject();
-
-        try {
-            jsonRequest.put("controller", "Messages");
-            jsonRequest.put("method", "write");
-            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
-            data.put("idChat", cid);
-            jsonRequest.put("data", data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        Log.v(TAG, jsonRequest.toString());
-        ws.sendText(jsonRequest.toString());
+        WebSocketRequest request =
+                new WebSocketRequest("Messages", "write", profile.getAuthToken(),
+                        new Object[][]{
+                                {"idChat", cid}
+                        });
+        sendRequest(request);
     }
 
     public void addUser(String uid, String cid) {
-        reconnect();
-        JSONObject jsonRequest = new JSONObject();
-        JSONObject data = new JSONObject();
-
-        try {
-            jsonRequest.put("controller", "Chats");
-            jsonRequest.put("method", "addUser");
-            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
-            data.put("idRoom", cid);
-            data.put("idUser", uid);
-            jsonRequest.put("data", data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        ws.sendText(jsonRequest.toString());
+        WebSocketRequest request =
+                new WebSocketRequest("Chats", "addUser", profile.getAuthToken(),
+                        new Object[][] {
+                                {"idRoom", cid},
+                                {"idUser", uid}
+                        });
+        sendRequest(request);
     }
 
     public void updateName(String cid, String chatName) {
-        reconnect();
-        JSONObject jsonRequest = new JSONObject();
-        JSONObject data = new JSONObject();
-
-        try {
-            jsonRequest.put("controller", "Chats");
-            jsonRequest.put("method", "updateName");
-            data.put(ApiSection.AUTH_TOKEN_PARAMETER_NAME, profile.getAuthToken());
-            data.put("idRoom", cid);
-            data.put("nameChat", chatName);
-            jsonRequest.put("data", data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        Log.v(TAG + ".updateName", jsonRequest.toString());
-        ws.sendText(jsonRequest.toString());
+        WebSocketRequest request =
+                new WebSocketRequest("Chats", "updateName", profile.getAuthToken(),
+                        new Object[][] {
+                                {"idRoom", cid},
+                                {"nameChat", chatName}
+                        });
+        sendRequest(request);
     }
 
     public void disconnect() {
         ws.disconnect();
-    }
-
-    public boolean isStateOK() {
-        return !(ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING));
     }
 
     @Override
@@ -361,26 +267,19 @@ public class Messages extends WSConnection implements IMessageSender {
         return ws.getState().equals(WebSocketState.OPEN);
     }
 
-    public void reconnect() {
-        if (!isStateOK()) {
-            try {
-                ws = ws.recreate();
-                ws.connectAsynchronously();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public void setGroupCreateListener(IGroupCreateListener groupCreateListener) {
         this.groupCreateListener = groupCreateListener;
     }
 
-    public void setChatListener(IChatListener chatListener) {
-        this.chatListener = chatListener;
+    public void setWsStatusListener(WSStatusListener chatListener) {
+        this.wsStatusListener = chatListener;
     }
 
     public void setGroupEditListener(@Nullable IGroupEditListener groupEditListener) {
         this.groupEditListener = groupEditListener;
+    }
+
+    public void setChatListener(@Nullable IChatListener chatListener) {
+        dialogDispatcher.setChatListener(chatListener);
     }
 }
