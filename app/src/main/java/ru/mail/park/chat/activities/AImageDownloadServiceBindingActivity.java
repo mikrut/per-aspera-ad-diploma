@@ -19,7 +19,7 @@ import ru.mail.park.chat.loaders.images.ImageDownloadManager;
  */
 
 // TODO: think about using composition instead of inheritance
-public abstract class AImageDownloadServiceBindingActivity extends AppCompatActivity {
+public abstract class AImageDownloadServiceBindingActivity extends ANotificationServiceBindingActivity {
     private List<IImageDownloadManagerBinderSubscriber> subscribers = new ArrayList<>();
 
     public interface IImageDownloadManagerBinderSubscriber {

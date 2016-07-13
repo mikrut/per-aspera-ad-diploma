@@ -27,6 +27,8 @@ public class P2PDialogActivity extends DialogActivity {
     public static final String HOST_ARG = P2PDialogActivity.class.getCanonicalName() + ".HOST_ARG";
 
     public final static int LISTENER_DEFAULT_PORT = 8275;
+    private IMessageSender sender;
+    private boolean requestedServce = false;
 
     @Override
     protected void onResume() {
@@ -42,7 +44,7 @@ public class P2PDialogActivity extends DialogActivity {
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     P2PService.P2PServiceSingletonBinder binder = (P2PService.P2PServiceSingletonBinder) service;
                     P2PService p2PService = binder.getService();
-                    messages = p2PService;
+                    sender = p2PService;
                     p2PService.addListener(P2PDialogActivity.this);
                 }
 
@@ -56,25 +58,30 @@ public class P2PDialogActivity extends DialogActivity {
     }
 
     @Override
-    protected IMessageSender getMessageSender() throws IOException {
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            int port = extras.getInt(PORT_ARG, -1);
-            String host = extras.getString(HOST_ARG);
+    protected IMessageSender getMessageSender() {
+        if (requestedServce == false) {
+            requestedServce = true;
+            Bundle extras = getIntent().getExtras();
+            if (extras != null) {
+                int port = extras.getInt(PORT_ARG, -1);
+                String host = extras.getString(HOST_ARG);
 
-            if (port != -1 && host != null) {
-                Intent intent = new Intent(this, P2PService.class);
-                intent.setAction(P2PService.ACTION_START_CLIENT);
-                intent.putExtra(P2PService.DESTINATION_URL, host);
-                intent.putExtra(P2PService.DESTINATION_PORT, port);
+                if (port != -1 && host != null) {
+                    Intent intent = new Intent(this, P2PService.class);
+                    intent.setAction(P2PService.ACTION_START_CLIENT);
+                    intent.putExtra(P2PService.DESTINATION_URL, host);
+                    intent.putExtra(P2PService.DESTINATION_PORT, port);
 
-                bindService(intent, getConnection(), Context.BIND_AUTO_CREATE);
-                return null;
+                    bindService(intent, getConnection(), Context.BIND_AUTO_CREATE);
+                    return null;
+                }
             }
-        }
 
-        requestHiddenService();
-        return null;
+            requestHiddenService();
+            return null;
+        } else {
+            return sender;
+        }
     }
 
     private void requestHiddenService () {
@@ -109,8 +116,8 @@ public class P2PDialogActivity extends DialogActivity {
 
     @Override
     protected void sendMessage(@NonNull Message message) {
-        if (messages != null) {
-            messages.sendMessage(null, message);
+        if (sender != null) {
+            sender.sendMessage(null, message);
         }
     }
 

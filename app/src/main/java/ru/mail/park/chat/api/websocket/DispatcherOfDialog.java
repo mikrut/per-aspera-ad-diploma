@@ -15,13 +15,13 @@ import ru.mail.park.chat.models.Contact;
 /**
  * Created by Михаил on 10.07.2016.
  */
-public class DialogDispatcher {
-    private static final String TAG = DialogDispatcher.class.getSimpleName();
+public class DispatcherOfDialog implements IDispatcher {
+    private static final String TAG = DispatcherOfDialog.class.getSimpleName();
     @Nullable
     private IChatListener chatListener;
     private Context context;
 
-    public DialogDispatcher(@NonNull Context context) {
+    public DispatcherOfDialog(@NonNull Context context) {
         this.context = context;
     }
 

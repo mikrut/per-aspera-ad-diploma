@@ -38,7 +38,9 @@ import ru.mail.park.chat.activities.tasks.IOperationListener;
 import ru.mail.park.chat.activities.tasks.UpdateChatImageTask;
 import ru.mail.park.chat.activities.views.EditTextDialogBuilder;
 import ru.mail.park.chat.api.rest.Chats;
+import ru.mail.park.chat.api.websocket.DispatcherOfGroupEdit;
 import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.api.websocket.IGroupEditListener;
@@ -67,7 +69,6 @@ public class GroupDialogEditActivity
     public static final int PICK_CONTACT = 1;
 
     private Chat chat;
-    private Messages groupEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,14 +131,6 @@ public class GroupDialogEditActivity
                 startActivityForResult(intent, PICK_CONTACT);
             }
         });
-
-        // FIXME: check for IOException properly
-        try {
-            groupEdit = new Messages(this, new Handler());
-            groupEdit.setGroupEditListener(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -164,8 +157,19 @@ public class GroupDialogEditActivity
         }
         if (requestCode == PICK_CONTACT && resultCode == RESULT_OK) {
             Contact contact = (Contact) data.getSerializableExtra(ContactsActivity.RESULT_CONTACT);
-            groupEdit.addUser(contact.getUid(), chat.getCid());
+            Messages groupEdit = getGroupEdit();
+            if (groupEdit != null) {
+                groupEdit.addUser(contact.getUid(), chat.getCid());
+            }
         }
+    }
+
+    private Messages getGroupEdit() {
+        NotificationService service = getNotificationService();
+        if (service != null) {
+            return service.getMessages();
+        }
+        return null;
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
@@ -209,7 +213,10 @@ public class GroupDialogEditActivity
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 final String name = builder.getInput().getText().toString();
-                                groupEdit.updateName(chat.getCid(), name);
+                                Messages groupEdit = getGroupEdit();
+                                if (groupEdit != null) {
+                                    groupEdit.updateName(chat.getCid(), name);
+                                }
                             }
                         }
                 ).setNegativeButton(
@@ -259,5 +266,21 @@ public class GroupDialogEditActivity
         if (cid.equals(chat.getCid())) {
             toolbarTitle.setText(chatName);
         }
+    }
+
+    private DispatcherOfGroupEdit dispatcherOfGroupEdit;
+
+    @Override
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        dispatcherOfGroupEdit = new DispatcherOfGroupEdit(this);
+        dispatcherOfGroupEdit.setGroupEditListener(this);
+        notificationService.addDispatcher(dispatcherOfGroupEdit, uiHandler);
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.removeDispatcher(dispatcherOfGroupEdit);
     }
 }
