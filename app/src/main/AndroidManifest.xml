@@ -117,6 +117,8 @@
         <service
             android:name=".api.p2p.P2PService"
             android:exported="false" />
+        <service android:name=".api.websocket.NotificationService"
+            android:exported="false"/>
         <service android:name="com.google.android.gms.analytics.AnalyticsService"
             android:enabled="true"
             android:exported="false"/>

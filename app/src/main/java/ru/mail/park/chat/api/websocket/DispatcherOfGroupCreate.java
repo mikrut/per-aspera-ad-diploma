@@ -8,6 +8,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.models.Chat;
 
 /**
@@ -29,8 +30,8 @@ public class DispatcherOfGroupCreate implements IDispatcher {
     public void dispatchJSON(@NonNull String method, JSONObject jsonIncome) {
         try {
             switch (method) {
-                case "createChats":
-                    dispatchCreateChats(jsonIncome);
+                case "createChat":
+                    dispatchCreateChat(jsonIncome);
                     break;
             }
         } catch (JSONException e) {
@@ -38,8 +39,13 @@ public class DispatcherOfGroupCreate implements IDispatcher {
         }
     }
 
-    private void dispatchCreateChats(JSONObject jsonIncome) throws JSONException {
+    private void dispatchCreateChat(JSONObject jsonIncome) throws JSONException {
         Chat chat = new Chat(jsonIncome.getJSONObject("data"), getContext());
+
+        ChatsHelper helper = new ChatsHelper(getContext());
+        helper.saveChat(chat);
+        helper.close();
+
         if (groupCreateListener != null) {
             groupCreateListener.onChatCreated(chat);
         }

@@ -827,6 +827,7 @@ public class DialogActivity
     public void addDispatchers(NotificationService notificationService) {
         super.addDispatchers(notificationService);
         notificationService.getMessages().getWsStatusNotifier(uiHandler).setWsStatusListener(this);
+        onUpdateWSStatus(notificationService.getMessages().getWsStatus());
     }
 
     @Override

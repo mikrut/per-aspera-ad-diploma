@@ -46,6 +46,10 @@ public class Messages extends WSConnection implements IMessageSender {
         dispatchers.remove(dispatcher);
     }
 
+    public WebSocketState getWsStatus() {
+        return ws.getState();
+    }
+
     public IWSStatusNotifier getWsStatusNotifier(@NonNull  Handler uiHandler) {
         this.uiHandler = uiHandler;
         return new IWSStatusNotifier() {

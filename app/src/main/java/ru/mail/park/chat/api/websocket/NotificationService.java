@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.view.animation.Animation;
@@ -61,14 +62,17 @@ public class NotificationService
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, "Service bind");
         return mBinder;
     }
 
     private Messages messages;
+    private static final String TAG = NotificationService.class.getSimpleName();
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "Service created");
         try {
             messages = new Messages(this);
             setTimer();
@@ -80,6 +84,7 @@ public class NotificationService
     @Override
     public void onRebind(Intent intent) {
         super.onRebind(intent);
+        Log.d(TAG, "Service rebound");
         messages.reconnect();
         setTimer();
     }
@@ -102,6 +107,7 @@ public class NotificationService
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "Unbind");
         schedulerTimer.cancel();
         messages.disconnect();
         return super.onUnbind(intent);

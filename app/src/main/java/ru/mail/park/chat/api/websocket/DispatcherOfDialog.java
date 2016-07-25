@@ -36,11 +36,11 @@ public class DispatcherOfDialog implements IDispatcher {
     public void dispatchJSON(@NonNull final String method, final JSONObject jsonIncome) {
         try{
             switch (method) {
-                case "SEND":
-                    dispatchSend(jsonIncome);
-                    break;
                 case "newMessage":
-                    dispatchNewMessage(jsonIncome);
+                    if (jsonIncome.has("user"))
+                        dispatchNewMessage(jsonIncome);
+                    else
+                        dispatchAckSend(jsonIncome);
                     break;
                 case "DELETE":
                     dispatchDelete(jsonIncome);
@@ -57,7 +57,7 @@ public class DispatcherOfDialog implements IDispatcher {
         }
     }
 
-    private void dispatchSend(JSONObject income) throws JSONException {
+    private void dispatchAckSend(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
 
         String message = data.getString("textMessage");
@@ -83,6 +83,7 @@ public class DispatcherOfDialog implements IDispatcher {
     private void dispatchDelete(JSONObject income) throws JSONException {
         int mid = income.getInt("mid");
 
+        if (chatListener != null)
             chatListener.onActionDeleteMessage(mid);
     }
 

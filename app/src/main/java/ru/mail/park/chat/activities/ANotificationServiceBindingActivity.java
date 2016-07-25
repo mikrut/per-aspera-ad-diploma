@@ -39,6 +39,8 @@ import ru.mail.park.chat.models.Message;
 public abstract class ANotificationServiceBindingActivity
         extends AppCompatActivity
         implements IChatListener {
+    private static final String TAG = ANotificationServiceBindingActivity.class.getSimpleName();
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -58,6 +60,7 @@ public abstract class ANotificationServiceBindingActivity
 
     private void removeDispatchersNoOverride(NotificationService notificationService) {
         notificationService.removeDispatcher(dispatcherOfDialog);
+        Log.d(TAG, "removeDispatchers");
 
         removeDispatchers(notificationService);
     }
@@ -67,6 +70,7 @@ public abstract class ANotificationServiceBindingActivity
         dispatcherOfDialog.setChatListener(ANotificationServiceBindingActivity.this);
         notificationService.addDispatcher(dispatcherOfDialog, uiHandler);
 
+        Log.d(TAG, "addDispatchers");
         addDispatchers(notificationService);
     }
 
