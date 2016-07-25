@@ -379,6 +379,21 @@ public class ChatsActivity
 
         @Override
         public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
+            if (loader.getId() == CHAT_SEARCH_LOADER) {
+                ChatsAdapter adapter = (ChatsAdapter) chatsList.getAdapter();
+                chatsData.clear();
+                chatsData.addAll(data);
+
+                if (adapter == null) {
+                    adapter = new ChatsAdapter(chatsData);
+                    adapter.setDownloadManager(getImageDownloadManager());
+                    chatsList.setAdapter(adapter);
+                } else {
+                    adapter.notifyDataSetChanged();
+                }
+                return;
+            }
+
             ChatsHelper chatsHelper = new ChatsHelper(ChatsActivity.this);
 
             if (loader.getId() == CHAT_DB_LOADER) {
