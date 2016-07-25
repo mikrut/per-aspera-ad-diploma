@@ -1,6 +1,7 @@
 package ru.mail.park.chat.activities.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ public class ContactsGroupFragment extends ContactsFragment {
         return inflater.inflate(R.layout.fragment_contacts_no_swipe, container, false);
     }
 
+    @NonNull
     @Override
     protected LoaderManager.LoaderCallbacks<List<Contact>> getLoaderCallbacks() {
         return new GroupContactsLoaderCallbacks();

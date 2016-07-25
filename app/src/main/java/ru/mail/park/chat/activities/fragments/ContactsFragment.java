@@ -156,6 +156,7 @@ public class ContactsFragment
 
     private final LoaderManager.LoaderCallbacks<List<Contact>> contactsLoaderListener = getLoaderCallbacks();
 
+    @NonNull
     protected LoaderManager.LoaderCallbacks<List<Contact>> getLoaderCallbacks() {
         return new ContactsLoaderCallbacks();
     }
@@ -214,7 +215,7 @@ public class ContactsFragment
     private ImageDownloadManager manager;
 
     @Override
-    public void onImageDownloadManagerAvailable(ImageDownloadManager manager) {
+    public void onImageDownloadManagerAvailable(@NonNull ImageDownloadManager manager) {
         if (contactAdapter != null)
             contactAdapter.onImageDownloadManagerAvailable(manager);
         this.manager = manager;

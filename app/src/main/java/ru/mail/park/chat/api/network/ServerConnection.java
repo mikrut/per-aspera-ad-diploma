@@ -124,7 +124,7 @@ public class ServerConnection {
      *                   Can be both usual objects (Strings, Integers etc.) and Files.
      *                   If a request contains a File parameter it automatically becomes multipart.
      */
-    public void setParameters(List<Pair<String, Object>> parameters) {
+    public void setParameters(@Nullable List<Pair<String, Object>> parameters) {
         this.parameters = parameters;
     }
 

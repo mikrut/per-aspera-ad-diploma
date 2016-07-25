@@ -381,6 +381,7 @@ public class ChatsActivity
         @Override
         public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
             if (loader.getId() == CHAT_SEARCH_LOADER) {
+                Log.d("tag", "chat_serach_loader");
                 ChatsAdapter adapter = (ChatsAdapter) chatsList.getAdapter();
                 chatsData.clear();
                 chatsData.addAll(data);
@@ -409,9 +410,11 @@ public class ChatsActivity
                 for (Chat chat : data) {
                     boolean contains = false;
                     int indexOfCoincidence;
-                    for (indexOfCoincidence = 0; indexOfCoincidence < chatsData.size() && !contains; indexOfCoincidence++) {
+                    for (indexOfCoincidence = 0; indexOfCoincidence < chatsData.size() && !contains;) {
                         Chat existingChat = chatsData.get(indexOfCoincidence);
                         contains = existingChat.getCid().equals(chat.getCid());
+                        if (!contains)
+                            indexOfCoincidence++;
                     }
 
                     if (!contains) {
