@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -406,19 +407,20 @@ public class ChatsActivity
             boolean changes = false;
             if (data != null) {
                 for (Chat chat : data) {
-                    if (!chatsData.contains(chat)) {
+                    boolean contains = false;
+                    int indexOfCoincidence;
+                    for (indexOfCoincidence = 0; indexOfCoincidence < chatsData.size() && !contains; indexOfCoincidence++) {
+                        Chat existingChat = chatsData.get(indexOfCoincidence);
+                        contains = existingChat.getCid().equals(chat.getCid());
+                    }
+
+                    if (!contains) {
                         chatsData.add(chatsData.size(), chat);
                         changes = true;
                     } else {
-                        boolean inserted = false;
-                        for (int i = 0; i < chatsData.size() && !inserted; i++) {
-                            if (chatsData.get(i).getCid().equals(chat.getCid())) {
-                                if (!chatsData.get(i).equals(chat)) {
-                                    chatsData.set(i, chat);
-                                    changes = true;
-                                }
-                                inserted = true;
-                            }
+                        if (!chat.equals(chatsData.get(indexOfCoincidence))) {
+                            chatsData.set(indexOfCoincidence, chat);
+                            changes = true;
                         }
                     }
                 }
