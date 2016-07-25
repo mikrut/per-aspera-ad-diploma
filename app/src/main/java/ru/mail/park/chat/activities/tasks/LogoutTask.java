@@ -7,7 +7,7 @@ import android.util.Log;
 import java.io.IOException;
 
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
-import ru.mail.park.chat.api.Auth;
+import ru.mail.park.chat.api.rest.Auth;
 
 /**
  * Created by 1запуск BeCompact on 27.03.2016.

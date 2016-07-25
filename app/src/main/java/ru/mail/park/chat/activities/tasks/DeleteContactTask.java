@@ -1,12 +1,11 @@
 package ru.mail.park.chat.activities.tasks;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 
 import java.io.IOException;
 
-import ru.mail.park.chat.api.Contacts;
+import ru.mail.park.chat.api.rest.Contacts;
 
 /**
  * Created by Михаил on 21.05.2016.

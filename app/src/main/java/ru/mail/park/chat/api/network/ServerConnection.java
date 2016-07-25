@@ -3,6 +3,7 @@ package ru.mail.park.chat.api.network;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
@@ -46,6 +47,7 @@ public class ServerConnection {
 
     private String requestURL;
     private String method = "GET";
+    @Nullable
     private List<Pair<String, Object>> parameters = null;
 
     public ServerConnection(Context context, String url) throws IOException {
@@ -67,7 +69,7 @@ public class ServerConnection {
         };
     }
 
-    public HttpURLConnection getUrl() throws IOException {
+    private HttpURLConnection getUrl() throws IOException {
         String paramsString = "";
         if (method != null && method.equals("GET")) {
             paramsString = buildParameterString(parameters);
@@ -117,11 +119,19 @@ public class ServerConnection {
         return httpURLConnection;
     }
 
-    public void setParameters(List<Pair<String, Object>> parameters) {
+    /**
+     * @param parameters pairs {parameterName : parameter} to send in HTTP request.
+     *                   Can be both usual objects (Strings, Integers etc.) and Files.
+     *                   If a request contains a File parameter it automatically becomes multipart.
+     */
+    public void setParameters(@Nullable List<Pair<String, Object>> parameters) {
         this.parameters = parameters;
     }
 
-    public void setRequestMethod(String method) throws ProtocolException {
+    /**
+     * @param method an HTTP request method to use (GET, POST, DELETE, UPDATE etc.)
+     */
+    public void setRequestMethod(String method) {
         this.method = method;
     }
 
@@ -135,6 +145,10 @@ public class ServerConnection {
         return haveFile;
     }
 
+    /**
+     * @return An HTTP response for the specified request.
+     * Prior calling to this method you should set request method, parameters and destination URL.
+     */
     public String getResponse() {
         final boolean multipart = isMultipart(parameters);
         if (!multipart) {
@@ -144,6 +158,10 @@ public class ServerConnection {
         }
     }
 
+    /**
+     *
+     * @return An HTTP response for our simple (non-multipart) request.
+     */
     private String getSimpleResponse() {
         final String tag = ServerConnection.class.getSimpleName() + ".getResponse";
 
@@ -206,6 +224,10 @@ public class ServerConnection {
         return responseBuilder.toString();
     }
 
+    /**
+     *
+     * @return A server response for multipart request.
+     */
     private String getMultipartResponse() {
         final String tag = ServerConnection.class.getSimpleName() + ".getMultipartResponse";
         String response = "";
@@ -249,7 +271,8 @@ public class ServerConnection {
         return response;
     }
     
-    private static void write(String boundary, DataOutputStream dos, String key, Object value) throws IOException {
+    private static void write(String boundary, DataOutputStream dos, String key, Object value)
+            throws IOException {
         final String tag = ServerConnection.class.getSimpleName() + ".getMultipartResponse";
 
         final String lineEnd = "\r\n";

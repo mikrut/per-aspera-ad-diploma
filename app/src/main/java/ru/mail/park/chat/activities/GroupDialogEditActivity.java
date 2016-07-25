@@ -14,45 +14,36 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsGroupFragment;
 import ru.mail.park.chat.activities.tasks.IOperationListener;
 import ru.mail.park.chat.activities.tasks.UpdateChatImageTask;
 import ru.mail.park.chat.activities.views.EditTextDialogBuilder;
-import ru.mail.park.chat.api.Chats;
-import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.api.rest.Chats;
+import ru.mail.park.chat.api.websocket.DispatcherOfGroupEdit;
+import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
-import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.message_interfaces.IGroupEditListener;
+import ru.mail.park.chat.api.websocket.IGroupEditListener;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
@@ -78,7 +69,6 @@ public class GroupDialogEditActivity
     public static final int PICK_CONTACT = 1;
 
     private Chat chat;
-    private Messages groupEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,14 +131,6 @@ public class GroupDialogEditActivity
                 startActivityForResult(intent, PICK_CONTACT);
             }
         });
-
-        // FIXME: check for IOException properly
-        try {
-            groupEdit = new Messages(this, new Handler());
-            groupEdit.setGroupEditListener(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -175,8 +157,19 @@ public class GroupDialogEditActivity
         }
         if (requestCode == PICK_CONTACT && resultCode == RESULT_OK) {
             Contact contact = (Contact) data.getSerializableExtra(ContactsActivity.RESULT_CONTACT);
-            groupEdit.addUser(contact.getUid(), chat.getCid());
+            Messages groupEdit = getGroupEdit();
+            if (groupEdit != null) {
+                groupEdit.addUser(contact.getUid(), chat.getCid());
+            }
         }
+    }
+
+    private Messages getGroupEdit() {
+        NotificationService service = getNotificationService();
+        if (service != null) {
+            return service.getMessages();
+        }
+        return null;
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
@@ -220,7 +213,10 @@ public class GroupDialogEditActivity
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 final String name = builder.getInput().getText().toString();
-                                groupEdit.updateName(chat.getCid(), name);
+                                Messages groupEdit = getGroupEdit();
+                                if (groupEdit != null) {
+                                    groupEdit.updateName(chat.getCid(), name);
+                                }
                             }
                         }
                 ).setNegativeButton(
@@ -270,5 +266,21 @@ public class GroupDialogEditActivity
         if (cid.equals(chat.getCid())) {
             toolbarTitle.setText(chatName);
         }
+    }
+
+    private DispatcherOfGroupEdit dispatcherOfGroupEdit;
+
+    @Override
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        dispatcherOfGroupEdit = new DispatcherOfGroupEdit(this);
+        dispatcherOfGroupEdit.setGroupEditListener(this);
+        notificationService.addDispatcher(dispatcherOfGroupEdit, uiHandler);
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.removeDispatcher(dispatcherOfGroupEdit);
     }
 }

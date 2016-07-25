@@ -6,10 +6,9 @@ import android.app.AlertDialog;
 import android.util.Log;
 
 import java.io.IOException;
-import java.security.acl.Owner;
 
 import ru.mail.park.chat.api.MultipartProfileUpdater;
-import ru.mail.park.chat.api.Users;
+import ru.mail.park.chat.api.rest.Users;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 

@@ -1,4 +1,4 @@
-package ru.mail.park.chat.message_interfaces;
+package ru.mail.park.chat.api.websocket;
 
 import org.json.JSONObject;
 
@@ -17,5 +17,4 @@ public interface IChatListener {
     void onActionDeleteMessage(int mid);
     void onGetHistoryMessages(ArrayList<Message> msg_list);
     void onWrite(String cid, Contact user);
-    void onUpdateChatStatus(boolean isOnline);
 }

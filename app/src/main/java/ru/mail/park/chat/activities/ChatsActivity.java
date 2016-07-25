@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -379,6 +380,22 @@ public class ChatsActivity
 
         @Override
         public void onLoadFinished(Loader<List<Chat>> loader, List<Chat> data) {
+            if (loader.getId() == CHAT_SEARCH_LOADER) {
+                Log.d("tag", "chat_serach_loader");
+                ChatsAdapter adapter = (ChatsAdapter) chatsList.getAdapter();
+                chatsData.clear();
+                chatsData.addAll(data);
+
+                if (adapter == null) {
+                    adapter = new ChatsAdapter(chatsData);
+                    adapter.setDownloadManager(getImageDownloadManager());
+                    chatsList.setAdapter(adapter);
+                } else {
+                    adapter.notifyDataSetChanged();
+                }
+                return;
+            }
+
             ChatsHelper chatsHelper = new ChatsHelper(ChatsActivity.this);
 
             if (loader.getId() == CHAT_DB_LOADER) {
@@ -391,19 +408,22 @@ public class ChatsActivity
             boolean changes = false;
             if (data != null) {
                 for (Chat chat : data) {
-                    if (!chatsData.contains(chat)) {
+                    boolean contains = false;
+                    int indexOfCoincidence;
+                    for (indexOfCoincidence = 0; indexOfCoincidence < chatsData.size() && !contains;) {
+                        Chat existingChat = chatsData.get(indexOfCoincidence);
+                        contains = existingChat.getCid().equals(chat.getCid());
+                        if (!contains)
+                            indexOfCoincidence++;
+                    }
+
+                    if (!contains) {
                         chatsData.add(chatsData.size(), chat);
                         changes = true;
                     } else {
-                        boolean inserted = false;
-                        for (int i = 0; i < chatsData.size() && !inserted; i++) {
-                            if (chatsData.get(i).getCid().equals(chat.getCid())) {
-                                if (!chatsData.get(i).equals(chat)) {
-                                    chatsData.set(i, chat);
-                                    changes = true;
-                                }
-                                inserted = true;
-                            }
+                        if (!chat.equals(chatsData.get(indexOfCoincidence))) {
+                            chatsData.set(indexOfCoincidence, chat);
+                            changes = true;
                         }
                     }
                 }

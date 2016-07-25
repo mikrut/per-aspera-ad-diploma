@@ -1,6 +1,5 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.websocket;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.preference.PreferenceManager;
@@ -13,29 +12,18 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import com.neovisionaries.ws.client.WebSocketListener;
 import com.neovisionaries.ws.client.WebSocketState;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Proxy;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.List;
 
 import info.guardianproject.netcipher.NetCipher;
 import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.PreferenceConstants;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
-import ru.mail.park.chat.models.AttachedFile;
-import ru.mail.park.chat.models.Chat;
-import ru.mail.park.chat.models.Contact;
-import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.models.OwnerProfile;
 
 /**
@@ -149,5 +137,26 @@ public class WSConnection extends ApiSection {
 
     protected void dispatchNewState(WebSocketState newState) {
 
+    }
+
+    public boolean isStateOK() {
+        return !(ws.getState().equals(WebSocketState.CLOSED) || ws.getState().equals(WebSocketState.CLOSING));
+    }
+
+    public void reconnect() {
+        if (!isStateOK()) {
+            try {
+                ws = ws.recreate();
+                ws.connectAsynchronously();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void sendRequest(WebSocketRequest request) {
+        reconnect();
+        Log.v(TAG + "." + request.getMethod(), request.toString());
+        ws.sendText(request.toString());
     }
 }

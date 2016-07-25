@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.neovisionaries.ws.client.WebSocketState;
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
@@ -64,7 +65,9 @@ import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.DialogActionBar;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
-import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.IWSStatusListener;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.helpers.DialogEndlessPagination;
@@ -74,8 +77,8 @@ import ru.mail.park.chat.loaders.ChatInfoWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
@@ -86,6 +89,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 public class DialogActivity
         extends AImageDownloadServiceBindingActivity
         implements IChatListener,
+        IWSStatusListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         HttpFileUpload.IUploadListener {
@@ -128,7 +132,6 @@ public class DialogActivity
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
     private ScrollEndlessPagination<Message> pagination;
-    protected IMessageSender messages;
 
     private boolean receivedFromWeb = false;
 
@@ -147,12 +150,6 @@ public class DialogActivity
 
         initViews();
         initAttachments();
-
-        try {
-            messages = getMessageSender();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         userID = getIntent().getStringExtra(USER_ID);
@@ -330,14 +327,15 @@ public class DialogActivity
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (chatID != null && !messages.isConnected()) {
+                        IMessageSender sender = getMessageSender();
+                        if (chatID != null && (sender == null || !sender.isConnected())) {
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        if (undeliveredMessages.size() == 0)
-                            messages.reconnect();
+                        if (undeliveredMessages.size() == 0 && sender != null)
+                            sender.reconnect();
 
                         for (Message message : undeliveredMessages) {
                             sendMessage(message);
@@ -396,8 +394,9 @@ public class DialogActivity
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (chatID != null)
-                    messages.write(chatID);
+                IMessageSender sender = getMessageSender();
+                if (chatID != null && sender != null)
+                    sender.write(chatID);
             }
 
             @Override
@@ -449,10 +448,12 @@ public class DialogActivity
         });
     }
 
-    protected IMessageSender getMessageSender() throws IOException {
-        Messages messages = new Messages(this, new Handler());
-        messages.setChatListener(this);
-        return messages;
+    @Nullable
+    protected IMessageSender getMessageSender() {
+        if (getNotificationService() != null) {
+            return getNotificationService().getMessages();
+        }
+        return null;
     }
 
     private void onUpdateChatID() {
@@ -480,10 +481,13 @@ public class DialogActivity
     protected void sendMessage(@NonNull Message message) {
         undeliveredMessages.add(message);
         addMessage(message);
-        if (chatID != null) {
-            messages.sendMessage(chatID, message);
-        } else if (userID != null) {
-            messages.sendFirstMessage(userID, message);
+        IMessageSender sender = getMessageSender();
+        if (sender != null) {
+            if (chatID != null) {
+                sender.sendMessage(chatID, message);
+            } else if (userID != null) {
+                sender.sendFirstMessage(userID, message);
+            }
         }
     }
 
@@ -612,8 +616,9 @@ public class DialogActivity
     }
 
     @Override
-    public void onUpdateChatStatus(boolean isOnline) {
+    public void onUpdateWSStatus(WebSocketState state) {
         // TODO: use Android string resources
+        boolean isOnline = state.equals(WebSocketState.OPEN);
         if (isOnline) {
             if (thisChat != null) {
                 if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {
@@ -671,9 +676,6 @@ public class DialogActivity
     @Override
     protected void onPause() {
         super.onPause();
-        if (messages != null) {
-            messages.disconnect();
-        }
         schedulerTimer.cancel();
     }
 
@@ -699,7 +701,7 @@ public class DialogActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode)
         {
@@ -819,5 +821,18 @@ public class DialogActivity
         if (messagesAdapter != null) {
             messagesAdapter.setImageDownloadManager(mgr);
         }
+    }
+
+    @Override
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        notificationService.getMessages().getWsStatusNotifier(uiHandler).setWsStatusListener(this);
+        onUpdateWSStatus(notificationService.getMessages().getWsStatus());
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.getMessages().getWsStatusNotifier(uiHandler).setWsStatusListener(null);
     }
 }
