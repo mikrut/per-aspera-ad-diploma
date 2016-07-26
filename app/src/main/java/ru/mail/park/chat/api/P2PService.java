@@ -2,6 +2,7 @@ package ru.mail.park.chat.api;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.SSLCertificateSocketFactory;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -22,18 +23,24 @@ import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Random;
 
 import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
@@ -153,28 +160,11 @@ public class P2PService extends Service implements IMessageSender {
         Log.d(P2PService.class.getSimpleName(), "Destination " + destination);
         Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
 
-        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-        Proxy orbotProxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-      /*  try {
-            closeStreams();
-
-            Socket underlying = new Socket(orbotProxy);
-            underlying.connect(new InetSocketAddress(destination, port));
-
-            SSLContext sslContext = getSSLContext(new TrustManager[] {getTrustManager()});
-            Socket socket = sslContext.getSocketFactory().createSocket(underlying, proxyHost, proxyPort, true);
-*/
         ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
         try {
             closeStreams();
-            Socket underlying = proxyInfo.getSocketFactory().createSocket(destination, port);
-            SSLContext sslContext = getSSLContext(null, new TrustManager[] {getTrustManager()});
-            SSLSocketFactory factory = sslContext.getSocketFactory();
-
-            SSLSocket socket = (SSLSocket) factory.createSocket(underlying, proxyHost, proxyPort, true);
-            socket.setEnabledCipherSuites(socket.getSupportedCipherSuites());
-            socket.setEnabledProtocols(socket.getSupportedProtocols());
-            socket.startHandshake();
+            Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
+            socket = wrapSocketWithSSL(socket, true);
 
             synchronized (outputSynchronizer) {
                 output = new ObjectOutputStream(socket.getOutputStream());
@@ -182,9 +172,10 @@ public class P2PService extends Service implements IMessageSender {
             synchronized (inputSynchronizer) {
                 input = new ObjectInputStream(socket.getInputStream());
             }
+
             Log.i(P2PService.class.getSimpleName(), "got a connection");
             Log.i(P2PService.class.getSimpleName(), destination);
-        } catch (KeyManagementException | NoSuchAlgorithmException | IOException e) {
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
     }
@@ -215,30 +206,63 @@ public class P2PService extends Service implements IMessageSender {
         };
     }
 
+    /**
+     * @return Insecure dummy KeyManager which trusts everyone
+     */
+    @Deprecated
+    private KeyManager[] getKeyManagers() {
+        try {
+            KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
+            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+            ks.load(null);
+            factory.init(ks, "password".toCharArray());
+            //factory.init(null, null);
+            return factory.getKeyManagers();
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param socket plain socket to wrap
+     * @param isClient whether we're on a client side (needed for handshake)
+     * @return SSL socket created over an existing plain socket
+     * @throws IOException
+     */
+    private SSLSocket wrapSocketWithSSL(Socket socket, boolean isClient) throws IOException,
+            NoSuchAlgorithmException, KeyManagementException {
+        SSLContext sslContext = getSSLContext(null, new TrustManager[]{ getTrustManager() });
+
+        SSLSocketFactory factory = (SSLSocketFactory) sslContext.getSocketFactory();
+        SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket,
+                socket.getInetAddress().getHostAddress(),
+                socket.getPort(),
+                true);
+        sslSocket.setUseClientMode(isClient);
+
+        sslSocket.setEnabledProtocols(sslSocket.getSupportedProtocols());
+        sslSocket.setEnabledCipherSuites(sslSocket.getEnabledCipherSuites());
+
+        sslSocket.startHandshake();
+
+        return sslSocket;
+    }
+
     // TODO: implement error dispatch
     // TODO: move generation methods to (?) subclass
     public void handleActionStartServer(int port) {
         try {
             closeStreams();
 
-            byte[] nonce = SSLServerStuffFactory.generateNonce();
-            KeyPair keyPair = SSLServerStuffFactory.generateKeyPair();
-            X509Certificate cert = SSLServerStuffFactory.createCACert(keyPair.getPublic(), keyPair.getPrivate());
-            KeyStore keyStore = SSLServerStuffFactory.generateKeyStore(nonce, keyPair, cert);
-            byte[] keyData = SSLServerStuffFactory.generateKeyData(keyStore, nonce);
-            KeyStore finalKeyStore = SSLServerStuffFactory.generateFinalKeyStore(keyData, nonce);
-            KeyManager[] km = SSLServerStuffFactory.getKeyManagers(nonce, finalKeyStore);
-
-            SSLContext sslContext = getSSLContext(km, new TrustManager[]{getTrustManager()});
-            SSLServerSocketFactory factory = sslContext.getServerSocketFactory();
-            serverSocket = SSLServerStuffFactory.getServerSocket(factory, port, keyData, nonce);
-
+            serverSocket = new ServerSocket(port);
             Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
-            SSLSocket socket = (SSLSocket) serverSocket.accept();
-            socket.setEnabledCipherSuites(socket.getSupportedCipherSuites());
-            socket.setEnabledProtocols(socket.getSupportedProtocols());
-            socket.startHandshake();
+            Socket socket = serverSocket.accept();
             Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+
+            socket = wrapSocketWithSSL(socket, false);
 
             synchronized (inputSynchronizer) {
                 input = new ObjectInputStream(socket.getInputStream());
@@ -247,7 +271,7 @@ public class P2PService extends Service implements IMessageSender {
                 output = new ObjectOutputStream(socket.getOutputStream());
             }
             Log.i(P2PService.class.getSimpleName(), "connection finished!");
-        } catch (Exception e) {
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
     }

@@ -338,8 +338,10 @@ public class DialogActivity
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        boolean ok = messages.isConnected();
-                        dialogActionBar.setProgress(!ok);
+                        if (messages != null) {
+                            boolean ok = messages.isConnected();
+                            dialogActionBar.setProgress(!ok);
+                        }
 
                         if (undeliveredMessages.size() == 0)
                             messages.reconnect();
