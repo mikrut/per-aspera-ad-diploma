@@ -8,15 +8,15 @@ import java.io.IOException;
 import java.util.List;
 
 import ru.mail.park.chat.activities.ChatsActivity;
-import ru.mail.park.chat.api.Chats;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.api.rest.Chats;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.models.Chat;
 
 /**
  * Created by mikrut on 28.03.16.
  */
 public class ChatWebLoader extends ChatLoader {
-    public static final String ARG_PAGE = ScrollEnlessPagination.ARG_PAGE;
+    public static final String ARG_PAGE = ScrollEndlessPagination.ARG_PAGE;
     int page = 1;
 
     public ChatWebLoader(@NonNull Context context) {

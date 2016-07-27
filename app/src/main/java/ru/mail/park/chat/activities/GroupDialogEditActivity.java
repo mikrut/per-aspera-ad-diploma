@@ -1,53 +1,55 @@
 package ru.mail.park.chat.activities;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import ru.mail.park.chat.R;
-import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsGroupFragment;
 import ru.mail.park.chat.activities.tasks.IOperationListener;
 import ru.mail.park.chat.activities.tasks.UpdateChatImageTask;
-import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.activities.views.EditTextDialogBuilder;
+import ru.mail.park.chat.api.rest.Chats;
+import ru.mail.park.chat.api.websocket.DispatcherOfGroupEdit;
+import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
-import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
+import ru.mail.park.chat.api.websocket.IGroupEditListener;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 
-public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivity {
+public class GroupDialogEditActivity
+        extends AImageDownloadServiceBindingActivity
+        implements IGroupEditListener{
     public static final String ARG_CID =
             GroupDialogEditActivity.class.getCanonicalName() + ".ARG_CID";
 
@@ -58,12 +60,15 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
     private Button addMemberButton;
     private ImageButton setPictureButton;
 
+    @NonNull
+    private ContactsGroupFragment fragment;
+
     public static final String CONTACTS_TAG =
             GroupDialogEditActivity.class.getCanonicalName() + ".CONTACTS_TAG";
     private static final int PICK_IMAGE = 0;
+    public static final int PICK_CONTACT = 1;
 
     private Chat chat;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +99,9 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
         ChatsHelper helper = new ChatsHelper(this);
         chat = helper.getChat(cid);
         toolbarTitle.setText(chat.getName());
-        toolbarSubtitle.setText(chat.getChatUsers().size() + " user" + (chat.getChatUsers().size() > 1 ? "s" : ""));
+        toolbarSubtitle.setText(chat.getMembersCount() + " user" + (chat.getMembersCount() > 1 ? "s" : ""));
 
-        ContactsGroupFragment fragment = new ContactsGroupFragment();
+        fragment = new ContactsGroupFragment();
         Bundle args = new Bundle();
         args.putString(ContactsGroupFragment.ARG_CID, cid);
         fragment.setArguments(args);
@@ -116,6 +121,14 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
                 Intent chooserIntent = Intent.createChooser(pickIntent, pickTitle);
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { takePhotoIntent });
                 startActivityForResult(chooserIntent, PICK_IMAGE);
+            }
+        });
+
+        addMemberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(GroupDialogEditActivity.this, ContactsActivity.class);
+                startActivityForResult(intent, PICK_CONTACT);
             }
         });
     }
@@ -142,6 +155,21 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
                 }
             }
         }
+        if (requestCode == PICK_CONTACT && resultCode == RESULT_OK) {
+            Contact contact = (Contact) data.getSerializableExtra(ContactsActivity.RESULT_CONTACT);
+            Messages groupEdit = getGroupEdit();
+            if (groupEdit != null) {
+                groupEdit.addUser(contact.getUid(), chat.getCid());
+            }
+        }
+    }
+
+    private Messages getGroupEdit() {
+        NotificationService service = getNotificationService();
+        if (service != null) {
+            return service.getMessages();
+        }
+        return null;
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
@@ -174,7 +202,29 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_edit_name:
-                // TODO: Edit group chat name
+                final EditTextDialogBuilder builder = new EditTextDialogBuilder(this);
+                AlertDialog dialog = builder
+                .setTitle("Edit name")
+                .setMessage("Input name")
+                .setIcon(R.drawable.ic_edit_black_24dp)
+                .setPositiveButton(
+                        getString(R.string.action_save),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                final String name = builder.getInput().getText().toString();
+                                Messages groupEdit = getGroupEdit();
+                                if (groupEdit != null) {
+                                    groupEdit.updateName(chat.getCid(), name);
+                                }
+                            }
+                        }
+                ).setNegativeButton(
+                        getString(R.string.cancel),
+                        null
+                ).create();
+                dialog.show();
+                //dialog.getButton(dialog.BUTTON_POSITIVE).setTextColor(getColor(R.color.blue));
                 break;
             case R.id.action_delete:
                 // TODO: Delete and leave group
@@ -203,4 +253,34 @@ public class GroupDialogEditActivity extends AImageDownloadServiceBindingActivit
                     Toast.makeText(GroupDialogEditActivity.this, s, Toast.LENGTH_SHORT).show();
                 }
             };
+
+    @Override
+    public void onAddUser(@NonNull String cid, @NonNull Contact user) {
+        if (cid.equals(chat.getCid())) {
+            fragment.setData(fragment.getData());
+        }
+    }
+
+    @Override
+    public void onUpdateName(@NonNull String cid, @NonNull String chatName) {
+        if (cid.equals(chat.getCid())) {
+            toolbarTitle.setText(chatName);
+        }
+    }
+
+    private DispatcherOfGroupEdit dispatcherOfGroupEdit;
+
+    @Override
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        dispatcherOfGroupEdit = new DispatcherOfGroupEdit(this);
+        dispatcherOfGroupEdit.setGroupEditListener(this);
+        notificationService.addDispatcher(dispatcherOfGroupEdit, uiHandler);
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.removeDispatcher(dispatcherOfGroupEdit);
+    }
 }

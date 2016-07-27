@@ -7,15 +7,18 @@ import android.util.Log;
 import java.io.IOException;
 
 import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
-import ru.mail.park.chat.api.Auth;
+import ru.mail.park.chat.api.rest.Auth;
 
 /**
  * Created by 1запуск BeCompact on 27.03.2016.
  */
 public class LogoutTask extends AsyncTask<String, Void, Boolean> {
     private final IAuthLogout listener;
-    private Auth auth;
     private final Context context;
+
+    public LogoutTask(Context context) {
+        this(context, null);
+    }
 
     public LogoutTask(Context context, IAuthLogout listener) {
         this.context = context;
@@ -27,7 +30,7 @@ public class LogoutTask extends AsyncTask<String, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(String... params) {
-        auth = new Auth(context);
+        Auth auth = new Auth(context);
         Log.d("[TechMail]", "calling doInBackground");
         String token = params[0];
 

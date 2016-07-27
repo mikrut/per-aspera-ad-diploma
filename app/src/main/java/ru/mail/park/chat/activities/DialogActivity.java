@@ -26,7 +26,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -34,11 +33,11 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.neovisionaries.ws.client.WebSocketState;
 import com.rockerhieu.emojicon.EmojiconEditText;
 import com.rockerhieu.emojicon.EmojiconGridFragment;
 import com.rockerhieu.emojicon.EmojiconsFragment;
@@ -66,18 +65,20 @@ import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.views.DialogActionBar;
 import ru.mail.park.chat.activities.views.KeyboardDetectingLinearLayout;
 import ru.mail.park.chat.api.HttpFileUpload;
-import ru.mail.park.chat.api.Messages;
+import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.IWSStatusListener;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
-import ru.mail.park.chat.helpers.ScrollEnlessPagination;
+import ru.mail.park.chat.helpers.DialogEndlessPagination;
+import ru.mail.park.chat.helpers.ScrollEndlessPagination;
 import ru.mail.park.chat.loaders.ChatInfoLoader;
 import ru.mail.park.chat.loaders.ChatInfoWebLoader;
-import ru.mail.park.chat.loaders.ChatWebLoader;
 import ru.mail.park.chat.loaders.MessagesDBLoader;
 import ru.mail.park.chat.loaders.MessagesLoader;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
@@ -88,6 +89,7 @@ import ru.mail.park.chat.models.OwnerProfile;
 public class DialogActivity
         extends AImageDownloadServiceBindingActivity
         implements IChatListener,
+        IWSStatusListener,
         EmojiconGridFragment.OnEmojiconClickedListener,
         EmojiconsFragment.OnEmojiconBackspaceClickedListener,
         HttpFileUpload.IUploadListener {
@@ -129,8 +131,7 @@ public class DialogActivity
     private List<AttachedFile> attachemtsList;
     private MessagesAdapter messagesAdapter;
     private LinearLayoutManager layoutManager;
-    private ScrollEnlessPagination<Message> pagination;
-    protected IMessageSender messages;
+    private ScrollEndlessPagination<Message> pagination;
 
     private boolean receivedFromWeb = false;
 
@@ -149,12 +150,6 @@ public class DialogActivity
 
         initViews();
         initAttachments();
-
-        try {
-            messages = getMessageSender();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         chatID = getIntent().getStringExtra(CHAT_ID);
         userID = getIntent().getStringExtra(USER_ID);
@@ -332,19 +327,15 @@ public class DialogActivity
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (chatID != null && !messages.isConnected()) {
+                        IMessageSender sender = getMessageSender();
+                        if (chatID != null && (sender == null || !sender.isConnected())) {
                             Bundle args = new Bundle();
                             args.putString(MessagesLoader.CID_ARG, chatID);
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        if (messages != null) {
-                            boolean ok = messages.isConnected();
-                            dialogActionBar.setProgress(!ok);
-                        }
-
-                        if (undeliveredMessages.size() == 0)
-                            messages.reconnect();
+                        if (undeliveredMessages.size() == 0 && sender != null)
+                            sender.reconnect();
 
                         for (Message message : undeliveredMessages) {
                             sendMessage(message);
@@ -363,7 +354,7 @@ public class DialogActivity
         layoutManager.setStackFromEnd(true);
         messagesList.setLayoutManager(layoutManager);
 
-        pagination = new ScrollEnlessPagination<>(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager());
+        pagination = new DialogEndlessPagination(layoutManager, messagesLoaderListener, MESSAGES_WEB_LOADER, getLoaderManager(), receivedMessageList);
         messagesList.addOnScrollListener(pagination);
         messagesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -381,8 +372,6 @@ public class DialogActivity
                 }
             }
         });
-
-
     }
 
     private void initActionListeners() {
@@ -405,8 +394,9 @@ public class DialogActivity
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (chatID != null)
-                    messages.write(chatID);
+                IMessageSender sender = getMessageSender();
+                if (chatID != null && sender != null)
+                    sender.write(chatID);
             }
 
             @Override
@@ -458,10 +448,12 @@ public class DialogActivity
         });
     }
 
-    protected IMessageSender getMessageSender() throws IOException {
-        Messages messages = new Messages(this);
-        messages.setChatListener(this);
-        return messages;
+    @Nullable
+    protected IMessageSender getMessageSender() {
+        if (getNotificationService() != null) {
+            return getNotificationService().getMessages();
+        }
+        return null;
     }
 
     private void onUpdateChatID() {
@@ -489,48 +481,54 @@ public class DialogActivity
     protected void sendMessage(@NonNull Message message) {
         undeliveredMessages.add(message);
         addMessage(message);
-        if (chatID != null) {
-            messages.sendMessage(chatID, message);
-        } else if (userID != null) {
-            messages.sendFirstMessage(userID, message);
+        IMessageSender sender = getMessageSender();
+        if (sender != null) {
+            if (chatID != null) {
+                sender.sendMessage(chatID, message);
+            } else if (userID != null) {
+                sender.sendFirstMessage(userID, message);
+            }
         }
     }
 
     private void addMessage(@NonNull Message message) {
+        int itemCount = receivedMessageList.size();
         boolean atBottom =
                 (layoutManager.findLastVisibleItemPosition() == receivedMessageList.size() - 1);
 
-        boolean inserted = false;
         boolean isDifferent = true;
-        for (int position = 0; position < receivedMessageList.size() && !inserted; position++) {
+        Integer insertedPosition = null;
+
+        for (int position = 0; position < receivedMessageList.size() && insertedPosition == null; position++) {
             int comp = message.compareTo(receivedMessageList.get(position));
             if (comp < 0) {
                 receivedMessageList.add(position, message);
-                messagesAdapter.notifyItemInserted(position);
-                inserted = true;
+                messagesAdapter.notifyItemInserted(insertedPosition = position);
             } else if (comp == 0) {
                 Message mess = receivedMessageList.get(position);
                 if (mess.getFiles() != null && mess.getFiles().size() > 0) {
                     message.setFiles(mess.getFiles());
                 }
                 undeliveredMessages.remove(mess);
-                if (mess.getMessageBody().equals(message.getMessageBody())) {
+                if (mess.getMid() == null && mess.getMessageBody().equals(message.getMessageBody()) || mess.getMid() != null && mess.getMid().equals(message.getMid())) {
                     isDifferent = false;
+                    Log.v(DialogActivity.class.getSimpleName(), "MID1: " + mess.getMid() + ", MID2: " + message.getMid());
                 }
                 receivedMessageList.set(position, message);
-                messagesAdapter.notifyItemChanged(position);
-                inserted = true;
+                messagesAdapter.notifyItemChanged(insertedPosition = position);
             }
         }
 
-        if (!inserted) {
+        if (insertedPosition == null) {
             receivedMessageList.add(message);
-            messagesAdapter.notifyItemInserted(receivedMessageList.size() - 1);
+            messagesAdapter.notifyItemInserted(insertedPosition = receivedMessageList.size() - 1);
         }
+
+        Log.v(DialogActivity.class.getSimpleName() + ".addMessage", "Position: " + insertedPosition + ", mid: " + message.getMid() + ", diff: " + isDifferent + ", size: " + receivedMessageList.size());
 
         if (atBottom) {
             messagesList.scrollToPosition(receivedMessageList.size() - 1);
-        } else if (isDifferent) {
+        } else if (isDifferent && insertedPosition >= itemCount - 1) {
             buttonDown.setVisibility(View.VISIBLE);
         }
     }
@@ -601,6 +599,27 @@ public class DialogActivity
     }
 
     @Override
+    public void onUpdateWSStatus(WebSocketState state) {
+        // TODO: use Android string resources
+        boolean isOnline = state.equals(WebSocketState.OPEN);
+        if (isOnline) {
+            if (thisChat != null) {
+                if (thisChat.getType() == Chat.INDIVIDUAL_TYPE) {
+
+                } else {
+                    dialogActionBar.setSubtitle(thisChat.getMembersCount() + " members");
+                }
+            } else {
+                dialogActionBar.setSubtitle("Connected");
+            }
+        } else {
+            dialogActionBar.setSubtitle("Not connected");
+        }
+        // TODO: consider using another type of status indication (as proposed by Anton)
+        dialogActionBar.setProgress(!isOnline);
+    }
+
+    @Override
     public void onWrite(String cid, Contact user) {
         if (ObjectUtils.compare(cid, chatID) == 0) {
             for (int i = 0; i < writers.size(); i++) {
@@ -640,9 +659,6 @@ public class DialogActivity
     @Override
     protected void onPause() {
         super.onPause();
-        if (messages != null) {
-            messages.disconnect();
-        }
         schedulerTimer.cancel();
     }
 
@@ -668,7 +684,7 @@ public class DialogActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode)
         {
@@ -683,7 +699,7 @@ public class DialogActivity
     }
 
     private final MessagesLoaderListener messagesLoaderListener = new MessagesLoaderListener();
-    private class MessagesLoaderListener implements ScrollEnlessPagination.EndlessLoaderListener<Message> {
+    private class MessagesLoaderListener implements ScrollEndlessPagination.EndlessLoaderListener<Message> {
         private boolean endReached = false;
 
         @Override
@@ -727,12 +743,10 @@ public class DialogActivity
 
                     if (data.size() < pagination.getPageSize()) {
                         endReached = true;
-                    } else {
-                        Bundle args = new Bundle();
-                        args.putString(MessagesLoader.CID_ARG, chatID);
-                        args.putString(MessagesLoader.UID_ARG, userID);
-                        args.putInt(MessagesLoader.ARG_PAGE, receivedMessageList.size() / pagination.getPageSize() + 1);
-                        getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, this).forceLoad();
+
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Not full data set");
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Fetched: " + data.size());
+                        Log.d(MessagesLoaderListener.class.getSimpleName(), "Required: " + pagination.getPageSize());
                     }
                 }
             } else {
@@ -790,5 +804,18 @@ public class DialogActivity
         if (messagesAdapter != null) {
             messagesAdapter.setImageDownloadManager(mgr);
         }
+    }
+
+    @Override
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        notificationService.getMessages().getWsStatusNotifier(uiHandler).setWsStatusListener(this);
+        onUpdateWSStatus(notificationService.getMessages().getWsStatus());
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.getMessages().getWsStatusNotifier(uiHandler).setWsStatusListener(null);
     }
 }

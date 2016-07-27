@@ -41,7 +41,7 @@ public class Message implements Comparable<Message>, Serializable {
 
     private @Nullable String imageURL;
 
-    public Message(String messageBody, Context context) {
+    public Message(@NonNull String messageBody, Context context) {
         this.messageBody = messageBody;
         OwnerProfile owner = new OwnerProfile(context);
         uid = owner.getUid();

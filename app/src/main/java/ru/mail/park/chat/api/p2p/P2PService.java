@@ -1,4 +1,4 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.p2p;
 
 import android.app.Service;
 import android.content.Intent;
@@ -43,6 +43,8 @@ import javax.net.ssl.X509TrustManager;
 
 import ru.mail.park.chat.message_interfaces.IChatListener;
 import ru.mail.park.chat.message_interfaces.IMessageSender;
+import ru.mail.park.chat.api.websocket.IChatListener;
+import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.security.SSLServerStuffFactory;
 

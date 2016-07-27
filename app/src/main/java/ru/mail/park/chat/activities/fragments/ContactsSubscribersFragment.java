@@ -24,6 +24,7 @@ public class ContactsSubscribersFragment extends ContactsFragment {
     public static final String MY_ARG = ContactsSubscribersFragment.class.getSimpleName() + ".MY_ARG";
     private boolean my;
 
+    @NonNull
     @Override
     protected LoaderManager.LoaderCallbacks<List<Contact>> getLoaderCallbacks() {
         return new SubscribersLoaderCallbacks();

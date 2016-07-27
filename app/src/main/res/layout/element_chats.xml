@@ -67,7 +67,9 @@
         android:layout_toLeftOf="@+id/lastMessageTime"
         android:layout_toStartOf="@+id/lastMessageTime"
         android:layout_toRightOf="@+id/groupIndicatorImageView"
-        android:layout_toEndOf="@+id/groupIndicatorImageView" />
+        android:layout_toEndOf="@+id/groupIndicatorImageView"
+        android:ellipsize="end"
+        android:singleLine="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -79,7 +81,7 @@
         android:id="@+id/lastMessageTime"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"/>
 
     <com.rockerhieu.emojicon.EmojiconTextView
         android:layout_width="wrap_content"
@@ -94,7 +96,9 @@
         android:layout_alignRight="@+id/lastMessageTime"
         android:layout_alignEnd="@+id/lastMessageTime"
         android:layout_alignBottom="@+id/imageLayout"
-        android:gravity="center_vertical" />
+        android:gravity="center_vertical"
+        android:ellipsize="end"
+        android:singleLine="true" />
 
 
     <View

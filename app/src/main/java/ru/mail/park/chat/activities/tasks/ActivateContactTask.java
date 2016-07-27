@@ -8,7 +8,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import ru.mail.park.chat.activities.ProfileViewActivity;
-import ru.mail.park.chat.api.Contacts;
+import ru.mail.park.chat.api.rest.Contacts;
 
 /**
  * Created by Михаил on 14.05.2016.

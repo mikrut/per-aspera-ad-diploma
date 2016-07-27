@@ -1,22 +1,14 @@
 package ru.mail.park.chat.activities.tasks;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Pair;
-
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.Response;
 
 import java.io.File;
 import java.io.IOException;
 
-import ru.mail.park.chat.api.Auth;
-import ru.mail.park.chat.api.Chats;
+import ru.mail.park.chat.api.rest.Chats;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.models.Chat;
-import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by Михаил on 16.06.2016.

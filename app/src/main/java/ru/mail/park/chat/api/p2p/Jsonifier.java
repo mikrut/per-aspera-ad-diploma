@@ -1,4 +1,4 @@
-package ru.mail.park.chat.message_interfaces;
+package ru.mail.park.chat.api.p2p;
 
 import org.json.JSONArray;
 import org.json.JSONException;

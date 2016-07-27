@@ -1,6 +1,7 @@
-package ru.mail.park.chat.api;
+package ru.mail.park.chat.api.rest;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -25,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.mail.park.chat.api.ApiSection;
+import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.auth_signup.IRegisterCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -32,11 +35,11 @@ import ru.mail.park.chat.models.OwnerProfile;
  * Created by 1запуск BeCompact on 29.02.2016.
  */
 public class Auth extends ApiSection {
-    private static final String URL_ADDITION = "auth/";
+    private static final String URL_ADDITION = "auth";
 
     @Override
-    protected String getUrlAddition() {
-        return super.getUrlAddition() + URL_ADDITION;
+    protected Uri getUrlAddition() {
+        return super.getUrlAddition().buildUpon().appendPath(URL_ADDITION).build();
     }
 
     private String login;

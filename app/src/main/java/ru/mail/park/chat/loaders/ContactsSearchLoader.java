@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 
-import ru.mail.park.chat.api.Users;
+import ru.mail.park.chat.api.rest.Users;
 import ru.mail.park.chat.models.Contact;
 
 /**

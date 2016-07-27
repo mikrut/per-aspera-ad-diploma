@@ -2,17 +2,15 @@ package ru.mail.park.chat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,23 +21,22 @@ import java.util.TreeSet;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.ContactsSimpleListFragment;
-import ru.mail.park.chat.api.Messages;
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IGroupCreateListener;
+import ru.mail.park.chat.api.websocket.DispatcherOfGroupCreate;
+import ru.mail.park.chat.api.websocket.Messages;
+import ru.mail.park.chat.api.websocket.IGroupCreateListener;
+import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
-import ru.mail.park.chat.models.Message;
 
 /**
  * Created by mikrut on 01.04.16.
  */
 public class GroupDialogCreateActivity
-        extends AppCompatActivity
+        extends AImageDownloadServiceBindingActivity
         implements IGroupCreateListener, ContactsFragment.OnPickEventListener {
     private EditText chosenContactsList;
     private EditText groupChat;
 
-    private Messages messages;
     private List<String> uids;
 
     private static final String PICKER_TAG = "PICKER_FRAGMENT";
@@ -49,13 +46,6 @@ public class GroupDialogCreateActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_dialog_create);
-
-        try {
-            messages = new Messages(this);
-            messages.setGroupCreateListener(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -122,18 +112,19 @@ public class GroupDialogCreateActivity
         return true;
     }
 
+    public Messages getGroupCreate() {
+        NotificationService notificationService = getNotificationService();
+        if (notificationService != null) {
+            return notificationService.getMessages();
+        }
+        return null;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_create:
-                if (messages == null) {
-                    try {
-                        messages = new Messages(this);
-                        messages.setGroupCreateListener(this);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                Messages messages = getGroupCreate();
                 if (messages != null &&
                         uids.size() > 0 &&
                         groupChat.getVisibility() != View.GONE &&
@@ -173,9 +164,19 @@ public class GroupDialogCreateActivity
         finish();
     }
 
+    private DispatcherOfGroupCreate dispatcherOfGroupCreate;
+
     @Override
-    protected void onPause() {
-        super.onPause();
-        messages.disconnect();
+    public void addDispatchers(NotificationService notificationService) {
+        super.addDispatchers(notificationService);
+        dispatcherOfGroupCreate = new DispatcherOfGroupCreate(this);
+        dispatcherOfGroupCreate.setGroupCreateListener(this);
+        notificationService.addDispatcher(dispatcherOfGroupCreate, uiHandler);
+    }
+
+    @Override
+    public void removeDispatchers(NotificationService notificationService) {
+        super.removeDispatchers(notificationService);
+        notificationService.removeDispatcher(dispatcherOfGroupCreate);
     }
 }

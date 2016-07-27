@@ -2,14 +2,13 @@ package ru.mail.park.chat.activities.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Pair;
 
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.IOException;
 import java.util.Map;
 
-import ru.mail.park.chat.api.Auth;
+import ru.mail.park.chat.api.rest.Auth;
 import ru.mail.park.chat.auth_signup.IRegisterCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 
