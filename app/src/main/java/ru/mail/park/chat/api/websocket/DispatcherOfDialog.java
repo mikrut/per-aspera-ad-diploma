@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.text.ParseException;
 
 import ru.mail.park.chat.models.Contact;
+import ru.mail.park.chat.models.Message;
 
 /**
  * Created by Михаил on 10.07.2016.
@@ -60,24 +61,19 @@ public class DispatcherOfDialog implements IDispatcher {
     private void dispatchAckSend(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
 
-        String message = data.getString("textMessage");
-        String cid = data.getString("idMessage");
-        String creationDate = data.getString("dtCreate");
-
-        if (chatListener != null)
-            chatListener.onAcknowledgeSendMessage(data);
+        if (chatListener != null) {
+            Message message = new Message(income, getContext());
+            chatListener.onAcknowledgeSendMessage(message);
+        }
     }
 
     private void dispatchNewMessage(JSONObject income) throws JSONException {
         JSONObject data = income.getJSONObject("data");
 
-        String message = data.getString("textMessage");
-        JSONObject user = data.getJSONObject("user");
-        String cid = data.getString("idRoom");
-        String creationDate = data.getString("dtCreate");
-
-        if (chatListener != null)
-            chatListener.onIncomeMessage(data);
+        if (chatListener != null) {
+            Message message = new Message(income, getContext());
+            chatListener.onIncomeMessage(message);
+        }
     }
 
     private void dispatchDelete(JSONObject income) throws JSONException {

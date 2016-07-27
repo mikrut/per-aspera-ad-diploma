@@ -111,39 +111,30 @@ public abstract class ANotificationServiceBindingActivity
     };
 
     @Override
-    public void onIncomeMessage(JSONObject message) {
-        try {
-            Message incomeMsg = new Message(message, this, null);
+    public void onIncomeMessage(Message incomeMsg) {
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 
-            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+        notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
+                .setContentTitle(incomeMsg.getTitle())
+                .setContentText(incomeMsg.getMessageBody());
+        Intent intent = new Intent(this, DialogActivity.class);
+        intent.putExtra(DialogActivity.CHAT_ID, incomeMsg.getCid());
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationBuilder.setContentIntent(pendingIntent);
 
-            notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
-                    .setContentTitle(incomeMsg.getTitle())
-                    .setContentText(incomeMsg.getMessageBody());
-            Intent intent = new Intent(this, DialogActivity.class);
-            intent.putExtra(DialogActivity.CHAT_ID, incomeMsg.getCid());
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            notificationBuilder.setContentIntent(pendingIntent);
-
-            Notification notification = notificationBuilder.build();
-            notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            manager.notify(0, notification);
-        } catch (JSONException ignore) {}
+        Notification notification = notificationBuilder.build();
+        notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, notification);
     }
 
     @Override
-    public void onAcknowledgeSendMessage(JSONObject message) {
+    public void onAcknowledgeSendMessage(Message message) {
 
     }
 
     @Override
     public void onActionDeleteMessage(int mid) {
-
-    }
-
-    @Override
-    public void onGetHistoryMessages(ArrayList<Message> msg_list) {
 
     }
 

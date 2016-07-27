@@ -41,8 +41,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
-import ru.mail.park.chat.message_interfaces.IChatListener;
-import ru.mail.park.chat.message_interfaces.IMessageSender;
 import ru.mail.park.chat.api.websocket.IChatListener;
 import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.Message;
