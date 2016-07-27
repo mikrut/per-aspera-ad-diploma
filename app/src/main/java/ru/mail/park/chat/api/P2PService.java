@@ -2,7 +2,6 @@ package ru.mail.park.chat.api;
 
 import android.app.Service;
 import android.content.Intent;
-import android.net.SSLCertificateSocketFactory;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,8 +15,6 @@ import org.jivesoftware.smack.proxy.ProxyInfo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyManagementException;
@@ -25,18 +22,19 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -183,7 +181,9 @@ public class P2PService extends Service implements IMessageSender {
     @NonNull
     private static SSLContext getSSLContext(KeyManager[] km, TrustManager[] trustManagers) throws KeyManagementException, NoSuchAlgorithmException {
         SecureRandom secureRandom = new SecureRandom();
-        SSLContext sslContext = SSLContext.getInstance("TLSv1");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        Log.d("KeyManager", Arrays.toString(km));
+        Log.d("TrustManagers", Arrays.toString(trustManagers));
         sslContext.init(km, trustManagers, secureRandom);
         return sslContext;
     }
@@ -194,13 +194,21 @@ public class P2PService extends Service implements IMessageSender {
     @Deprecated
     private TrustManager getTrustManager() {
         return new X509TrustManager() {
+            String TAG = "TrustManager";
+
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                Log.d(TAG, "Check client trusted");
             }
 
             public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                Log.d(TAG, "Check server trusted");
+                for (X509Certificate cert : chain) {
+                    Log.d(TAG + ".cert", cert.toString());
+                }
             }
 
             public X509Certificate[] getAcceptedIssuers() {
+                Log.d(TAG, "getAcceptedIssuers");
                 return null;
             }
         };
@@ -212,17 +220,77 @@ public class P2PService extends Service implements IMessageSender {
     @Deprecated
     private KeyManager[] getKeyManagers() {
         try {
-            KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            byte[] nonce = SSLServerStuffFactory.generateNonce();
+            KeyPair kp = SSLServerStuffFactory.generateKeyPair(new SecureRandom());
+            X509Certificate cert = SSLServerStuffFactory.createCACert(kp.getPublic(), kp.getPrivate());
+            KeyStore ks = SSLServerStuffFactory.generateKeyStore(nonce, kp, cert);
 
-            KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-            ks.load(null);
-            factory.init(ks, "password".toCharArray());
-            //factory.init(null, null);
-            return factory.getKeyManagers();
+            Log.d("Cert alias", ks.getCertificateAlias(cert));
+            Log.d("Cert sigalg", cert.getSigAlgName());
+
+            //byte[] keyData = SSLServerStuffFactory.generateKeyData(ks, nonce);
+            //KeyStore fks = SSLServerStuffFactory.initializeKeyStore(keyData, nonce);
+
+            KeyManager[] kms = SSLServerStuffFactory.getKeyManagers(nonce, ks);
+            Log.d("getKeyManagers", String.valueOf(kms.length));
+            for (int i = 0; i < kms.length; i++) {
+                kms[i] = new LogMan((X509KeyManager) kms[i]);
+            }
+            return kms;
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
             e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        Log.e("getKeyManagers", "Could not create..");
         return null;
+    }
+
+    private static class LogMan implements X509KeyManager {
+        private static final String TAG = LogMan.class.getSimpleName();
+        private final X509KeyManager km;
+
+        public LogMan(X509KeyManager wrapped) {
+            km = wrapped;
+        }
+
+        @Override
+        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+            Log.d(TAG, "chooseClientAlias");
+            return km.chooseClientAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+            Log.d(TAG, "chooseServerAlias");
+            return km.chooseServerAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public X509Certificate[] getCertificateChain(String alias) {
+            Log.d(TAG, "getCertificateChain");
+            return km.getCertificateChain(alias);
+        }
+
+        @Override
+        public String[] getClientAliases(String keyType, Principal[] issuers) {
+            Log.d(TAG, "getClientAliases");
+            return km.getClientAliases(keyType, issuers);
+        }
+
+        @Override
+        public String[] getServerAliases(String keyType, Principal[] issuers) {
+            Log.d(TAG, "getServerAliases");
+            return km.getServerAliases(keyType, issuers);
+        }
+
+        @Override
+        public PrivateKey getPrivateKey(String alias) {
+            Log.d(TAG, "getPrivateKey");
+            return km.getPrivateKey(alias);
+        }
     }
 
     /**
@@ -234,7 +302,15 @@ public class P2PService extends Service implements IMessageSender {
      */
     private SSLSocket wrapSocketWithSSL(Socket socket, boolean isClient) throws IOException,
             NoSuchAlgorithmException, KeyManagementException {
-        SSLContext sslContext = getSSLContext(null, new TrustManager[]{ getTrustManager() });
+        SSLContext sslContext;
+        if (!isClient) {
+            Log.d("Server", "cool!");
+            sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
+        } else {
+            Log.d("Client", "not cool... =(");
+            sslContext = getSSLContext(null, new TrustManager[]{getTrustManager()});
+        }
+        // sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
 
         SSLSocketFactory factory = (SSLSocketFactory) sslContext.getSocketFactory();
         SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket,
@@ -244,7 +320,11 @@ public class P2PService extends Service implements IMessageSender {
         sslSocket.setUseClientMode(isClient);
 
         sslSocket.setEnabledProtocols(sslSocket.getSupportedProtocols());
-        sslSocket.setEnabledCipherSuites(sslSocket.getEnabledCipherSuites());
+        sslSocket.setEnabledCipherSuites(factory.getSupportedCipherSuites());
+
+        for (String suite : sslSocket.getEnabledCipherSuites()) {
+            Log.d("Suite", suite);
+        }
 
         sslSocket.startHandshake();
 
