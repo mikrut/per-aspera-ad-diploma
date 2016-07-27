@@ -87,26 +87,30 @@ public class P2PService extends Service implements IMessageSender {
         send(message);
     }
 
-    private void send(Message message) {
+    private void send(final Message message) {
         Log.i(P2PService.class.getSimpleName() + " OUT message", message.getMessageBody());
-        if (output != null) {
-            synchronized (outputSynchronizer) {
+        new Thread() {
+            public void run() {
                 if (output != null) {
-                    try {
+                    synchronized (outputSynchronizer) {
                         if (output != null) {
-                            synchronized (outputSynchronizer) {
+                            try {
                                 if (output != null) {
-                                    output.writeObject(message);
-                                    acknowledgeOutgoingMessage(message);
+                                    synchronized (outputSynchronizer) {
+                                        if (output != null) {
+                                            output.writeObject(message);
+                                            acknowledgeOutgoingMessage(message);
+                                        }
+                                    }
                                 }
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
-        }
+        }.start();
     }
 
     public void addListener(IChatListener chatListener) {
