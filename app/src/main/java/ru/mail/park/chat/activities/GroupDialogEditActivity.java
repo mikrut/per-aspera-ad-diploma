@@ -17,6 +17,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -101,14 +102,21 @@ public class GroupDialogEditActivity
         toolbarTitle.setText(chat.getName());
         toolbarSubtitle.setText(chat.getMembersCount() + " user" + (chat.getMembersCount() > 1 ? "s" : ""));
 
-        fragment = new ContactsGroupFragment();
-        Bundle args = new Bundle();
-        args.putString(ContactsGroupFragment.ARG_CID, cid);
-        fragment.setArguments(args);
+        if (savedInstanceState == null) {
+            Log.d("gdea", "null instance state");
+            Bundle args = new Bundle();
+            args.putString(ContactsGroupFragment.ARG_CID, cid);
+            fragment = new ContactsGroupFragment();
+            fragment.setArguments(args);
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.main_container, fragment, CONTACTS_TAG);
-        transaction.commit();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.main_container, fragment, CONTACTS_TAG);
+            transaction.commit();
+        } else {
+            Log.d("gdea", "non null instance state");
+            fragment = (ContactsGroupFragment) getSupportFragmentManager()
+                    .findFragmentByTag(CONTACTS_TAG);
+        }
 
         setPictureButton.setOnClickListener(new View.OnClickListener() {
             @Override

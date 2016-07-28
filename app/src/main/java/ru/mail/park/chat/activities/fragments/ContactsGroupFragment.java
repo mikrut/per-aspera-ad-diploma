@@ -2,6 +2,7 @@ package ru.mail.park.chat.activities.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
@@ -57,5 +58,20 @@ public class ContactsGroupFragment extends ContactsFragment {
             }
             return null;
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ARG_CID, cid);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            cid = savedInstanceState.getString(ARG_CID);
+        }
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 }
