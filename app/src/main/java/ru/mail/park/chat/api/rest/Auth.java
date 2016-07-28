@@ -9,6 +9,7 @@ import android.util.Pair;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -186,7 +187,7 @@ public class Auth extends ApiSection {
                         fileInputStream = new FileInputStream(p.second);
 
                         Log.d("[TP-diploma]", "printing img = " + p.second);
-                        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(p.second));
+                        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FilenameUtils.getExtension(p.second));
 
                         dos.writeBytes(twoHyphens + boundary + lineEnd);
 

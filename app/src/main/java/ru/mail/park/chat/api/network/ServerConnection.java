@@ -8,6 +8,8 @@ import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -294,7 +296,7 @@ public class ServerConnection {
         final String twoHyphens = "--";
 
         Log.v(tag, "Sending file: " + file.getName());
-        final String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+        final String extension = FilenameUtils.getExtension(file.getName());
         final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
 
         dos.writeBytes(twoHyphens + boundary + lineEnd);

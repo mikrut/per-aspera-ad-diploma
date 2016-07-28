@@ -1,19 +1,24 @@
 package ru.mail.park.chat.file_dialog;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -21,7 +26,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.apache.commons.io.FilenameUtils;
+
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.models.AttachedFile;
 
 
 /**
@@ -36,6 +44,9 @@ public class FileDialog extends ListActivity {
 	 * Chave de um item da lista de paths.
 	 */
 	private static final String ITEM_KEY = "key";
+
+
+    private static final String ITEM_SUBTITLE = "subtitle";
 
 	/**
 	 * Imagem de um item da lista de paths (diretorio ou arquivo).
@@ -208,10 +219,8 @@ public class FileDialog extends ListActivity {
 	 *            Diretorio pai.
 	 */
 	private void getDirImpl(final String dirPath) {
-
 		currentPath = dirPath;
 
-		final List<String> item = new ArrayList<String>();
 		path = new ArrayList<String>();
 		mList = new ArrayList<HashMap<String, Object>>();
 
@@ -225,22 +234,17 @@ public class FileDialog extends ListActivity {
 		myPath.setText(getText(R.string.location) + ": " + currentPath);
 
 		if (!currentPath.equals(ROOT)) {
-
-			item.add(ROOT);
-			addItem(ROOT, R.drawable.folder);
+			addItem(ROOT, "Root", R.drawable.ic_folder_black_24dp);
 			path.add(ROOT);
 
-			item.add("../");
-			addItem("../", R.drawable.folder);
-			path.add(f.getParent());
-			parentPath = f.getParent();
-
+            parentPath = f.getParent();
+			addItem("../", parentPath, R.drawable.ic_folder_black_24dp);
+			path.add(parentPath);
 		}
 
 		TreeMap<String, String> dirsMap = new TreeMap<String, String>();
 		TreeMap<String, String> dirsPathMap = new TreeMap<String, String>();
-		TreeMap<String, String> filesMap = new TreeMap<String, String>();
-		TreeMap<String, String> filesPathMap = new TreeMap<String, String>();
+        List<File> filesList = new ArrayList<>();
 		for (File file : files) {
 			if (file.isDirectory()) {
 				String dirName = file.getName();
@@ -260,30 +264,51 @@ public class FileDialog extends ListActivity {
 						}
 					}
 					if (contains) {
-						filesMap.put(fileName, fileName);
-						filesPathMap.put(fileName, file.getPath());
+                        filesList.add(file);
 					}
 					// senao, adiciona todos os arquivos
 				} else {
-					filesMap.put(fileName, fileName);
-					filesPathMap.put(fileName, file.getPath());
+                    filesList.add(file);
 				}
 			}
 		}
-		item.addAll(dirsMap.tailMap("").values());
-		item.addAll(filesMap.tailMap("").values());
-		path.addAll(dirsPathMap.tailMap("").values());
-		path.addAll(filesPathMap.tailMap("").values());
 
-		SimpleAdapter fileList = new SimpleAdapter(this, mList, R.layout.file_dialog_row, new String[] {
-				ITEM_KEY, ITEM_IMAGE }, new int[] { R.id.fdrowtext, R.id.fdrowimage });
+		path.addAll(dirsPathMap.tailMap("").values());
+        for (File file : filesList) {
+            path.add(file.getPath());
+        }
+
+		SimpleAdapter fileList = new SimpleAdapter(this, mList, R.layout.file_dialog_row,
+				new String[] {ITEM_KEY, ITEM_SUBTITLE, ITEM_IMAGE },
+                new int[] { R.id.fdrowtext, R.id.fdrowsubtext, R.id.fdrowimage });
 
 		for (String dir : dirsMap.tailMap("").values()) {
-			addItem(dir, R.drawable.folder);
+			addItem(dir, "Folder", R.drawable.ic_folder_black_24dp);
 		}
 
-		for (String file : filesMap.tailMap("").values()) {
-			addItem(file, R.drawable.file);
+		for (File file : filesList) {
+            @DrawableRes
+            int fileImage = R.drawable.ic_document_2;;
+
+            String extension = FilenameUtils.getExtension(file.getPath());
+            Log.d("ext", extension);
+            final String IMAGE_PATTERN = "(jpg|png|gif|bmg|jpeg)";
+            final String DOCUMENT_PATTERN = "(doc|pdf|docx|txt)";
+            final String AUDIO_PATTERN = "(mp3|wav|ogg|flac|wma)";
+
+            if (extension != null) {
+                extension = extension.toLowerCase();
+                if (extension.matches(IMAGE_PATTERN)) {
+                    fileImage = R.drawable.ic_file_image;
+                } else if (extension.matches(DOCUMENT_PATTERN)) {
+                    fileImage = R.drawable.ic_file_document;
+                } else if (extension.matches(AUDIO_PATTERN)) {
+                    fileImage = R.drawable.ic_file_audio;
+                }
+            }
+
+			addItem(file.getName(), AttachedFile.humanReadableByteCount(file.length()),
+                    fileImage);
 		}
 
 		fileList.notifyDataSetChanged();
@@ -292,9 +317,10 @@ public class FileDialog extends ListActivity {
 
 	}
 
-	private void addItem(String fileName, int imageId) {
+	private void addItem(String fileName, String subtitle, int imageId) {
 		HashMap<String, Object> item = new HashMap<String, Object>();
 		item.put(ITEM_KEY, fileName);
+        item.put(ITEM_SUBTITLE, subtitle);
 		item.put(ITEM_IMAGE, imageId);
 		mList.add(item);
 	}

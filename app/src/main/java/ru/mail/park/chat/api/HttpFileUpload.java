@@ -16,6 +16,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,7 +74,7 @@ public class HttpFileUpload implements Runnable{
         protected String doInBackground(Void... params) {
             try {
                 String iFileName = Title;
-                String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(iFileName));
+                String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FilenameUtils.getExtension(iFileName));
                 String lineEnd = "\r\n";
                 String twoHyphens = "--";
                 String boundary = "===" + System.currentTimeMillis() + "===";
