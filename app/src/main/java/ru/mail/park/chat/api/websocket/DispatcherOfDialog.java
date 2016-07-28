@@ -62,7 +62,7 @@ public class DispatcherOfDialog implements IDispatcher {
         JSONObject data = income.getJSONObject("data");
 
         if (chatListener != null) {
-            Message message = new Message(income, getContext());
+            Message message = new Message(data, getContext());
             chatListener.onAcknowledgeSendMessage(message);
         }
     }
@@ -71,7 +71,7 @@ public class DispatcherOfDialog implements IDispatcher {
         JSONObject data = income.getJSONObject("data");
 
         if (chatListener != null) {
-            Message message = new Message(income, getContext());
+            Message message = new Message(data, getContext());
             chatListener.onIncomeMessage(message);
         }
     }
@@ -88,17 +88,19 @@ public class DispatcherOfDialog implements IDispatcher {
     }
 
     private void dispatchWriteMessage(JSONObject income) throws JSONException {
-        JSONObject data = income.getJSONObject("data");
+        JSONObject data = income.optJSONObject("data");
 
-        String cid = data.getString("idChat");
-        JSONObject user = data.getJSONObject("user");
+        if (data != null) {
+            String cid = data.getString("idChat");
+            JSONObject user = data.getJSONObject("user");
 
-        if (chatListener != null) {
-            try {
-                Contact contact = new Contact(user, getContext());
-                chatListener.onWrite(cid, contact);
-            } catch (ParseException e) {
-                e.printStackTrace();
+            if (chatListener != null) {
+                try {
+                    Contact contact = new Contact(user, getContext());
+                    chatListener.onWrite(cid, contact);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
