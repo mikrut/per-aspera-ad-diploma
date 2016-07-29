@@ -15,6 +15,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -151,26 +152,70 @@ public class ServerConnection {
      * @return An HTTP response for the specified request.
      * Prior calling to this method you should set request method, parameters and destination URL.
      */
+    @NonNull
     public String getResponse() {
-        final boolean multipart = isMultipart(parameters);
-        if (!multipart) {
-            return getSimpleResponse();
-        } else {
-            return getMultipartResponse();
+        HttpURLConnection connection = getConnection();
+        String reply = "";
+        if (connection != null) {
+            try {
+                reply = getServerResponse(connection);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            connection.disconnect();
         }
+
+        Log.v(ServerConnection.class.getSimpleName() + ".getResponse", "Reply: " + reply);
+        return reply;
     }
 
     /**
      *
-     * @return An HTTP response for our simple (non-multipart) request.
+     * @return An HTTP response as an input stream.
+     * Prior calling to this method you should set request method, parameters and destination URL.
      */
-    private String getSimpleResponse() {
-        final String tag = ServerConnection.class.getSimpleName() + ".getResponse";
+    @Nullable
+    public static InputStream getResponseStream(HttpURLConnection connection) {
+        InputStream stream = null;
+        if (connection != null) {
+            try {
+                if (connection.getResponseCode() == 200) {
+                    stream = connection.getInputStream();
+                } else {
+                    stream = connection.getErrorStream();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return stream;
+    }
 
-        String reply = "";
+    @Nullable
+    public HttpURLConnection getConnection() {
+        final boolean multipart = isMultipart(parameters);
+        HttpURLConnection connection;
+        if (!multipart) {
+            connection = getSimpleResponse();
+        } else {
+            connection = getMultipartResponse();
+        }
+        return connection;
+    }
+
+    /**
+     *
+     * @return HTTP(S) connection to a server after sending specified parameters
+     * via simple (non-multipart) request.
+     */
+    @Nullable
+    private HttpURLConnection getSimpleResponse() {
+        final String tag = ServerConnection.class.getSimpleName() + ".getResponse";
+        HttpURLConnection httpURLConnection = null;
+
         try {
             // AFAIK everything except GET sends parameters the same way
-            HttpURLConnection httpURLConnection = getUrl();
+            httpURLConnection = getUrl();
             Log.w(tag + "_url", httpURLConnection.getURL().toString());
 
             httpURLConnection.setInstanceFollowRedirects(true);
@@ -197,15 +242,12 @@ public class ServerConnection {
                 wr.flush();
                 wr.close();
             }
-
-            reply = getServerResponse(httpURLConnection);
         } catch (IOException e) {
             Log.v(ServerConnection.class.getSimpleName() + ".getResponse", "Exception: " + e.getMessage());
             e.printStackTrace();
         }
 
-        Log.v(ServerConnection.class.getSimpleName() + ".getResponse", "Reply: " + reply);
-        return reply;
+        return httpURLConnection;
     }
     
     private static String getServerResponse(HttpURLConnection httpURLConnection) throws IOException {
@@ -228,18 +270,18 @@ public class ServerConnection {
 
     /**
      *
-     * @return A server response for multipart request.
+     * @return HTTP(S) connection to a server after sending specified parameters
+     * via multipart request.
      */
-    private String getMultipartResponse() {
+    @Nullable
+    private HttpURLConnection getMultipartResponse() {
         final String tag = ServerConnection.class.getSimpleName() + ".getMultipartResponse";
-        String response = "";
+        HttpURLConnection conn = null;
         try {
-            String lineEnd = "\r\n";
-            String twoHyphens = "--";
-            String boundary = "===" + System.currentTimeMillis() + "===";
+            final String boundary = "===" + System.currentTimeMillis() + "===";
 
             Log.v(tag, "Multipart for: " + requestURL);
-            HttpURLConnection conn = getUrl(); // Open a HTTP connection to the URL
+            conn = getUrl(); // Open a HTTP connection to the URL
             Log.v(tag, "Opened a connection");
 
             conn.setDoInput(true);          // Allow Inputs
@@ -262,15 +304,11 @@ public class ServerConnection {
                     write(boundary, dos, parameter.first, (File) parameter.second);
                 }
             }
-            
-            // retrieve the response from server
-            response = getServerResponse(conn);
         } catch (IOException e) {
             Log.e(tag, "Exception: " + e.getLocalizedMessage());
         }
-        
-        Log.v(tag, "Response: " + response);
-        return response;
+
+        return conn;
     }
     
     private static void write(String boundary, DataOutputStream dos, String key, Object value)

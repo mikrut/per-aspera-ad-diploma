@@ -77,4 +77,8 @@ public class AttachmentsHelper {
     public List<AttachedFile> getAttachments(@NonNull String mid) {
         return getAttachments(getAttachmentsCursor(mid));
     }
+
+    public void close() {
+        dbHelper.close();
+    }
 }

@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -9,11 +10,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -23,6 +29,7 @@ import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.views.TitledPicturedViewHolder;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
+import ru.mail.park.chat.models.AttachedFile;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 
@@ -91,10 +98,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             attachments.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    String path = message.getFiles().get(position).getFilePath();
-                    Uri uri = Uri.parse(ApiSection.SERVER_URL + path);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    itemView.getContext().startActivity(intent);
+                    AttachedFile attachment = message.getFiles().get(position);
+                    boolean fileIsDownloadedAndExists = (attachment.getFromFileSystem(view.getContext()) != null);
+                    if (fileIsDownloadedAndExists) {
+                        attachment.openInNewActivity(view.getContext());
+                    } else {
+                        attachment.download(view.getContext(), (TextView) view.findViewById(R.id.file_size_text_view));
+                    }
                 }
             });
 
