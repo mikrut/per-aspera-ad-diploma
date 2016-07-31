@@ -220,7 +220,7 @@ public class ServerConnection {
 
             httpURLConnection.setInstanceFollowRedirects(true);
             httpURLConnection.setConnectTimeout(10000);
-            httpURLConnection.setReadTimeout(10000);
+            // httpURLConnection.setReadTimeout(10000);
             final String USER_AGENT = "Mozilla/5.0 (Linux; U; Android 1.6; en-us; GenericAndroidDevice) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1";
             httpURLConnection.setRequestProperty("User-Agent", USER_AGENT);
 
@@ -369,22 +369,25 @@ public class ServerConnection {
         dos.flush();
     }
 
-    private static String buildParameterString(List<Pair<String, Object>> parameters) {
+    @NonNull
+    private static String buildParameterString(@Nullable List<Pair<String, Object>> parameters) {
         final StringBuilder parametersBuilder = new StringBuilder();
-        boolean first = true;
-        for (Pair<String, Object> parameter : parameters) {
-            if (first) {
-                first = false;
-            } else {
-                parametersBuilder.append('&');
-            }
+        if (parameters != null) {
+            boolean first = true;
+            for (Pair<String, Object> parameter : parameters) {
+                if (first) {
+                    first = false;
+                } else {
+                    parametersBuilder.append('&');
+                }
 
-            try {
-                parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.first), "UTF-8"));
-                parametersBuilder.append("=");
-                parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.second), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                try {
+                    parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.first), "UTF-8"));
+                    parametersBuilder.append("=");
+                    parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.second), "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

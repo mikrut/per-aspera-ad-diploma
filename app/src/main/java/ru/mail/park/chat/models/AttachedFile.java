@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
+import android.util.Log;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -161,11 +164,12 @@ public class AttachedFile {
 
     public void download(final Context context, @Nullable final TextView progressTextView) {
         final String path;
+        File torchatDir = null;
         if (fileSystemPath != null) {
             path = fileSystemPath;
         } else {
             File externalDir = Environment.getExternalStorageDirectory();
-            File torchatDir = new File(externalDir, "TorChatDocuments");
+            torchatDir = new File(externalDir, "TorChatDocuments");
             if (!torchatDir.exists()) {
                 torchatDir.mkdir();
             }
@@ -185,13 +189,13 @@ public class AttachedFile {
                                 .put(fileID.getBytes())
                                 .put(messageID.getBytes())
                                 .array();
-                        hash = Base64.encodeToString(md5.digest(hashingBase), Base64.URL_SAFE);
+                        hash = Base64.encodeToString(md5.digest(hashingBase), Base64.URL_SAFE | Base64.NO_WRAP);
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
                         hash = String.valueOf(System.currentTimeMillis());
                     }
 
-                    path = name + hash + "." + extension;
+                    path = name + "--" + hash + "." + extension;
                 } else {
                     path = attachmentFile.getPath();
                 }
@@ -201,30 +205,43 @@ public class AttachedFile {
 
         }
         if (path != null) {
-            File attachmentFile = new File(path);
-            DownloadFileTask task = new DownloadFileTask(context, attachmentFile, this);
-            task.setDownloadProgressListener(new DownloadFileTask.IDownloadProgressListener() {
-                @Override
-                public void onProgressUpdate(@NonNull DownloadFileTask.DownloadProgress progress) {
-                    if (progressTextView != null) {
-                        String progressText =
-                                AttachedFile.humanReadableByteCount(progress.totalWritten) +
-                                '/' +
-                                AttachedFile.humanReadableByteCount(progress.totalFileSize);
-                        progressTextView.setText(progressText);
-                    }
-                }
-
-                @Override
-                public void onPostExecute(boolean success) {
-                    if (progressTextView != null) {
-                        progressTextView.setText(success ? "Download success" : "Download failure");
-                    }
-                }
-            });
+            File attachmentFile;
             try {
-                task.execute(new URL(ApiSection.SERVER_URL + filePath));
-            } catch (MalformedURLException e) {
+                if (fileSystemPath != null) {
+                    attachmentFile = new File(path);
+                } else {
+                    attachmentFile = new File(torchatDir, path);
+                    attachmentFile.createNewFile();
+
+                }
+                DownloadFileTask task = new DownloadFileTask(context, attachmentFile, this);
+                task.setDownloadProgressListener(new DownloadFileTask.IDownloadProgressListener() {
+                    @Override
+                    public void onProgressUpdate(@NonNull DownloadFileTask.DownloadProgress progress) {
+                        if (progressTextView != null) {
+                            String progressText =
+                                    AttachedFile.humanReadableByteCount(progress.totalWritten) +
+                                    '/' +
+                                    AttachedFile.humanReadableByteCount(progress.totalFileSize);
+                            progressTextView.setText(progressText);
+                            progressTextView.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute(boolean success) {
+                        if (progressTextView != null) {
+                            progressTextView.setText(success ? "Download success" : "Download failure");
+                            progressTextView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+                try {
+                    task.execute(new URL(ApiSection.SERVER_URL + filePath));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

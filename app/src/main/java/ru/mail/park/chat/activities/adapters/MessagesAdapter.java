@@ -100,6 +100,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     AttachedFile attachment = message.getFiles().get(position);
                     boolean fileIsDownloadedAndExists = (attachment.getFromFileSystem(view.getContext()) != null);
+                    Log.v("File download", fileIsDownloadedAndExists ? "not needed" : "needed");
                     if (fileIsDownloadedAndExists) {
                         attachment.openInNewActivity(view.getContext());
                     } else {

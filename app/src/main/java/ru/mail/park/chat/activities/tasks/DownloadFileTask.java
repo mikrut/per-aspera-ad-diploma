@@ -63,6 +63,8 @@ public class DownloadFileTask extends AsyncTask<URL, DownloadFileTask.DownloadPr
         private long totalWritten = 0;
         private final long totalFileSize;
 
+        private long lastpub = 0;
+
         public DownloadOutputStream(OutputStream out, long fileSize) {
             super(out);
             totalFileSize = fileSize;
@@ -72,7 +74,10 @@ public class DownloadFileTask extends AsyncTask<URL, DownloadFileTask.DownloadPr
         protected void afterWrite(int n) throws IOException {
             super.afterWrite(n);
             totalWritten += n;
-            publishProgress(new DownloadProgress(totalWritten, totalFileSize));
+            if (((double) totalWritten - lastpub) / totalWritten > 0.01) {
+                lastpub = totalWritten;
+                publishProgress(new DownloadProgress(totalWritten, totalFileSize));
+            }
         }
     }
 
