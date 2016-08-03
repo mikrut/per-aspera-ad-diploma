@@ -45,6 +45,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +57,7 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.adapters.ChatsAdapter;
 import ru.mail.park.chat.activities.adapters.MenuAdapter;
 import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.helpers.ScrollEndlessPagination;
@@ -73,15 +76,13 @@ public class ChatsActivity
     private SwipeRefreshLayout swipeContainer;
     private ProgressBar pbChats;
 
+    private MenuAdapter menuAdapter;
     private LinearLayoutManager liman;
     private ScrollEndlessPagination pagination;
 
     private MaterialMenuDrawable mToolbarMorphDrawable;
     private MaterialMenuDrawable mSearchViewMorphDrawable;
     private Toolbar toolbar;
-    private Bitmap bmBlurred;
-
-    private String uid;
 
     public static final int CHAT_WEB_LOADER = 0;
     public static final int CHAT_SEARCH_LOADER = 1;
@@ -169,7 +170,7 @@ public class ChatsActivity
                 @Override
                 public void onClick(View v) {
                     OwnerProfile ownerProfile = new OwnerProfile(ChatsActivity.this);
-                    ownerProfile.logout(ChatsActivity.this);
+                    ownerProfile.logout(ChatsActivity.this, getImageDownloadManager());
                     ChatsActivity.this.finish();
                 }
             }
@@ -184,52 +185,36 @@ public class ChatsActivity
             };
         OwnerProfile owner = new OwnerProfile(this);
 
-        uid = owner.getUid();
-        Log.d("[TP-diploma]", "URL to load from: http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
-
-        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-
-        RecyclerView.Adapter mAdapter = new MenuAdapter(
+        menuAdapter = new MenuAdapter(
                 owner.getLogin(),
                 owner.getEmail(),
-                filePath,
-                bmBlurred,
                 titles,
                 listeners,
                 pictures);
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(menuAdapter);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        new DownloadAndBlurImageTask(bmBlurred, (IUserPicSetupListener)mAdapter).execute("http://p30480.lab1.stud.tech-mail.ru/" + owner.getImg());
-
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeContainer.setOnRefreshListener(refreshListener);
-
-        File folder = new File(Environment.getExternalStorageDirectory() + "/torchat");
-        boolean success = false;
-        if (!folder.exists()) {
-            success = folder.mkdir();
-        }
-        if (success) {
-            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars");
-            folder.mkdir();
-
-            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/users");
-            folder.mkdir();
-
-            folder = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/chats");
-            folder.mkdir();
-        } else {
-            // Do something else on failure
-        }
-
     }
 
     @Override
     protected void onSetImageManager(ImageDownloadManager mgr) {
         if (chatsList != null && chatsList.getAdapter() != null) {
             ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
+        }
+
+        RelativeLayout rl = (RelativeLayout) findViewById(R.id.left_drawer_header);
+        CircleImageView  civ = (CircleImageView) rl.findViewById(R.id.userPicture);
+
+        OwnerProfile owner = new OwnerProfile(this);
+        try {
+            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
+            mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+            mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -238,33 +223,10 @@ public class ChatsActivity
         super.onResume();
 
         Log.v("GAv4", "Resume");
-        Tracker t = ((AnalyticsApplication) getApplication()).getDefaultTracker();
-        t.setScreenName("hello");
-        t.send(new HitBuilders.AppViewBuilder().build());
+        ((AnalyticsApplication) getApplication()).getDefaultTracker();
         GoogleAnalytics.getInstance(this).reportActivityStart(this);
 
-        CircleImageView civ = null;
         getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
-        if(uid != null) {
-            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-            String localBlurPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
-
-            RelativeLayout rl = (RelativeLayout)ChatsActivity.this.findViewById(R.id.left_drawer_header);
-            try {
-                civ = (CircleImageView) rl.findViewById(R.id.userPicture);
-            } catch (NullPointerException e) {
-
-            }
-
-            File localFile = new File(localPath);
-            if(localFile.exists() && civ != null)
-                civ.setImageBitmap(BitmapFactory.decodeFile(localPath));
-
-            File localBlurFile = new File(localBlurPath);
-
-            if(localBlurFile.exists() && rl != null)
-                rl.setBackground(new BitmapDrawable(getResources(), BitmapFactory.decodeFile(localBlurPath)));
-        }
     }
 
     @Override
@@ -506,98 +468,6 @@ public class ChatsActivity
         catch (Exception e) {
             // Something went wrong, let the app work without morphing the buttons :)
             e.printStackTrace();
-        }
-    }
-
-    private class DownloadAndBlurImageTask extends AsyncTask<String, Void, Bitmap> {
-        Bitmap bmImage;
-        IUserPicSetupListener listener;
-
-        public DownloadAndBlurImageTask(Bitmap bmImage, IUserPicSetupListener listener) {
-            this.bmImage = bmImage;
-            this.listener = listener;
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            OwnerProfile own = new OwnerProfile(ChatsActivity.this);
-            Log.d("[TP-diploma]", "task is working");
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            String smallFilePath = "http://p30480.lab1.stud.tech-mail.ru" + own.getImg();
-
-            String localPath =  Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-            String localBlurPath =  Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
-
-            File fileLocal = new File(localPath);
-            File fileLocalBlur = new File(localBlurPath);
-
-            if(fileLocal.exists()) {
-
-            }
-
-            if(fileLocalBlur.exists()) {
-
-            }
-
-            try {
-                Log.d("[TP-diploma]", "Requesting smallUserPic: " + smallFilePath);
-                InputStream in = new java.net.URL(smallFilePath).openStream();
-                Bitmap smallUserPic = BitmapFactory.decodeStream(in);
-                File file = new File(Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + own.getUid() + ".bmp");
-                FileOutputStream fos = new FileOutputStream(file);
-                if(smallUserPic != null)
-                    smallUserPic.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                else
-                    Log.d("[TP-diploma]", "DownloadAndBlurImageTask: smallUserPic = null");
-
-                fos.close();
-            } catch (IOException e) {
-
-            }
-
-            try {
-                InputStream in = new java.net.URL(urldisplay).openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-                bmImage = BlurBuilder.blur(ChatsActivity.this, mIcon11);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return bmImage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
-            File file = new File(filePath);
-            RelativeLayout rl = (RelativeLayout) ChatsActivity.this.findViewById(R.id.left_drawer_header);
-
-            if (result != null && rl != null) {
-                Log.d("[TP-diploma]", "DownloadImageTask result not null");
-                bmImage = result;
-                rl.setBackground(new BitmapDrawable(getResources(), result));
-                try {
-                    FileOutputStream fos = new FileOutputStream(file);
-                    result.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    Log.d("[TP-diploma]", "File not found: " + e.getMessage());
-                } catch (IOException e) {
-                    Log.d("[TP-diploma]", "Error accessing file: " + e.getMessage());
-                }
-            } else if (rl != null) {
-                Log.d("[TP-diploma]", "DownloadImageTask result NULL");
-                if(file.exists()) {
-                    Log.d("[TP-diploma]", "DownloadImageTask file exists: " + file.getAbsolutePath());
-                    bmImage = BitmapFactory.decodeFile(filePath);
-                    rl.setBackground(new BitmapDrawable(getResources(), bmImage));
-                }
-                else {
-                    Log.d("[TP-diploma]", "DownloadImageTask file do not exist");
-                    bmImage = BitmapFactory.decodeResource(ChatsActivity.this.getResources(), R.drawable.ic_user_picture_blur);
-                    rl.setBackground(new BitmapDrawable(getResources(), bmImage));
-                }
-            }
-
-            listener.onUserPicUploadComplete(Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp");
         }
     }
 

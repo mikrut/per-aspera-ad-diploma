@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.annotation.Dimension;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
@@ -36,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class ImageDownloadManager extends Service {
     public enum Size {
         SMALL,
+        HEADER_USER_PICTURE,
+        HEADER_BACKGROUND,
         NORMAL;
 
         @Nullable
@@ -43,6 +47,10 @@ public class ImageDownloadManager extends Service {
             switch (this) {
                 case SMALL:
                     return 50;
+                case HEADER_USER_PICTURE:
+                    return 70;
+                case HEADER_BACKGROUND:
+                    return 320;
                 case NORMAL:
                 default:
                     return null;
@@ -110,7 +118,10 @@ public class ImageDownloadManager extends Service {
 
     public void addBitmapToCache(URL url, Bitmap bitmap, Size size) {
         addBitmapToMemCache(url, bitmap, size);
+        addBitmapToDiskCache(url, bitmap, size);
+    }
 
+    public void addBitmapToDiskCache(URL url, Bitmap bitmap, Size size) {
         try {
             String bitmapName = paramsToName(url, size);
             DiskLruCache.Editor editor = diskCache.edit(bitmapName);
@@ -131,6 +142,7 @@ public class ImageDownloadManager extends Service {
     public void addBitmapToMemCache(URL url, Bitmap bitmap, Size size) {
         String bitmapName = paramsToName(url, size);
         memoryCache.put(bitmapName, bitmap);
+        Log.v(ImageDownloadManager.class.getSimpleName(), "Put in memory cache " + bitmapName);
     }
 
     @Nullable
@@ -196,6 +208,15 @@ public class ImageDownloadManager extends Service {
 
     void remove(IImageSettable image) {
         tasks.remove(image);
+    }
+
+    public void clearDiskCache() {
+        try {
+            diskCache.delete();
+            Log.v(ImageDownloadManager.class.getSimpleName(), "Disk cache was cleared");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Creates a unique subdirectory of the designated app cache directory. Tries to use external

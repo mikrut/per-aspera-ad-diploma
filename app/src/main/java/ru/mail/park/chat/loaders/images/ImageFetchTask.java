@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import ru.mail.park.chat.api.BlurBuilder;
+
 /**
  * Created by Михаил on 22.05.2016.
  */
@@ -58,27 +60,35 @@ public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
                 Log.v(ImageFetchTask.class.getSimpleName(), "Fetching an image from web");
                 try {
                     InputStream in = url.openStream();
+
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.RGB_565;
                     bm = BitmapFactory.decodeStream(in, null, options);
 
+                    Bitmap returnedBitmap = null;
                     if (bm != null) {
-                        for (ImageDownloadManager.Size size : sizes) {
-                            Integer resize = size.toInteger();
+                        for (ImageDownloadManager.Size iterationSize : sizes) {
+                            Integer resize = iterationSize.toInteger();
                             Bitmap scaled;
                             if (resize != null) {
                                 Resources r = manager.getResources();
                                 float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, resize, r.getDisplayMetrics());
                                 scaled = scaleDown(bm, px);
+                                if (iterationSize == ImageDownloadManager.Size.HEADER_BACKGROUND) {
+                                    scaled = BlurBuilder.blur(manager, scaled);
+                                }
                             } else {
                                 scaled = bm;
                             }
-
-                            manager.addBitmapToCache(url, scaled, size);
+                            if (iterationSize == size) {
+                                returnedBitmap = scaled;
+                                manager.addBitmapToMemCache(url, scaled, iterationSize);
+                            }
+                            manager.addBitmapToDiskCache(url, scaled, iterationSize);
                         }
                     }
 
-                    return bm;
+                    return returnedBitmap;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

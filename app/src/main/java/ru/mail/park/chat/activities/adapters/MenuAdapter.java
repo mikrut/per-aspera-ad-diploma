@@ -1,8 +1,11 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,18 +22,18 @@ import java.io.File;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
 import ru.mail.park.chat.activities.interfaces.IUserPicSetupListener;
+import ru.mail.park.chat.loaders.images.IImageSettable;
 
 /**
  * Created by Михаил on 08.03.2016.
  */
-public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements IUserPicSetupListener {
+public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final String[] titles;
     private final int[] icons;
     private final String name;
     private final String email;
-    private final String filePath;
-    private final Bitmap bmBlurred;
-    private View headerViewObject = null;
+    private Bitmap bmBlurred;
+    private Bitmap bmUserImage;
     private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
@@ -57,6 +60,16 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             });
         }
 
+
+        public void setBluredBackground(Bitmap blurredImage) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                itemView.setBackground(new BitmapDrawable(itemView.getContext().getResources(), blurredImage));
+            } else {
+                //noinspection deprecation
+                itemView.setBackgroundDrawable(new BitmapDrawable(itemView.getContext().getResources(), blurredImage));
+            }
+        }
+
         public void setUserName(String name) {
             userName.setText(name);
         }
@@ -65,32 +78,11 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             userEmail.setText(email);
         }
 
-        public void setUserPicture(String filePath) {
-            File file = new File(filePath);
-
-            if(file.exists()) {
-                Log.d("[TP-diploma]", "Setting an image: " + filePath);
-                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
-            }
-            else {
+        public void setUserPicture(Bitmap userImage) {
+            if (userImage == null) {
                 userPicture.setImageResource(R.drawable.ic_user_picture);
-            }
-        }
-    }
-
-    @Override
-    public void onUserPicUploadComplete(String filePath) {
-        File file = new File(filePath);
-        ImageView userPicture;
-
-        if (headerViewObject != null) {
-            userPicture = (ImageView) headerViewObject.findViewById(R.id.userPicture);
-
-            if (file.exists()) {
-                Log.d("[TP-diploma]", "Setting an image: " + filePath);
-                userPicture.setImageBitmap(BitmapFactory.decodeFile(filePath));
             } else {
-                userPicture.setImageResource(R.drawable.ic_user_picture);
+                userPicture.setImageBitmap(userImage);
             }
         }
     }
@@ -119,15 +111,33 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         }
     }
 
-    public MenuAdapter(String name, String email, String filePath,  Bitmap bmBlurred, String titles[],
+    public MenuAdapter(String name, String email, String titles[],
                        @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
-        this.filePath = filePath;
-        this.bmBlurred = bmBlurred;
         this.listeners = listeners;
+    }
+
+    public IImageSettable getBlurSettable() {
+        return new IImageSettable() {
+            @Override
+            public void setImage(Bitmap image) {
+                bmBlurred = image;
+                notifyItemChanged(0);
+            }
+        };
+    }
+
+    public IImageSettable getUserImageSettable() {
+        return new IImageSettable() {
+            @Override
+            public void setImage(Bitmap image) {
+                bmUserImage = image;
+                notifyItemChanged(0);
+            }
+        };
     }
 
     @Override
@@ -136,8 +146,6 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
             case HEADER:
                 View headerView = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.header, parent, false);
-
-                headerViewObject = headerView;
                 return new HeaderHolder(headerView);
             case ITEM:
                 View rowView = LayoutInflater.from(parent.getContext())
@@ -155,7 +163,8 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
                 HeaderHolder headerHolder = (HeaderHolder) holder;
                 headerHolder.setUserEmail(email);
                 headerHolder.setUserName(name);
-                headerHolder.setUserPicture(filePath);
+                headerHolder.setUserPicture(bmUserImage);
+                headerHolder.setBluredBackground(bmBlurred);
                 break;
             case ITEM:
                 position--;

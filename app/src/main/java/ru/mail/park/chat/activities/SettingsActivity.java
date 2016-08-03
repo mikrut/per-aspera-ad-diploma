@@ -2,8 +2,10 @@ package ru.mail.park.chat.activities;
 
 
 import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -13,6 +15,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -20,9 +23,11 @@ import android.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -33,8 +38,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.OwnerProfile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,6 +56,73 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity {
+    private List<IImageDownloadManagerBinderSubscriber> subscribers = new ArrayList<>();
+
+    public interface IImageDownloadManagerBinderSubscriber {
+        void onImageDownloadManagerAvailable(@NonNull ImageDownloadManager idm);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to ImageDownloadService
+        Log.i(AImageDownloadServiceBindingActivity.class.getSimpleName(), ".onStart()");
+        Intent intent = new Intent(this, ImageDownloadManager.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private ImageDownloadManager imageDownloadManager;
+    private boolean bound = false;
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (bound) {
+            unbindService(mConnection);
+            bound = false;
+        }
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            ImageDownloadManager.ImageDownloadBinder binder =
+                    (ImageDownloadManager.ImageDownloadBinder) service;
+            imageDownloadManager = binder.getService();
+            nonOverridableOnSetImageManager(imageDownloadManager);
+            bound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            bound = false;
+        }
+    };
+
+    private void nonOverridableOnSetImageManager(ImageDownloadManager mgr) {
+        for (IImageDownloadManagerBinderSubscriber subscriber : subscribers) {
+            subscriber.onImageDownloadManagerAvailable(mgr);
+        }
+
+        onSetImageManager(mgr);
+    }
+
+    protected void onSetImageManager(ImageDownloadManager mgr) {
+
+    }
+
+    protected ImageDownloadManager getImageDownloadManager() {
+        return imageDownloadManager;
+    }
+
+    public void subscribe(IImageDownloadManagerBinderSubscriber subscriber) {
+        subscribers.add(subscriber);
+        if (imageDownloadManager != null) {
+            subscriber.onImageDownloadManagerAvailable(imageDownloadManager);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -215,7 +289,7 @@ public class SettingsActivity extends PreferenceActivity {
     public void onHeaderClick(Header header, int position) {
         if (header.id == R.id.action_logout) {
             OwnerProfile ownerProfile = new OwnerProfile(this);
-            ownerProfile.logout(this);
+            ownerProfile.logout(this, getImageDownloadManager());
             finish();
         } else {
             super.onHeaderClick(header, position);

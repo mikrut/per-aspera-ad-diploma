@@ -17,6 +17,7 @@ import ru.mail.park.chat.activities.auth_logout.IAuthLogout;
 import ru.mail.park.chat.activities.tasks.LogoutTask;
 import ru.mail.park.chat.database.MessengerDBHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 
 /**
  * Created by Михаил on 19.03.2016.
@@ -126,12 +127,16 @@ public class OwnerProfile extends Contact {
         return super.equals(o);
     }
 
-    public void logout(Context context) {
+    public void logout(Context context, @Nullable ImageDownloadManager mgr) {
         new LogoutTask(context).execute(authToken);
 
         removeFromPreferences(context);
         MessengerDBHelper dbHelper = new MessengerDBHelper(context);
         dbHelper.clearDatabase();
+
+        if (mgr != null) {
+            mgr.clearDiskCache();
+        }
 
         Intent intent = new Intent(context, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
