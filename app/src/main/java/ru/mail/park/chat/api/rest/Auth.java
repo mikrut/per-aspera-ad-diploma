@@ -91,7 +91,7 @@ public class Auth extends ApiSection {
 
         OwnerProfile user;
         try {
-            JSONObject result = executeSignUpRequest(ApiSection.SERVER_URL + "auth/signUp", parameters);//new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            JSONObject result = executeSignUpRequest(ApiSection.SERVER_URL + "/api/auth/signUp", parameters);//new JSONObject(executeRequest(requestURL, requestMethod, parameters));
             if (result != null) {
                 final int status = result.getInt("status");
                 if (status == 200) {
@@ -232,7 +232,12 @@ public class Auth extends ApiSection {
 
             Log.d("[TP-diploma]","Form Sent, Response: "+String.valueOf(conn.getResponseCode()));
 
-            InputStream is = conn.getInputStream();
+            InputStream is;
+            if (conn.getResponseCode() == 200) {
+                is = conn.getInputStream();
+            } else {
+                is = conn.getErrorStream();
+            }
 
             // retrieve the response from server
             int ch;
@@ -247,7 +252,7 @@ public class Auth extends ApiSection {
                 return null;
             }
         } catch (IOException e) {
-            Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage());
+            Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage(), e);
             return null;
         }
     }

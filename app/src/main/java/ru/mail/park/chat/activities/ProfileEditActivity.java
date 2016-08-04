@@ -35,17 +35,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.api.HttpFileUpload;
 import ru.mail.park.chat.api.MultipartProfileUpdater;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileEditActivity extends AppCompatActivity implements MultipartProfileUpdater.IUploadListener {
+public class ProfileEditActivity
+        extends AImageDownloadServiceBindingActivity
+        implements MultipartProfileUpdater.IUploadListener {
     private static final int REQUEST_WRITE_STORAGE = 112;
 
     private ImageView imgCameraShot;
@@ -102,14 +108,6 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
 
         accessToken = ownerProfile.getAuthToken();
         uid = ownerProfile.getUid();
-
-        String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-        File file = new File(filePath);
-
-        if(file.exists())
-            currentAvatar.setImageURI(Uri.parse(filePath));
-        else
-            currentAvatar.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
 
         userLogin.addTextChangedListener(new TextWatcher() {
             @Override
@@ -248,6 +246,17 @@ public class ProfileEditActivity extends AppCompatActivity implements MultipartP
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_WRITE_STORAGE);
+        }
+    }
+
+    @Override
+    protected void onSetImageManager(ImageDownloadManager mgr) {
+        OwnerProfile owner = new OwnerProfile(this);
+        try {
+            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
+            mgr.setImage(currentAvatar, url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
     }
 

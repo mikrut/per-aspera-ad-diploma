@@ -184,7 +184,7 @@ public class MultipartProfileUpdater {
                 dos.close();
                 return conn.getResponseCode() == 200;
             } catch (IOException e) {
-                Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage());
+                Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage(), e);
                 return false;
             }
         }

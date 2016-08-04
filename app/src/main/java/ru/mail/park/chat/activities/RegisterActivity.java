@@ -52,7 +52,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
     private CircleImageView regImagePreview;
     private ImageButton regUserCameraShot;
     private ImageButton regUserUploadPicture;
-    private TextView noteIncorrectData;
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
@@ -78,10 +77,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
         regImagePreview = (CircleImageView) findViewById(R.id.reg_user_picture_in_editor);
         regUserCameraShot = (ImageButton) findViewById(R.id.reg_user_camera_shot);
         regUserUploadPicture = (ImageButton) findViewById(R.id.reg_user_upload_picture);
-        noteIncorrectData = (TextView) findViewById(R.id.note_error_input_data);
-
-        noteIncorrectData.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-        noteIncorrectData.setVisibility(View.GONE);
 
         emailSignUpButton.setOnClickListener(signUpListener);
 
@@ -212,38 +207,10 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
             imageFound = false;
         }
 
-        if(checkRegistrationInfo(login, firstName, lastName, password, confirmPassword, email))
+        if (password.equals(confirmPassword))
             task.execute(login, firstName, lastName, password, email, imageFound ? selectedFilePath : null);
-        else {
-            noteIncorrectData.setVisibility(View.VISIBLE);
-        }
-
-    }
-
-    private boolean checkRegistrationInfo(String login, String firstName, String lastName, String password, String confirmPassword, String email) {
-        if(login.equals(""))
-            return false;
-
-        if(firstName.equals(""))
-            return false;
-
-        if(lastName.equals(""))
-            return false;
-
-        if(email.equals(""))
-            return false;
-
-        if(password.equals(""))
-            return false;
-
-        if(confirmPassword.equals(""))
-            return false;
-        //add other data checks
-
-        if(!password.equals(confirmPassword))
-            return false;
-
-        return true;
+        else
+            mPasswordView.setError("Password and confirmation don't match.");
     }
 
     @Override

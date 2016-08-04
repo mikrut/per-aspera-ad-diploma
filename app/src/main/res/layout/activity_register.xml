@@ -22,15 +22,15 @@
 
     <ScrollView
         android:id="@+id/reg_form"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/register_form"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -43,17 +43,6 @@
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
                 android:visibility="gone" />
-
-            <TextView
-                android:layout_height="32dp"
-                android:layout_width="match_parent"
-                android:id="@+id/note_error_input_data"
-                android:text="@string/note_error_input_data"
-                android:background="#BB0000"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center_vertical|center_horizontal"/>
-
 
             <RelativeLayout
                 android:layout_width="match_parent"
