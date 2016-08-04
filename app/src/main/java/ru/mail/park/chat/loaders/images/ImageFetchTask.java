@@ -68,7 +68,7 @@ public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
                     Bitmap returnedBitmap = null;
                     if (bm != null) {
                         for (ImageDownloadManager.Size iterationSize : sizes) {
-                            Integer resize = iterationSize.toInteger();
+                            Integer resize = iterationSize.toInteger(manager);
                             Bitmap scaled;
                             if (resize != null) {
                                 Resources r = manager.getResources();

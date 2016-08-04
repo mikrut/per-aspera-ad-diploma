@@ -14,7 +14,10 @@ import android.support.annotation.Dimension;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.jakewharton.disklrucache.DiskLruCache;
@@ -40,10 +43,11 @@ public class ImageDownloadManager extends Service {
         SMALL,
         HEADER_USER_PICTURE,
         HEADER_BACKGROUND,
+        SCREEN_SIZE,
         NORMAL;
 
         @Nullable
-        public Integer toInteger() {
+        public Integer toInteger(Context context) {
             switch (this) {
                 case SMALL:
                     return 50;
@@ -51,6 +55,15 @@ public class ImageDownloadManager extends Service {
                     return 70;
                 case HEADER_BACKGROUND:
                     return 320;
+                case SCREEN_SIZE:
+                    WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+                    Display display = manager.getDefaultDisplay();
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    display.getMetrics(metrics);
+
+                    float density = context.getResources().getDisplayMetrics().density;
+                    float maxDimension = Math.max(metrics.heightPixels, metrics.widthPixels) / density;
+                    return (int) maxDimension;
                 case NORMAL:
                 default:
                     return null;

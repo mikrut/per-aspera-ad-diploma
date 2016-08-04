@@ -32,6 +32,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 
 import java.io.InputStream;
@@ -40,15 +42,17 @@ import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
 import ru.mail.park.chat.activities.tasks.DeleteContactTask;
 import ru.mail.park.chat.activities.views.ContactInfoElementView;
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.database.ContactsToChatsHelper;
 import ru.mail.park.chat.loaders.OwnerWebLoader;
 import ru.mail.park.chat.loaders.ProfileWebLoader;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
-public class ProfileViewActivity extends AppCompatActivity
+public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         implements DeleteContactTask.DeleteContactCallbacks {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
     public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/file/image";
@@ -196,6 +200,17 @@ public class ProfileViewActivity extends AppCompatActivity
             if(localFile.exists())
                 userPicture.setImageBitmap(BitmapFactory.decodeFile(localPath));
 
+        }
+    }
+
+    @Override
+    protected void onSetImageManager(ImageDownloadManager mgr) {
+        OwnerProfile owner = new OwnerProfile(this);
+        try {
+            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
+            mgr.setImage(userPicture, url, ImageDownloadManager.Size.SCREEN_SIZE);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
         }
     }
 
