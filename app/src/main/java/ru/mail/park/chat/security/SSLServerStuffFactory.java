@@ -1,5 +1,6 @@
 package ru.mail.park.chat.security;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 
@@ -15,6 +16,7 @@ import org.spongycastle.asn1.x509.KeyPurposeId;
 import org.spongycastle.asn1.x509.KeyUsage;
 import org.spongycastle.asn1.x509.SubjectKeyIdentifier;
 import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.spongycastle.cert.CertIOException;
 import org.spongycastle.cert.X509CertificateHolder;
 import org.spongycastle.cert.X509v3CertificateBuilder;
 import org.spongycastle.cert.bc.BcX509ExtensionUtils;
@@ -23,6 +25,7 @@ import org.spongycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.spongycastle.jce.X509Principal;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.operator.ContentSigner;
+import org.spongycastle.operator.OperatorCreationException;
 import org.spongycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.spongycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
 import org.spongycastle.x509.X509V3CertificateGenerator;
@@ -31,7 +34,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -70,77 +78,62 @@ public class SSLServerStuffFactory {
     private static final String KEY_STORE_INSTANCE = "BKS";
     private static final String KMF_INSTANCE = "PKIX";
 
+    private static final String SECRET = "mysecret";
+    private static final String CERT_ALIAS = "certificate";
+    private static final String KEY_STORE_FILENAME = "keystore";
+
     private static final String PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
     static {
         Security.addProvider(new BouncyCastleProvider());
         Security.addProvider(new BouncyCastlePQCProvider());
     }
 
-    /**
-     * Generates a one time use secure random number to be used as the password
-     * for a keystore
-     *
-     * Retrieved from http://codereview.stackexchange.com/questions/117944/bouncycastle-implementation-with-x509certificate-signing-keystore-generation-a
-     *
-     * @return Returns void on completion
-     */
-    public static byte[] generateNonce() {
-        SecureRandom rand = new SecureRandom();
-        byte[] nonce = new byte[2048];
-        rand.nextBytes(nonce);
-        return nonce;
-    }
+    public static KeyStore getKeyStore(Context context)
+            throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException,
+            NoSuchProviderException, OperatorCreationException, InvalidKeyException,
+            SignatureException {
+        File keyStoreFile = new File(context.getFilesDir(), KEY_STORE_FILENAME);
+        keyStoreFile.createNewFile();
 
-    /**
-     * Retrieves key data from a key store into a byte array
-     * Retrieved from http://codereview.stackexchange.com/questions/117944/bouncycastle-implementation-with-x509certificate-signing-keystore-generation-a
-     *
-     * @param ks
-     * @param nonce
-     * @return
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws KeyStoreException
-     * @throws IOException
-     */
-    public static byte[] generateKeyData(KeyStore ks, byte[] nonce) throws CertificateException,
-            NoSuchAlgorithmException, KeyStoreException, IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ks.store(os, (new String(nonce)).toCharArray());
-        byte[] keyData = os.toByteArray();
-        os.close();
-        return keyData;
-    }
-
-    /**
-     * Generates a one time use keystore for use with an SSL session
-     * Retrieved from http://codereview.stackexchange.com/questions/117944/bouncycastle-implementation-with-x509certificate-signing-keystore-generation-a
-     *
-     * @param nonce
-     * @param keyPair
-     * @return
-     * @throws KeyStoreException
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     */
-    public static KeyStore generateKeyStore(byte[] nonce, KeyPair keyPair, X509Certificate cert) throws KeyStoreException,
-            CertificateException, NoSuchAlgorithmException, IOException {
-        Log.d("Certificate", cert.toString());
-        Log.d("Certificate", cert.getType());
-        if (cert.getExtendedKeyUsage() != null) {
-            for (String usage : cert.getExtendedKeyUsage()) {
-                Log.d("Certificate extUs", usage);
-            }
+        KeyStore ks = null;
+        InputStream is = new FileInputStream(keyStoreFile);
+        try {
+            ks = KeyStore.getInstance(KEY_STORE_INSTANCE);
+            ks.load(is, SECRET.toCharArray());
+        } finally {
+            is.close();
         }
 
-        KeyStore ks = KeyStore.getInstance(KEY_STORE_INSTANCE);
-        ks.load(null, (new String(nonce)).toCharArray());
-        //byte[] tempPass = new byte[2048];
-        //new SecureRandom().nextBytes(tempPass);
-        ks.setKeyEntry("foo.bar", keyPair.getPrivate(), new String(nonce).toCharArray(),
-                new X509Certificate[] { cert });
+        if (ks != null && !ks.containsAlias(CERT_ALIAS)) {
+            KeyPair keyPair = SSLServerStuffFactory.generateKeyPair(new SecureRandom());
+            X509Certificate certificate = createCACert(keyPair.getPublic(), keyPair.getPrivate());
+            Log.v("Certificate", certificate.toString());
+            ks.setKeyEntry(CERT_ALIAS, keyPair.getPrivate(), SECRET.toCharArray(),
+                    new X509Certificate[] { certificate });
+
+            OutputStream os = new FileOutputStream(keyStoreFile);
+            try {
+                ks.store(os, SECRET.toCharArray());
+            } finally {
+                os.close();
+            }
+        }
         return ks;
+    }
+
+    /**
+     * Retrieves key managers from a KeyStore
+     *
+     * @param ks
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     * @throws KeyStoreException
+     */
+    public static KeyManager[] getKeyManagers(KeyStore ks) throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException {
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KMF_INSTANCE);
+        kmf.init(ks, SECRET.toCharArray());
+        return kmf.getKeyManagers();
     }
 
     /**
@@ -153,7 +146,7 @@ public class SSLServerStuffFactory {
      * @throws NoSuchProviderException
      * @throws NoSuchAlgorithmException
      */
-    public static KeyPair generateKeyPair(SecureRandom sr) throws NoSuchProviderException, NoSuchAlgorithmException {
+    private static KeyPair generateKeyPair(SecureRandom sr) throws NoSuchProviderException, NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KEY_GENERATION_ALGORITHM, PROVIDER_NAME);
         keyPairGenerator.initialize(2048, sr);
         return keyPairGenerator.generateKeyPair();
@@ -168,7 +161,7 @@ public class SSLServerStuffFactory {
      * @param privateKey Private key
      * @return Generated X509 Certificate
      */
-    public static X509Certificate createCACert(PublicKey publicKey, PrivateKey privateKey) throws Exception {
+    private static X509Certificate createCACert(PublicKey publicKey, PrivateKey privateKey) throws CertIOException, CertificateException, OperatorCreationException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         final Date BEFORE = new Date(System.currentTimeMillis() - 5000);
         final Date AFTER = new Date(System.currentTimeMillis() + 24L*60*60*1000);
 
@@ -231,7 +224,7 @@ public class SSLServerStuffFactory {
      * @return
      * @throws Exception
      */
-    private static X509Certificate signCertificate(X509v3CertificateBuilder certificateBuilder, PrivateKey signedWithPrivateKey) throws Exception {
+    private static X509Certificate signCertificate(X509v3CertificateBuilder certificateBuilder, PrivateKey signedWithPrivateKey) throws OperatorCreationException, CertificateException {
         ContentSigner signer = new JcaContentSignerBuilder(SIGNATURE_ALGORITHM).setProvider(PROVIDER_NAME).build(signedWithPrivateKey);
         X509CertificateHolder holder = certificateBuilder.build(signer);
         Log.d("Holder    issuer", holder.getIssuer().toString());
@@ -239,38 +232,5 @@ public class SSLServerStuffFactory {
         Log.d("Holder   subject", holder.getSubject().toString());
 
         return new JcaX509CertificateConverter().setProvider(PROVIDER_NAME).getCertificate(holder);
-    }
-
-    /**
-     * Initializes a key store with a specified key data
-     *
-     * @param keyData
-     * @param nonce
-     * @return
-     * @throws KeyStoreException
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     */
-    public static KeyStore initializeKeyStore(byte[] keyData, byte[] nonce) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore ks = KeyStore.getInstance(KEY_STORE_INSTANCE);
-        ks.load(new ByteArrayInputStream(keyData), (new String(nonce).toCharArray()));
-        return ks;
-    }
-
-    /**
-     * Retrieves key managers from a KeyStore
-     *
-     * @param nonce
-     * @param ks
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws UnrecoverableKeyException
-     * @throws KeyStoreException
-     */
-    public static KeyManager[] getKeyManagers(byte[] nonce, KeyStore ks) throws NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException {
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KMF_INSTANCE);
-        kmf.init(ks, (new String(nonce).toCharArray()));
-        return kmf.getKeyManagers();
     }
 }

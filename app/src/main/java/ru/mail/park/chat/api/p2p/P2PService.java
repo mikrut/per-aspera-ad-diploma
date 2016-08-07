@@ -11,12 +11,14 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.jivesoftware.smack.proxy.ProxyInfo;
+import org.spongycastle.operator.OperatorCreationException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -26,6 +28,7 @@ import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -224,28 +227,17 @@ public class P2PService extends Service implements IMessageSender {
     @Deprecated
     private KeyManager[] getKeyManagers() {
         try {
-            byte[] nonce = SSLServerStuffFactory.generateNonce();
-            KeyPair kp = SSLServerStuffFactory.generateKeyPair(new SecureRandom());
-            X509Certificate cert = SSLServerStuffFactory.createCACert(kp.getPublic(), kp.getPrivate());
-            KeyStore ks = SSLServerStuffFactory.generateKeyStore(nonce, kp, cert);
+            KeyStore ks = SSLServerStuffFactory.getKeyStore(this);
+            KeyManager[] kms = SSLServerStuffFactory.getKeyManagers(ks);
 
-            Log.d("Cert alias", ks.getCertificateAlias(cert));
-            Log.d("Cert sigalg", cert.getSigAlgName());
-
-            //byte[] keyData = SSLServerStuffFactory.generateKeyData(ks, nonce);
-            //KeyStore fks = SSLServerStuffFactory.initializeKeyStore(keyData, nonce);
-
-            KeyManager[] kms = SSLServerStuffFactory.getKeyManagers(nonce, ks);
             Log.d("getKeyManagers", String.valueOf(kms.length));
             for (int i = 0; i < kms.length; i++) {
                 kms[i] = new LogMan((X509KeyManager) kms[i]);
             }
             return kms;
-        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException |
+                UnrecoverableKeyException | NoSuchProviderException | OperatorCreationException |
+                InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
         Log.e("getKeyManagers", "Could not create..");
@@ -308,15 +300,12 @@ public class P2PService extends Service implements IMessageSender {
             NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslContext;
         if (!isClient) {
-            Log.d("Server", "cool!");
             sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
         } else {
-            Log.d("Client", "not cool... =(");
             sslContext = getSSLContext(null, new TrustManager[]{getTrustManager()});
         }
-        // sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
 
-        SSLSocketFactory factory = (SSLSocketFactory) sslContext.getSocketFactory();
+        SSLSocketFactory factory = sslContext.getSocketFactory();
         SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket,
                 socket.getInetAddress().getHostAddress(),
                 socket.getPort(),
@@ -325,11 +314,6 @@ public class P2PService extends Service implements IMessageSender {
 
         sslSocket.setEnabledProtocols(sslSocket.getSupportedProtocols());
         sslSocket.setEnabledCipherSuites(factory.getSupportedCipherSuites());
-
-        for (String suite : sslSocket.getEnabledCipherSuites()) {
-            Log.d("Suite", suite);
-        }
-
         sslSocket.startHandshake();
 
         return sslSocket;
