@@ -2,6 +2,7 @@ package ru.mail.park.chat.api.p2p;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -46,9 +47,13 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 
+import ru.mail.park.chat.api.rest.Contacts;
+import ru.mail.park.chat.api.rest.P2P;
+import ru.mail.park.chat.api.rest.Users;
 import ru.mail.park.chat.api.websocket.IChatListener;
 import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.security.SSLServerStuffFactory;
@@ -174,6 +179,20 @@ public class P2PService extends Service {
     // TODO: implement error dispatch
     // TODO: move generation methods to (?) subclass
     private void handleActionStartServer(int port) {
+        try {
+            KeyStore ks = SSLServerStuffFactory.getKeyStore(this);
+            Certificate cert = ks.getCertificate(SSLServerStuffFactory.CERT_ALIAS);
+            byte[] pubKeyFingerprint = SSLServerStuffFactory.getPublicKeyFingerprint(cert.getPublicKey());
+
+            SharedPreferences preferences = getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
+            String onionAddress = preferences.getString(PreferenceConstants.P2P_HOSTNAME, null);
+
+            Users users = new Users(this);
+            users.updateOnion(onionAddress, pubKeyFingerprint, port);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         try {
             if (serverSocket == null) {
                 serverSocket = new ServerSocket(port);

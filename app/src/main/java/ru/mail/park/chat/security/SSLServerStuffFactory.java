@@ -22,6 +22,9 @@ import org.spongycastle.cert.X509v3CertificateBuilder;
 import org.spongycastle.cert.bc.BcX509ExtensionUtils;
 import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.spongycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.spongycastle.crypto.digests.SHA1Digest;
+import org.spongycastle.jcajce.provider.asymmetric.rsa.DigestSignatureSpi;
+import org.spongycastle.jcajce.provider.digest.SHA1;
 import org.spongycastle.jce.X509Principal;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.operator.ContentSigner;
@@ -48,6 +51,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -78,9 +82,11 @@ public class SSLServerStuffFactory {
     private static final String KEY_STORE_INSTANCE = "BKS";
     private static final String KMF_INSTANCE = "PKIX";
 
+    public static final String CERT_ALIAS = "certificate";
     private static final String SECRET = "mysecret";
-    private static final String CERT_ALIAS = "certificate";
     private static final String KEY_STORE_FILENAME = "keystore";
+
+    private static final String PUBLIC_KEY_DIGEST = "SHA-1";
 
     private static final String PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
     static {
@@ -134,6 +140,11 @@ public class SSLServerStuffFactory {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KMF_INSTANCE);
         kmf.init(ks, SECRET.toCharArray());
         return kmf.getKeyManagers();
+    }
+
+    public static byte[] getPublicKeyFingerprint(PublicKey key) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance(PUBLIC_KEY_DIGEST);
+        return digest.digest(key.getEncoded());
     }
 
     /**

@@ -125,13 +125,15 @@ public class Users extends ApiSection {
         return contactList;
     }
 
-    public void updateOnion(String onionAddress, byte[] publicKeyHash, int port) throws IOException {
+    public void updateOnion(@Nullable String onionAddress, @Nullable byte[] publicKeyHash, int port) throws IOException {
         final String requestURL = "update";
         final String requestMethod = "POST";
 
         List<Pair<String, String>> parameters = new ArrayList<>(4);
-        parameters.add(new Pair<String, String>("onionAddress",  onionAddress));
-        parameters.add(new Pair<String, String>("pubKeyHash",    Contact.getPubkeyDigestString(publicKeyHash)));
+        if (onionAddress != null)
+            parameters.add(new Pair<String, String>("onionAddress",  onionAddress));
+        if (publicKeyHash != null)
+            parameters.add(new Pair<String, String>("pubKeyHash",    Contact.getPubkeyDigestString(publicKeyHash)));
         parameters.add(new Pair<String, String>("port",          String.valueOf(port)));
 
         try {
