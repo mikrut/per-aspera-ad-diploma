@@ -125,6 +125,27 @@ public class Users extends ApiSection {
         return contactList;
     }
 
+    public void updateOnion(String onionAddress, byte[] publicKeyHash, int port) throws IOException {
+        final String requestURL = "update";
+        final String requestMethod = "POST";
+
+        List<Pair<String, String>> parameters = new ArrayList<>(4);
+        parameters.add(new Pair<String, String>("onionAddress",  onionAddress));
+        parameters.add(new Pair<String, String>("pubKeyHash",    Contact.getPubkeyDigestString(publicKeyHash)));
+        parameters.add(new Pair<String, String>("port",          String.valueOf(port)));
+
+        try {
+            JSONObject result = new JSONObject(executeRequest(requestURL, requestMethod, parameters));
+            final int status = result.getInt("status");
+            if (status != 200) {
+                String message = result.getString("message");
+                throw new IOException(message);
+            }
+        } catch (JSONException e) {
+            throw new IOException("Server error", e);
+        }
+    }
+
     public boolean updateProfile(OwnerProfile profile) throws IOException {
         final String requestURL = "updateProfile";
         final String requestMethod = "POST";

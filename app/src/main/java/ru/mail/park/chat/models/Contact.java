@@ -310,6 +310,19 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
     }
 
+    @Nullable
+    public static byte[] pubkeyDigestToBlob(@Nullable String pubkeyDigest) {
+        if (pubkeyDigest != null) {
+            try {
+                BigInteger value = new BigInteger(pubkeyDigest, 16);
+                return value.toByteArray();
+            } catch (NumberFormatException e) {
+                Log.e(Contact.class.getSimpleName() + ".setPubkeyDigest", e.getLocalizedMessage());
+            }
+        }
+        return null;
+    }
+
     public void setPubkeyDigest(@Nullable byte[] pubkeyDigest) {
         this.pubkeyDigest = pubkeyDigest;
     }
@@ -336,6 +349,11 @@ public class Contact implements Comparable<Contact>, Serializable {
     }
 
     public String getPubkeyDigestString() {
+        return getPubkeyDigestString(pubkeyDigest);
+    }
+
+    @Nullable
+    public static String getPubkeyDigestString(@Nullable byte[] pubkeyDigest) {
         if (pubkeyDigest != null) {
             BigInteger bigInteger = new BigInteger(pubkeyDigest);
             return bigInteger.toString(16);
