@@ -205,9 +205,6 @@ public class ChatsActivity
             ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
         }
 
-        RelativeLayout rl = (RelativeLayout) findViewById(R.id.left_drawer_header);
-        CircleImageView  civ = (CircleImageView) rl.findViewById(R.id.userPicture);
-
         OwnerProfile owner = new OwnerProfile(this);
         try {
             URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
