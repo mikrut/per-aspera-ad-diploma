@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.spongycastle.operator.OperatorCreationException;
@@ -45,10 +46,18 @@ import ru.mail.park.chat.security.SSLServerStuffFactory;
  */
 public class P2PConnection implements IMessageSender {
     private static final String TAG = P2PConnection.class.getSimpleName();
+
     private Context context;
+    private IP2PEventListener p2pEventListener;
+
+    public void setP2PEventListener(IP2PEventListener p2pEventListener) {
+        this.p2pEventListener = p2pEventListener;
+    }
 
     private final Object inputSynchronizer = new Object();
     private final Object outputSynchronizer = new Object();
+
+    private String destinationUID;
 
     private volatile ObjectInputStream input;
     private volatile ObjectOutputStream output;
@@ -56,21 +65,41 @@ public class P2PConnection implements IMessageSender {
     private volatile IChatListener chatListener;
     private volatile boolean noStop = true;
 
-    public P2PConnection(Context context, Socket socket, boolean isClient)
+    public P2PConnection(Context context, Socket socket, IP2PEventListener p2pEventListener)
+            throws NoSuchAlgorithmException, IOException, KeyManagementException {
+        this(context, socket, null, p2pEventListener);
+    }
+
+    public P2PConnection(Context context, Socket socket, @Nullable final String destinationUID,
+                         final IP2PEventListener p2pEventListener)
             throws IOException, KeyManagementException, NoSuchAlgorithmException {
+        this.context = context;
+        this.destinationUID = destinationUID;
+        this.p2pEventListener = p2pEventListener;
+
         Log.d(TAG, "Starting thread");
-        Server server = new Server();
-        server.start();
+        MessagesThread messagesThread = new MessagesThread();
+        messagesThread.start();
 
         Log.d(TAG, "Finishing onCreate");
 
-        socket = wrapSocketWithSSL(socket, isClient);
+        socket = wrapSocketWithSSL(socket, destinationUID != null);
         synchronized (outputSynchronizer) {
             output = new ObjectOutputStream(socket.getOutputStream());
         }
 
         synchronized (inputSynchronizer) {
             input = new ObjectInputStream(socket.getInputStream());
+        }
+
+        if (p2pEventListener != null) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    p2pEventListener.onConnectionEstablished(destinationUID);
+                }
+            });
         }
     }
 
@@ -270,7 +299,7 @@ public class P2PConnection implements IMessageSender {
         });
     }
 
-    private class Server extends Thread {
+    private class MessagesThread extends Thread {
         @Override
         public void run() {
             try {
@@ -288,7 +317,7 @@ public class P2PConnection implements IMessageSender {
                     }
 
                     if (message != null) {
-                        Log.i(P2PService.class.getSimpleName() + " IN message", message.toString());
+                        Log.i(TAG + " IN message", message.toString());
                         handleIncomingMessage(message);
                     }
                 }
@@ -298,44 +327,52 @@ public class P2PConnection implements IMessageSender {
         }
     }
 
-    private void closeStreams() {
-        Log.d(P2PService.class.getSimpleName(), "Closing streams");
-        try {
-            if (output != null) {
-                synchronized (outputSynchronizer) {
-                    if (output != null) {
+    public void closeStreams() {
+        Log.d(TAG, "Closing streams");
+
+        if (output != null) {
+            synchronized (outputSynchronizer) {
+                if (output != null) {
+                    try {
                         output.flush();
                         output.close();
                         output = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
+        }
 
-            if (input != null) {
-                synchronized (inputSynchronizer) {
-                    if (input != null) {
+        if (input != null) {
+            synchronized (inputSynchronizer) {
+                if (input != null) {
+                    try {
                         input.close();
                         input = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
+        }
 
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        noStop = false;
+
+        if (p2pEventListener != null) {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    p2pEventListener.onConnectionBreak();
+                }
+            });
         }
     }
 
     @Override
     public boolean isConnected() {
         return output != null && input != null;
-    }
-
-    @Override
-    public void reconnect() {
-
     }
 
     @Override

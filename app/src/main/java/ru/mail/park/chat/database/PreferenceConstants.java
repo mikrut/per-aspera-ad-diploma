@@ -18,4 +18,6 @@ public abstract class PreferenceConstants {
 
     public static final String SECURITY_PARANOID_N = "paranoid_mode_switch";
 
+    public static final String P2P_HOSTNAME = "p2p_hostname";
+
 }

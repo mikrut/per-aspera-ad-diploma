@@ -30,8 +30,6 @@ public class DialogCreateActivity
         implements ContactsFragment.OnPickEventListener {
     TextView newGroupClickable;
     TextView newP2PClickable;
-    EditText onionAddress;
-    MenuItem p2pMenuItem;
 
     private DialogCreateFSM fsm = new DialogCreateFSM();
     private Contact choosenContact = null;
@@ -46,14 +44,11 @@ public class DialogCreateActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(fsm.createListener(UIEvent.BACK_PRESSED));
 
-
         newGroupClickable = (TextView) findViewById(R.id.new_group_dialog);
         newGroupClickable.setOnClickListener(fsm.createListener(UIEvent.NEW_GROUP_PRESSED));
 
         newP2PClickable = (TextView) findViewById(R.id.new_p2p_dialog);
         newP2PClickable.setOnClickListener(fsm.createListener(UIEvent.NEW_P2P_CHAT_PRESSED));
-
-        onionAddress = (EditText) findViewById(R.id.onion_address);
     }
 
     @Override
@@ -64,29 +59,7 @@ public class DialogCreateActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dialog_create, menu);
-        p2pMenuItem = menu.findItem(R.id.action_create_p2p);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_create_p2p:
-                fsm.handleEvent(UIEvent.P2P_CREATE_PRESSED);
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (fsm.getCurrentState().equals(UIState.CHOOSE_DIALOG_TYPE)) {
-            p2pMenuItem.setVisible(false);
-        } else if (fsm.getCurrentState().equals(UIState.CREATE_P2P)) {
-            p2pMenuItem.setVisible(true);
-        }
-        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -174,14 +147,11 @@ public class DialogCreateActivity
                 case CHOOSE_DIALOG_TYPE:
                     newGroupClickable.setVisibility(View.VISIBLE);
                     newP2PClickable.setVisibility(View.VISIBLE);
-                    onionAddress.setVisibility(View.GONE);
                     supportInvalidateOptionsMenu();
                     break;
                 case CREATE_P2P:
                     newGroupClickable.setVisibility(View.GONE);
                     newP2PClickable.setVisibility(View.GONE);
-                    onionAddress.setVisibility(View.VISIBLE);
-                    onionAddress.setText("");
                     supportInvalidateOptionsMenu();
                     break;
                 case OUT_BACK:
@@ -193,24 +163,19 @@ public class DialogCreateActivity
                     finish();
                     break;
                 case OUT_P2P:
-                    String onionURL = onionAddress.getText().toString();
-                    if (onionURL.equals("") && choosenContact != null && choosenContact.getOnionAddress() != null) {
-                        onionURL = choosenContact.getOnionAddress().getHost();
-                    }
-                    if (onionURL.matches("[a-zA-Z\\d]{1,50}\u002Eonion")) {
+                    if (choosenContact != null && choosenContact.getOnionAddress() != null) {
+                        String destinationUID = choosenContact.getUid();
+
                         Intent p2pIntent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
-                        p2pIntent.putExtra(P2PDialogActivity.HOST_ARG, onionURL);
+                        p2pIntent.putExtra(P2PDialogActivity.HOST_ARG, destinationUID);
                         p2pIntent.putExtra(P2PDialogActivity.PORT_ARG, P2PDialogActivity.LISTENER_DEFAULT_PORT);
-                        startActivity(p2pIntent);
-                        finish();
-                    } else if (choosenContact == null && onionURL.equals("")) {
-                        Intent p2pIntent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
                         startActivity(p2pIntent);
                         finish();
                     } else {
                         Toast.makeText(DialogCreateActivity.this, "Invalid onion address", Toast.LENGTH_SHORT).show();
                         fsm.handleEvent(UIEvent.VALIDATION_FAILED);
                     }
+
                     choosenContact = null;
 
                     break;

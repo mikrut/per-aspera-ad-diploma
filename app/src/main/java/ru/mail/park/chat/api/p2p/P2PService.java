@@ -18,6 +18,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -46,6 +48,8 @@ import javax.net.ssl.X509TrustManager;
 
 import ru.mail.park.chat.api.websocket.IChatListener;
 import ru.mail.park.chat.api.websocket.IMessageSender;
+import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 import ru.mail.park.chat.security.SSLServerStuffFactory;
 
@@ -60,8 +64,28 @@ public class P2PService extends Service {
 
     private static final int DEFAULT_LISTENING_PORT = 8275;
 
+    private IP2PEventListener p2pEventListener;
+    public void setP2PEventListener(IP2PEventListener p2pEventListener) {
+        this.p2pEventListener = p2pEventListener;
+        if (connection != null) {
+            synchronized (connectionLocker) {
+                if (connection != null) {
+                    connection.setP2PEventListener(p2pEventListener);
+                }
+            }
+        }
+    }
+
     private ServerSocket serverSocket;
-    private P2PConnection connection;
+    private volatile boolean noStop = true;
+    private final Object noStopLocker = new Object();
+
+    private volatile P2PConnection connection;
+    private final Object connectionLocker = new Object();
+
+    public P2PConnection getConnection() {
+        return connection;
+    }
 
     @Override
     public void onCreate() {
@@ -103,47 +127,120 @@ public class P2PService extends Service {
         }
     }
 
-    public void handleActionStartClient(String destination, int port) {
-        final Random rndForTorCircuits = new Random();
-        final String user = rndForTorCircuits.nextInt(100000) + "";
-        final String pass = rndForTorCircuits.nextInt(100000) + "";
-        final int proxyPort = 9050;
-        final String proxyHost = "127.0.0.1";
+    public void startClient(final String destinationServerUID, final int port) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                handleActionStartClient(destinationServerUID, port);
+            }
+        }).start();
+    }
 
-        Log.d(P2PService.class.getSimpleName(), "Destination " + destination);
-        Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
+    private void handleActionStartClient(String destinationServerUID, int port) {
+        if (connection == null) {
+            synchronized (connectionLocker) {
+                if (connection == null) {
+                    final Random rndForTorCircuits = new Random();
+                    final String user = rndForTorCircuits.nextInt(100000) + "";
+                    final String pass = rndForTorCircuits.nextInt(100000) + "";
+                    final int proxyPort = 9050;
+                    final String proxyHost = "127.0.0.1";
 
-        ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
-        try {
-            Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
-            connection = new P2PConnection(this, socket, true);
+                    final ContactsHelper helper = new ContactsHelper(this);
+                    final Contact contact = helper.getContact(destinationServerUID);
+                    helper.close();
 
-            Log.i(P2PService.class.getSimpleName(), "got a connection");
-            Log.i(P2PService.class.getSimpleName(), destination);
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
-            e.printStackTrace();
+                    final URI onionAddress = contact != null ? contact.getOnionAddress() : null;
+                    final String destination = onionAddress != null ? onionAddress.toString() : null;
+
+                    Log.d(P2PService.class.getSimpleName(), "Destination" + destination);
+                    Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
+
+                    ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
+                    try {
+                        Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
+                        connection = new P2PConnection(this, socket, destinationServerUID, p2pEventListener);
+
+                        Log.i(P2PService.class.getSimpleName(), "got a connection");
+                        Log.i(P2PService.class.getSimpleName(), destination);
+                    } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 
     // TODO: implement error dispatch
     // TODO: move generation methods to (?) subclass
-    public void handleActionStartServer(int port) {
+    private void handleActionStartServer(int port) {
         try {
-            serverSocket = new ServerSocket(port);
-            Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
-            Socket socket = serverSocket.accept();
-            Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
-            connection = new P2PConnection(this, socket, false);
-
-            Log.i(P2PService.class.getSimpleName(), "connection finished!");
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+            if (serverSocket == null) {
+                serverSocket = new ServerSocket(port);
+                Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
+                Server serverThread = new Server();
+                serverThread.start();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private class Server extends Thread {
+        @Override
+        public void run() {
+            while(noStop) {
+                try {
+                    Socket socket = serverSocket.accept();
+                    synchronized (noStopLocker) {
+                        if (noStop && connection == null) {
+                            synchronized (connectionLocker) {
+                                if (connection == null) {
+                                    Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+                                    connection = new P2PConnection(P2PService.this, socket, p2pEventListener);
+
+                                    Log.i(P2PService.class.getSimpleName(), "connection finished!");
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void closeConnection() {
+        if (connection != null) {
+            synchronized (connectionLocker) {
+                if (connection != null) {
+                    connection.closeStreams();
+                    connection = null;
+                }
+            }
+        }
+    }
+
+    private void closeStreams() {
+        closeConnection();
+
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void onDestroy() {
         Log.d(P2PService.class.getSimpleName(), "onDestroy");
+        synchronized (noStopLocker) {
+            closeStreams();
+            noStop = false;
+        }
         super.onDestroy();
     }
 }

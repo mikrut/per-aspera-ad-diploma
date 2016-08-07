@@ -137,7 +137,7 @@
     <string name="pref_header_security">Security</string>
 
     <string name="pref_title_paranoid_mode">Enable paranoid mode</string>
-    <string name="pref_description_paranoid_mode">Use TOR-only connections, onion version of server.
+    <string name="pref_description_paranoid_mode">Use TOR-only connections, onion version of messagesThread.
         See help for additional information.
     </string>
     <string name="action_save">Save</string>

@@ -5,31 +5,27 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.TextView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.api.p2p.IP2PEventListener;
+import ru.mail.park.chat.api.p2p.P2PService;
 import ru.mail.park.chat.api.websocket.DispatcherOfDialog;
-import ru.mail.park.chat.api.websocket.DispatcherOfGroupCreate;
-import ru.mail.park.chat.api.websocket.DispatcherOfGroupEdit;
 import ru.mail.park.chat.api.websocket.IChatListener;
-import ru.mail.park.chat.api.websocket.IGroupCreateListener;
-import ru.mail.park.chat.api.websocket.IGroupEditListener;
-import ru.mail.park.chat.api.websocket.IWSStatusListener;
 import ru.mail.park.chat.api.websocket.NotificationService;
-import ru.mail.park.chat.loaders.images.ImageDownloadManager;
+import ru.mail.park.chat.database.ContactsHelper;
+import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
 
@@ -38,21 +34,69 @@ import ru.mail.park.chat.models.Message;
  */
 public abstract class ANotificationServiceBindingActivity
         extends AppCompatActivity
-        implements IChatListener {
+        implements IChatListener, IP2PEventListener {
     private static final String TAG = ANotificationServiceBindingActivity.class.getSimpleName();
+    public final static int LISTENER_DEFAULT_PORT = 8275;
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        Intent intent = new Intent(this, NotificationService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        Intent notificationsIntent = new Intent(this, NotificationService.class);
+        bindService(notificationsIntent, mNotificationConnection, Context.BIND_AUTO_CREATE);
+
+        SharedPreferences preferences =
+                getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
+        String hostname = preferences.getString(PreferenceConstants.P2P_HOSTNAME, null);
+        if (hostname == null) {
+            OrbotHelper.requestHiddenServiceOnPort(this, LISTENER_DEFAULT_PORT);
+        } else {
+            startP2PService();
+        }
     }
 
+    private boolean boundToNotifications = false;
     private NotificationService notificationService;
     private DispatcherOfDialog dispatcherOfDialog;
-    private boolean bound = false;
+
+    private void startP2PService() {
+        Intent p2pIntent = new Intent(this, P2PService.class);
+        p2pIntent.setAction(P2PService.ACTION_START_SERVER);
+        bindService(p2pIntent, mP2PConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private P2PService p2pService;
+    private boolean boundToP2P = false;
+
+    protected P2PService getP2PService() {
+        return p2pService;
+    }
+
     protected Handler uiHandler = new Handler();
+
+    @Override
+    public synchronized void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        Log.v(TAG, "received onion hostname");
+        if (requestCode == OrbotHelper.HS_REQUEST_CODE) {
+            if (intent != null) {
+                String localHostname = intent.getStringExtra("hs_host");
+
+                if (localHostname != null) {
+                    Log.i(TAG, "P2P local hostname: " +localHostname);
+
+                    SharedPreferences preferences =
+                            getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_APPEND);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString(PreferenceConstants.P2P_HOSTNAME, localHostname);
+                    editor.apply();
+
+                    startP2PService();
+                }
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, intent);
+        }
+    }
 
     public NotificationService getNotificationService() {
         return notificationService;
@@ -85,15 +129,36 @@ public abstract class ANotificationServiceBindingActivity
     @Override
     protected void onStop() {
         super.onStop();
-        if (bound) {
+        if (boundToNotifications) {
             removeDispatchersNoOverride(notificationService);
             
-            unbindService(mConnection);
-            bound = false;
+            unbindService(mNotificationConnection);
+            boundToNotifications = false;
+        }
+
+        if (boundToP2P) {
+            unbindService(mP2PConnection);
+            boundToP2P = false;
         }
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection mP2PConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            P2PService.P2PServiceSingletonBinder binder =
+                    (P2PService.P2PServiceSingletonBinder) iBinder;
+            p2pService = binder.getService();
+            boundToP2P = true;
+            p2pService.setP2PEventListener(ANotificationServiceBindingActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            boundToP2P = false;
+        }
+    };
+
+    private ServiceConnection mNotificationConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
@@ -101,12 +166,12 @@ public abstract class ANotificationServiceBindingActivity
                     (NotificationService.NotificationBinder) service;
             notificationService = binder.getService();
             addDispatchersNoOverride(notificationService);
-            bound = true;
+            boundToNotifications = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            bound = false;
+            boundToNotifications = false;
         }
     };
 
@@ -141,5 +206,46 @@ public abstract class ANotificationServiceBindingActivity
     @Override
     public void onWrite(String cid, Contact user) {
 
+    }
+
+    // FIXME: Use string resources
+    @Override
+    public void onConnectionEstablished(String fromUid) {
+        Log.d(TAG + ".onConnection", "UID: " + fromUid);
+
+        ContactsHelper helper = new ContactsHelper(this);
+        Contact contact = helper.getContact(fromUid);
+        helper.close();
+
+        if (contact != null) {
+            new AlertDialog.Builder(this)
+                .setTitle("Incoming P2P connection")
+                .setMessage("Incoming P2P connection from user " + contact.getLogin())
+                .setCancelable(false)
+                .setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(ANotificationServiceBindingActivity.this, P2PDialogActivity.class);
+                        startActivity(intent);
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setNegativeButton("Decline", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        p2pService.closeConnection();
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create()
+                .show();
+        } else {
+            p2pService.closeConnection();
+        }
+    }
+
+    @Override
+    public void onConnectionBreak() {
+        Log.d(TAG + ".onConnectionBreak", "break of connection");
     }
 }

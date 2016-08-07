@@ -15,6 +15,5 @@ public interface IMessageSender {
     void sendFirstMessage(String userID, Message message);
     boolean isConnected();
     void disconnect();
-    void reconnect();
     void write(@NonNull String cid);
 }

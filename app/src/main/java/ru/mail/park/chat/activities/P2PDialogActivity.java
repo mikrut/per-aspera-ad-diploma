@@ -1,20 +1,11 @@
 package ru.mail.park.chat.activities;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
-import android.widget.TextView;
 
-import java.io.IOException;
-
-import info.guardianproject.netcipher.proxy.OrbotHelper;
-import ru.mail.park.chat.R;
 import ru.mail.park.chat.api.p2p.P2PService;
 import ru.mail.park.chat.api.websocket.IMessageSender;
 import ru.mail.park.chat.models.Message;
@@ -26,9 +17,7 @@ public class P2PDialogActivity extends DialogActivity {
     public static final String PORT_ARG = P2PDialogActivity.class.getCanonicalName() + ".PORT_ARG";
     public static final String HOST_ARG = P2PDialogActivity.class.getCanonicalName() + ".HOST_ARG";
 
-    public final static int LISTENER_DEFAULT_PORT = 8275;
-    private IMessageSender sender;
-    private boolean requestedServce = false;
+    private boolean requestedService = false;
 
     @Override
     protected void onResume() {
@@ -36,97 +25,51 @@ public class P2PDialogActivity extends DialogActivity {
         attachFile.setVisibility(View.GONE);
     }
 
-    private ServiceConnection mConnection;
-    private ServiceConnection getConnection() {
-        if (mConnection == null) {
-            mConnection = new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName name, IBinder service) {
-                    P2PService.P2PServiceSingletonBinder binder = (P2PService.P2PServiceSingletonBinder) service;
-                    P2PService p2PService = binder.getService();
-                    sender = p2PService;
-                    p2PService.addListener(P2PDialogActivity.this);
-                }
-
-                @Override
-                public void onServiceDisconnected(ComponentName name) {
-
-                }
-            };
-        }
-        return mConnection;
-    }
-
     @Override
     protected IMessageSender getMessageSender() {
-        if (requestedServce == false) {
-            requestedServce = true;
+        if (!requestedService) {
+            requestedService = true;
+
             Bundle extras = getIntent().getExtras();
             if (extras != null) {
                 int port = extras.getInt(PORT_ARG, -1);
                 String host = extras.getString(HOST_ARG);
 
                 if (port != -1 && host != null) {
-                    Intent intent = new Intent(this, P2PService.class);
-                    intent.setAction(P2PService.ACTION_START_CLIENT);
-                    intent.putExtra(P2PService.DESTINATION_URL, host);
-                    intent.putExtra(P2PService.DESTINATION_PORT, port);
-
-                    bindService(intent, getConnection(), Context.BIND_AUTO_CREATE);
+                    P2PService service = getP2PService();
+                    if (service != null)
+                        service.startClient(host, port);
                     return null;
                 }
             }
-
-            requestHiddenService();
             return null;
         } else {
-            return sender;
-        }
-    }
-
-    private void requestHiddenService () {
-        Intent nIntent = new Intent();
-        nIntent.setAction(OrbotHelper.ACTION_REQUEST_HS);
-        nIntent.putExtra("hs_port", LISTENER_DEFAULT_PORT);
-        startActivityForResult(nIntent, OrbotHelper.HS_REQUEST_CODE);
-    }
-
-    @Override
-    public synchronized void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        Log.v("ac res", "received result");
-        if (requestCode == OrbotHelper.HS_REQUEST_CODE) {
-            if (intent != null) {
-                String localHostname = intent.getStringExtra("hs_host");
-
-                if (localHostname != null) {
-                    Log.i("P2P local hostname", localHostname);
-                    TextView lastSeen = (TextView) findViewById(R.id.dialog_last_seen);
-                    if (lastSeen != null)
-                        lastSeen.setText(localHostname);
-
-                    Intent serviceIntent = new Intent(this, P2PService.class);
-                    serviceIntent.setAction(P2PService.ACTION_START_SERVER);
-                    bindService(serviceIntent, getConnection(), Context.BIND_AUTO_CREATE);
-                }
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, intent);
+            return getP2PService().getConnection();
         }
     }
 
     @Override
     protected void sendMessage(@NonNull Message message) {
+        IMessageSender sender = getMessageSender();
         if (sender != null) {
             sender.sendMessage(null, message);
         }
     }
 
+
+    // FIXME: Use string resources
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (mConnection != null) {
-            unbindService(mConnection);
-        }
-        mConnection = null;
+    public void onConnectionBreak() {
+        new AlertDialog.Builder(this)
+                .setTitle("No connection")
+                .setMessage("The connection was cancelled.")
+                .setCancelable(false)
+                .setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        });
     }
 }
