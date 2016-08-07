@@ -11,6 +11,7 @@ import android.util.Log;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.spongycastle.util.encoders.Hex;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -300,8 +301,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     public void setPubkeyDigest(@Nullable String pubkeyDigest) {
         if (pubkeyDigest != null) {
             try {
-                BigInteger value = new BigInteger(pubkeyDigest, 16);
-                this.pubkeyDigest = value.toByteArray();
+                this.pubkeyDigest = hexStringToByteArray(pubkeyDigest);
             } catch (NumberFormatException e) {
                 Log.e(Contact.class.getSimpleName() + ".setPubkeyDigest", e.getLocalizedMessage());
             }
@@ -314,8 +314,7 @@ public class Contact implements Comparable<Contact>, Serializable {
     public static byte[] pubkeyDigestToBlob(@Nullable String pubkeyDigest) {
         if (pubkeyDigest != null) {
             try {
-                BigInteger value = new BigInteger(pubkeyDigest, 16);
-                return value.toByteArray();
+                return hexStringToByteArray(pubkeyDigest);
             } catch (NumberFormatException e) {
                 Log.e(Contact.class.getSimpleName() + ".setPubkeyDigest", e.getLocalizedMessage());
             }
@@ -355,10 +354,39 @@ public class Contact implements Comparable<Contact>, Serializable {
     @Nullable
     public static String getPubkeyDigestString(@Nullable byte[] pubkeyDigest) {
         if (pubkeyDigest != null) {
-            BigInteger bigInteger = new BigInteger(pubkeyDigest);
-            return bigInteger.toString(16);
+            return bytesToHex(pubkeyDigest);
         }
         return null;
+    }
+
+    /**
+     * Fetched from http://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
+     */
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        if (len % 2 == 0) {
+            byte[] data = new byte[len / 2];
+            for (int i = 0; i < len; i += 2) {
+                data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                        + Character.digit(s.charAt(i + 1), 16));
+            }
+            return data;
+        }
+        return null;
+    }
+
+    /**
+     * Fetched from http://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+     */
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(@NonNull byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     @Nullable

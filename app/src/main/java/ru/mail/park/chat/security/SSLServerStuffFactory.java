@@ -77,6 +77,8 @@ import javax.net.ssl.SSLSocketFactory;
  * Created by Михаил on 21.06.2016.
  */
 public class SSLServerStuffFactory {
+    private static final String TAG = SSLServerStuffFactory.class.getSimpleName();
+
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
     private static final String KEY_GENERATION_ALGORITHM = "RSA";
     private static final String KEY_STORE_INSTANCE = "BKS";
@@ -101,16 +103,21 @@ public class SSLServerStuffFactory {
         File keyStoreFile = new File(context.getFilesDir(), KEY_STORE_FILENAME);
         keyStoreFile.createNewFile();
 
-        KeyStore ks = null;
+        KeyStore ks;
         InputStream is = new FileInputStream(keyStoreFile);
         try {
             ks = KeyStore.getInstance(KEY_STORE_INSTANCE);
-            ks.load(is, SECRET.toCharArray());
+            try {
+                ks.load(is, SECRET.toCharArray());
+            } catch (IOException e) {
+                ks.load(null, SECRET.toCharArray());
+                Log.w(TAG, e.getMessage(), e);
+            }
         } finally {
             is.close();
         }
 
-        if (ks != null && !ks.containsAlias(CERT_ALIAS)) {
+        if (!ks.containsAlias(CERT_ALIAS)) {
             KeyPair keyPair = SSLServerStuffFactory.generateKeyPair(new SecureRandom());
             X509Certificate certificate = createCACert(keyPair.getPublic(), keyPair.getPrivate());
             Log.v("Certificate", certificate.toString());

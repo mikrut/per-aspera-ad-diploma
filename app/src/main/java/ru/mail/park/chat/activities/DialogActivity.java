@@ -334,9 +334,6 @@ public class DialogActivity
                             getLoaderManager().restartLoader(MESSAGES_WEB_LOADER, args, messagesLoaderListener).forceLoad();
                         }
 
-                        if (undeliveredMessages.size() == 0 && sender != null)
-                            sender.reconnect();
-
                         for (Message message : undeliveredMessages) {
                             sendMessage(message);
                         }
