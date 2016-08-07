@@ -51,7 +51,7 @@ import ru.mail.park.chat.security.SSLServerStuffFactory;
 
 // TODO: review flow and architecture in context of security
 // TODO: consider using java NIO
-public class P2PService extends Service implements IMessageSender {
+public class P2PService extends Service {
     public static final String ACTION_START_SERVER = P2PService.class.getCanonicalName() + ".ACTION_START_SERVER";
     public static final String ACTION_START_CLIENT = P2PService.class.getCanonicalName() + ".ACTION_START_CLIENT";
 
@@ -61,63 +61,11 @@ public class P2PService extends Service implements IMessageSender {
     private static final int DEFAULT_LISTENING_PORT = 8275;
 
     private ServerSocket serverSocket;
-
-    private final Object inputSynchronizer = new Object();
-    private final Object outputSynchronizer = new Object();
-
-    private volatile ObjectInputStream input;
-    private volatile ObjectOutputStream output;
-
-    private volatile IChatListener chatListener;
-    private volatile boolean noStop = true;
+    private P2PConnection connection;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        Log.d(P2PService.class.getSimpleName(), "Starting thread");
-        Server server = new Server();
-        server.start();
-
-        Log.d(P2PService.class.getSimpleName(), "Finishing onCreate");
-    }
-
-    public void sendMessage(String chatID, Message message) {
-        send(message);
-    }
-
-    public void sendFirstMessage(String userID, Message message) {
-        send(message);
-    }
-
-    private void send(final Message message) {
-        Log.i(P2PService.class.getSimpleName() + " OUT message", message.getMessageBody());
-        new Thread() {
-            public void run() {
-                if (output != null) {
-                    synchronized (outputSynchronizer) {
-                        if (output != null) {
-                            try {
-                                if (output != null) {
-                                    synchronized (outputSynchronizer) {
-                                        if (output != null) {
-                                            output.writeObject(message);
-                                            acknowledgeOutgoingMessage(message);
-                                        }
-                                    }
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-        }.start();
-    }
-
-    public void addListener(IChatListener chatListener) {
-        this.chatListener = chatListener;
     }
 
     @Nullable
@@ -167,16 +115,8 @@ public class P2PService extends Service implements IMessageSender {
 
         ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
         try {
-            closeStreams();
             Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
-            socket = wrapSocketWithSSL(socket, true);
-
-            synchronized (outputSynchronizer) {
-                output = new ObjectOutputStream(socket.getOutputStream());
-            }
-            synchronized (inputSynchronizer) {
-                input = new ObjectInputStream(socket.getInputStream());
-            }
+            connection = new P2PConnection(this, socket, true);
 
             Log.i(P2PService.class.getSimpleName(), "got a connection");
             Log.i(P2PService.class.getSimpleName(), destination);
@@ -185,273 +125,25 @@ public class P2PService extends Service implements IMessageSender {
         }
     }
 
-    @NonNull
-    private static SSLContext getSSLContext(KeyManager[] km, TrustManager[] trustManagers) throws KeyManagementException, NoSuchAlgorithmException {
-        SecureRandom secureRandom = new SecureRandom();
-        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        Log.d("KeyManager", Arrays.toString(km));
-        Log.d("TrustManagers", Arrays.toString(trustManagers));
-        sslContext.init(km, trustManagers, secureRandom);
-        return sslContext;
-    }
-
-    /**
-     * @return Insecure dummy TrustManager which trusts everyone
-     */
-    @Deprecated
-    private TrustManager getTrustManager() {
-        return new X509TrustManager() {
-            String TAG = "TrustManager";
-
-            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                Log.d(TAG, "Check client trusted");
-            }
-
-            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                Log.d(TAG, "Check server trusted");
-                for (X509Certificate cert : chain) {
-                    Log.d(TAG + ".cert", cert.toString());
-                }
-            }
-
-            public X509Certificate[] getAcceptedIssuers() {
-                Log.d(TAG, "getAcceptedIssuers");
-                return null;
-            }
-        };
-    }
-
-    /**
-     * @return Insecure dummy KeyManager which trusts everyone
-     */
-    @Deprecated
-    private KeyManager[] getKeyManagers() {
-        try {
-            KeyStore ks = SSLServerStuffFactory.getKeyStore(this);
-            KeyManager[] kms = SSLServerStuffFactory.getKeyManagers(ks);
-
-            Log.d("getKeyManagers", String.valueOf(kms.length));
-            for (int i = 0; i < kms.length; i++) {
-                kms[i] = new LogMan((X509KeyManager) kms[i]);
-            }
-            return kms;
-        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException |
-                UnrecoverableKeyException | NoSuchProviderException | OperatorCreationException |
-                InvalidKeyException | SignatureException e) {
-            e.printStackTrace();
-        }
-        Log.e("getKeyManagers", "Could not create..");
-        return null;
-    }
-
-    private static class LogMan implements X509KeyManager {
-        private static final String TAG = LogMan.class.getSimpleName();
-        private final X509KeyManager km;
-
-        public LogMan(X509KeyManager wrapped) {
-            km = wrapped;
-        }
-
-        @Override
-        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-            Log.d(TAG, "chooseClientAlias");
-            return km.chooseClientAlias(keyType, issuers, socket);
-        }
-
-        @Override
-        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-            Log.d(TAG, "chooseServerAlias");
-            return km.chooseServerAlias(keyType, issuers, socket);
-        }
-
-        @Override
-        public X509Certificate[] getCertificateChain(String alias) {
-            Log.d(TAG, "getCertificateChain");
-            return km.getCertificateChain(alias);
-        }
-
-        @Override
-        public String[] getClientAliases(String keyType, Principal[] issuers) {
-            Log.d(TAG, "getClientAliases");
-            return km.getClientAliases(keyType, issuers);
-        }
-
-        @Override
-        public String[] getServerAliases(String keyType, Principal[] issuers) {
-            Log.d(TAG, "getServerAliases");
-            return km.getServerAliases(keyType, issuers);
-        }
-
-        @Override
-        public PrivateKey getPrivateKey(String alias) {
-            Log.d(TAG, "getPrivateKey");
-            return km.getPrivateKey(alias);
-        }
-    }
-
-    /**
-     *
-     * @param socket plain socket to wrap
-     * @param isClient whether we're on a client side (needed for handshake)
-     * @return SSL socket created over an existing plain socket
-     * @throws IOException
-     */
-    private SSLSocket wrapSocketWithSSL(Socket socket, boolean isClient) throws IOException,
-            NoSuchAlgorithmException, KeyManagementException {
-        SSLContext sslContext;
-        if (!isClient) {
-            sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
-        } else {
-            sslContext = getSSLContext(null, new TrustManager[]{getTrustManager()});
-        }
-
-        SSLSocketFactory factory = sslContext.getSocketFactory();
-        SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket,
-                socket.getInetAddress().getHostAddress(),
-                socket.getPort(),
-                true);
-        sslSocket.setUseClientMode(isClient);
-
-        sslSocket.setEnabledProtocols(sslSocket.getSupportedProtocols());
-        sslSocket.setEnabledCipherSuites(factory.getSupportedCipherSuites());
-        sslSocket.startHandshake();
-
-        return sslSocket;
-    }
-
     // TODO: implement error dispatch
     // TODO: move generation methods to (?) subclass
     public void handleActionStartServer(int port) {
         try {
-            closeStreams();
-
             serverSocket = new ServerSocket(port);
             Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
             Socket socket = serverSocket.accept();
             Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+            connection = new P2PConnection(this, socket, false);
 
-            socket = wrapSocketWithSSL(socket, false);
-
-            synchronized (inputSynchronizer) {
-                input = new ObjectInputStream(socket.getInputStream());
-            }
-            synchronized (outputSynchronizer) {
-                output = new ObjectOutputStream(socket.getOutputStream());
-            }
             Log.i(P2PService.class.getSimpleName(), "connection finished!");
         } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
             e.printStackTrace();
         }
     }
 
-    private void handleIncomingMessage(final Message message) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (chatListener != null) {
-                    chatListener.onIncomeMessage(message);
-                }
-            }
-        });
-    }
-
-    private void acknowledgeOutgoingMessage(final Message message) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (chatListener != null) {
-                    chatListener.onAcknowledgeSendMessage(message);
-                }
-            }
-        });
-    }
-
-    private class Server extends Thread {
-        @Override
-        public void run() {
-            try {
-                while (noStop) {
-                    Message message = null;
-                    if (input != null) {
-                        synchronized (inputSynchronizer) {
-                            if (input != null) {
-                                Object object = input.readObject();
-                                if (object instanceof Message) {
-                                    message = (Message) object;
-                                }
-                            }
-                        }
-                    }
-
-                    if (message != null) {
-                        Log.i(P2PService.class.getSimpleName() + " IN message", message.toString());
-                        handleIncomingMessage(message);
-                    }
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void closeStreams() {
-        Log.d(P2PService.class.getSimpleName(), "Closing streams");
-        try {
-            if (output != null) {
-                synchronized (outputSynchronizer) {
-                    if (output != null) {
-                        output.flush();
-                        output.close();
-                        output = null;
-                    }
-                }
-            }
-
-            if (input != null) {
-                synchronized (inputSynchronizer) {
-                    if (input != null) {
-                        input.close();
-                        input = null;
-                    }
-                }
-            }
-
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean isConnected() {
-        return output != null && input != null;
-    }
-
-    @Override
-    public void reconnect() {
-
-    }
-
-    @Override
-    public void write(@NonNull String cid) {
-
-    }
-
-    @Override
-    public void disconnect() {
-        closeStreams();
-        noStop = false;
-    }
-
     @Override
     public void onDestroy() {
         Log.d(P2PService.class.getSimpleName(), "onDestroy");
         super.onDestroy();
-        closeStreams();
-        noStop = false;
     }
 }
