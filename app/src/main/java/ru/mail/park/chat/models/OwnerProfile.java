@@ -7,9 +7,12 @@ import android.database.Cursor;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 
 import ru.mail.park.chat.activities.LoginActivity;
@@ -136,6 +139,13 @@ public class OwnerProfile extends Contact {
 
         if (mgr != null) {
             mgr.clearDiskCache();
+        }
+
+        try {
+            File internalDir = context.getFilesDir();
+            FileUtils.deleteDirectory(internalDir);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         Intent intent = new Intent(context, LoginActivity.class);

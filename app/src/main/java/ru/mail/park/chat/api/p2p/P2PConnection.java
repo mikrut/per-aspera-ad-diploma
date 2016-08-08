@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.spongycastle.asn1.x509.GeneralName;
+import org.spongycastle.jcajce.provider.asymmetric.X509;
 import org.spongycastle.operator.OperatorCreationException;
 
 import java.io.IOException;
@@ -24,9 +26,12 @@ import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -93,11 +98,12 @@ public class P2PConnection implements IMessageSender {
         }
 
         if (p2pEventListener != null) {
+            final String ourDestinationUID = this.destinationUID;
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    p2pEventListener.onConnectionEstablished(destinationUID);
+                    p2pEventListener.onConnectionEstablished(ourDestinationUID);
                 }
             });
         }
@@ -159,8 +165,26 @@ public class P2PConnection implements IMessageSender {
         return new X509TrustManager() {
             String TAG = P2PConnection.TAG + "::TrustManager";
 
+            private void checkAnyCertificate(X509Certificate[] chain, String authType) throws CertificateException {
+                X509Certificate certificate = chain[0];
+                if (certificate != null) {
+                    Log.v(TAG, certificate.toString());
+
+                    if (destinationUID == null) {
+                        destinationUID = certificate.getIssuerDN().getName();
+
+                        if (destinationUID == null) {
+                            throw new CertificateException("No UID was found in the presented certificate");
+                        }
+                    }
+                } else {
+                    throw new CertificateException("No certificate was provided");
+                }
+            }
+
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
                 Log.d(TAG, "Check client trusted");
+                checkAnyCertificate(chain, authType);
             }
 
             public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -168,10 +192,23 @@ public class P2PConnection implements IMessageSender {
                 for (X509Certificate cert : chain) {
                     Log.d(TAG + ".cert", cert.toString());
                 }
+                checkAnyCertificate(chain, authType);
             }
 
             public X509Certificate[] getAcceptedIssuers() {
                 Log.d(TAG, "getAcceptedIssuers");
+                KeyStore commonKeyStore = SSLServerStuffFactory.getCommonKeyStore(context);
+                X509Certificate cert = null;
+                try {
+                    cert = (X509Certificate) commonKeyStore.getCertificate(SSLServerStuffFactory.COMMON_KEY_STORE_ALIAS);
+                } catch (KeyStoreException ignore ){
+                    ignore.printStackTrace();
+                }
+                if (cert != null) {
+                    Log.v(TAG, "ISSUER: " + cert.getIssuerDN().getName());
+                    return new X509Certificate[]{cert};
+                }
+                Log.e(TAG, "No common certificate was found");
                 return null;
             }
         };
@@ -255,11 +292,11 @@ public class P2PConnection implements IMessageSender {
     private SSLSocket wrapSocketWithSSL(Socket socket, boolean isClient) throws IOException,
             NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslContext;
-        if (!isClient) {
+        //if (!isClient) {
             sslContext = getSSLContext(getKeyManagers(), new TrustManager[]{getTrustManager()});
-        } else {
-            sslContext = getSSLContext(null, new TrustManager[]{getTrustManager()});
-        }
+        //} else {
+        //    sslContext = getSSLContext(null, new TrustManager[]{getTrustManager()});
+        //}
 
         SSLSocketFactory factory = sslContext.getSocketFactory();
         SSLSocket sslSocket = (SSLSocket) factory.createSocket(socket,
@@ -267,9 +304,12 @@ public class P2PConnection implements IMessageSender {
                 socket.getPort(),
                 true);
         sslSocket.setUseClientMode(isClient);
+        sslSocket.setNeedClientAuth(true);
 
         sslSocket.setEnabledProtocols(sslSocket.getSupportedProtocols());
         sslSocket.setEnabledCipherSuites(factory.getSupportedCipherSuites());
+
+        sslSocket.getSession().invalidate(); // Invalidate session to ensure we check everything again
         sslSocket.startHandshake();
 
         return sslSocket;

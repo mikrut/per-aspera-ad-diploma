@@ -61,6 +61,8 @@ import ru.mail.park.chat.security.SSLServerStuffFactory;
 // TODO: review flow and architecture in context of security
 // TODO: consider using java NIO
 public class P2PService extends Service {
+    private static final String TAG = P2PService.class.getSimpleName();
+
     public static final String ACTION_START_SERVER = P2PService.class.getCanonicalName() + ".ACTION_START_SERVER";
     public static final String ACTION_START_CLIENT = P2PService.class.getCanonicalName() + ".ACTION_START_CLIENT";
 
@@ -158,16 +160,16 @@ public class P2PService extends Service {
                     final URI onionAddress = contact != null ? contact.getOnionAddress() : null;
                     final String destination = onionAddress != null ? onionAddress.toString() : null;
 
-                    Log.d(P2PService.class.getSimpleName(), "Destination" + destination);
-                    Log.d(P2PService.class.getSimpleName(), "Port " + String.valueOf(port));
+                    Log.d(TAG, "Destination: " + destination);
+                    Log.d(TAG, "Port: " + String.valueOf(port));
 
                     ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
                     try {
                         Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
                         connection = new P2PConnection(this, socket, destinationServerUID, p2pEventListener);
 
-                        Log.i(P2PService.class.getSimpleName(), "got a connection");
-                        Log.i(P2PService.class.getSimpleName(), destination);
+                        Log.i(TAG, "got a connection");
+                        Log.i(TAG, destination);
                     } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
                         e.printStackTrace();
                     }
@@ -180,6 +182,8 @@ public class P2PService extends Service {
     // TODO: move generation methods to (?) subclass
     private void handleActionStartServer(int port) {
         try {
+            Log.d(TAG, "handleActionStartServer");
+
             KeyStore ks = SSLServerStuffFactory.getKeyStore(this);
             Certificate cert = ks.getCertificate(SSLServerStuffFactory.CERT_ALIAS);
             byte[] pubKeyFingerprint = SSLServerStuffFactory.getPublicKeyFingerprint(cert.getPublicKey());
@@ -196,7 +200,7 @@ public class P2PService extends Service {
         try {
             if (serverSocket == null) {
                 serverSocket = new ServerSocket(port);
-                Log.i(P2PService.class.getSimpleName() + " IP", serverSocket.getInetAddress().getCanonicalHostName());
+                Log.i(TAG + " IP", serverSocket.getInetAddress().getCanonicalHostName());
                 Server serverThread = new Server();
                 serverThread.start();
             }
@@ -210,15 +214,18 @@ public class P2PService extends Service {
         public void run() {
             while(noStop) {
                 try {
+                    Log.v(TAG, "Listening for incoming sockets");
                     Socket socket = serverSocket.accept();
+                    Log.v(TAG, "Accepted a socket " + socket.getInetAddress());
+
                     synchronized (noStopLocker) {
                         if (noStop && connection == null) {
                             synchronized (connectionLocker) {
                                 if (connection == null) {
-                                    Log.i(P2PService.class.getSimpleName() + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+                                    Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
                                     connection = new P2PConnection(P2PService.this, socket, p2pEventListener);
 
-                                    Log.i(P2PService.class.getSimpleName(), "connection finished!");
+                                    Log.i(TAG, "connection finished!");
                                 }
                             }
                         }
@@ -242,11 +249,13 @@ public class P2PService extends Service {
     }
 
     private void closeStreams() {
+        Log.v(TAG, "Closing streams");
         closeConnection();
 
         if (serverSocket != null) {
             try {
                 serverSocket.close();
+                serverSocket = null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -255,7 +264,7 @@ public class P2PService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.d(P2PService.class.getSimpleName(), "onDestroy");
+        Log.d(TAG, "onDestroy");
         synchronized (noStopLocker) {
             closeStreams();
             noStop = false;

@@ -3,6 +3,8 @@ package ru.mail.park.chat.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -18,6 +20,8 @@ import java.util.TreeSet;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.FSM;
+import ru.mail.park.chat.activities.interfaces.ILoadOnionListener;
+import ru.mail.park.chat.activities.tasks.LoadOnionTask;
 import ru.mail.park.chat.database.ContactsToChatsHelper;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
@@ -27,12 +31,21 @@ import ru.mail.park.chat.models.Contact;
  */
 public class DialogCreateActivity
         extends AImageDownloadServiceBindingActivity
-        implements ContactsFragment.OnPickEventListener {
+        implements ContactsFragment.OnPickEventListener, ILoadOnionListener {
     TextView newGroupClickable;
     TextView newP2PClickable;
 
     private DialogCreateFSM fsm = new DialogCreateFSM();
     private Contact choosenContact = null;
+
+    @Nullable
+    private LoadOnionTask loadOnionTask;
+
+    @Override
+    public void onOnionLoaded(@NonNull Contact forContact, @Nullable String withResult) {
+        choosenContact = forContact;
+        fsm.handleEvent(UIEvent.CONTACT_ONION_RECEIVED);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +101,8 @@ public class DialogCreateActivity
         BACK_PRESSED,
         P2P_CREATE_PRESSED,
         CONTACT_PRESSED,
-        VALIDATION_FAILED
+        VALIDATION_FAILED,
+        CONTACT_ONION_RECEIVED
     }
 
     private class DialogCreateFSM extends FSM<UIEvent, UIState> {
@@ -128,6 +142,8 @@ public class DialogCreateActivity
                         default:
                             return currentState;
                     }
+                case CONTACT_ONION_RECEIVED:
+                    return UIState.OUT_P2P;
                 default:
                     return currentState;
             }
@@ -163,7 +179,9 @@ public class DialogCreateActivity
                     finish();
                     break;
                 case OUT_P2P:
-                    if (choosenContact != null && choosenContact.getOnionAddress() != null) {
+                    final String onionMatcherString = "[a-zA-Z\\d]{1,50}\u002Eonion";
+                    if (choosenContact != null && choosenContact.getOnionAddress() != null &&
+                            choosenContact.getOnionAddress().toString().matches(onionMatcherString)) {
                         String destinationUID = choosenContact.getUid();
 
                         Intent p2pIntent = new Intent(DialogCreateActivity.this, P2PDialogActivity.class);
@@ -172,7 +190,12 @@ public class DialogCreateActivity
                         startActivity(p2pIntent);
                         finish();
                     } else {
-                        Toast.makeText(DialogCreateActivity.this, "Invalid onion address", Toast.LENGTH_SHORT).show();
+                        if (loadOnionTask != null)
+                            loadOnionTask.cancel(true);
+                        loadOnionTask = new LoadOnionTask(DialogCreateActivity.this, DialogCreateActivity.this);
+                        loadOnionTask.execute(choosenContact);
+
+                        Toast.makeText(DialogCreateActivity.this, "No onion address", Toast.LENGTH_SHORT).show();
                         fsm.handleEvent(UIEvent.VALIDATION_FAILED);
                     }
 
@@ -195,5 +218,13 @@ public class DialogCreateActivity
                     break;
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (loadOnionTask != null)
+            loadOnionTask.cancel(true);
+        loadOnionTask = null;
     }
 }

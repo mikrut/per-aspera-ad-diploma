@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 
+import org.spongycastle.asn1.ASN1Encodable;
 import org.spongycastle.asn1.ASN1EncodableVector;
 import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.ASN1Sequence;
@@ -12,6 +13,7 @@ import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x509.AlgorithmIdentifier;
 import org.spongycastle.asn1.x509.BasicConstraints;
 import org.spongycastle.asn1.x509.Extension;
+import org.spongycastle.asn1.x509.GeneralName;
 import org.spongycastle.asn1.x509.KeyPurposeId;
 import org.spongycastle.asn1.x509.KeyUsage;
 import org.spongycastle.asn1.x509.SubjectKeyIdentifier;
@@ -23,6 +25,7 @@ import org.spongycastle.cert.bc.BcX509ExtensionUtils;
 import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.spongycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.spongycastle.crypto.digests.SHA1Digest;
+import org.spongycastle.jcajce.provider.asymmetric.X509;
 import org.spongycastle.jcajce.provider.asymmetric.rsa.DigestSignatureSpi;
 import org.spongycastle.jcajce.provider.digest.SHA1;
 import org.spongycastle.jce.X509Principal;
@@ -73,6 +76,9 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import ru.mail.park.chat.R;
+import ru.mail.park.chat.models.OwnerProfile;
+
 /**
  * Created by Михаил on 21.06.2016.
  */
@@ -87,6 +93,11 @@ public class SSLServerStuffFactory {
     public static final String CERT_ALIAS = "certificate";
     private static final String SECRET = "mysecret";
     private static final String KEY_STORE_FILENAME = "keystore";
+
+    private static final String COMMON_KEY_STORE_INSTANCE = "BKS";
+    private static final String COMMON_KEY_STORE_FILENAME = "keystore.bks";
+    private static final String COMMON_KEY_STORE_SECRET = "12345678";
+    public static final String COMMON_KEY_STORE_ALIAS = "selfsigned";
 
     private static final String PUBLIC_KEY_DIGEST = "SHA-1";
 
@@ -119,7 +130,17 @@ public class SSLServerStuffFactory {
 
         if (!ks.containsAlias(CERT_ALIAS)) {
             KeyPair keyPair = SSLServerStuffFactory.generateKeyPair(new SecureRandom());
-            X509Certificate certificate = createCACert(keyPair.getPublic(), keyPair.getPrivate());
+            String ownerUID = (new OwnerProfile(context)).getUid();
+
+            KeyStore commonKeyStore = getCommonKeyStore(context);
+            PrivateKey key = null;
+            try {
+                key = (PrivateKey) commonKeyStore.getKey(COMMON_KEY_STORE_ALIAS, COMMON_KEY_STORE_SECRET.toCharArray());
+            } catch (UnrecoverableKeyException ignore) {
+                ignore.printStackTrace();
+            }
+            X509Certificate commonCertificate = (X509Certificate) commonKeyStore.getCertificate(COMMON_KEY_STORE_ALIAS);
+            X509Certificate certificate = createCACert(commonCertificate, ownerUID, keyPair.getPublic(), key);
             Log.v("Certificate", certificate.toString());
             ks.setKeyEntry(CERT_ALIAS, keyPair.getPrivate(), SECRET.toCharArray(),
                     new X509Certificate[] { certificate });
@@ -131,6 +152,25 @@ public class SSLServerStuffFactory {
                 os.close();
             }
         }
+        return ks;
+    }
+
+    public static KeyStore getCommonKeyStore(Context context) {
+        KeyStore ks = null;
+        InputStream is = context.getResources().openRawResource(R.raw.keystore);
+        try {
+            ks = KeyStore.getInstance(COMMON_KEY_STORE_INSTANCE);
+            ks.load(is, COMMON_KEY_STORE_SECRET.toCharArray());
+        } catch (Exception ignore) {
+            ignore.printStackTrace();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ignore) {
+                ignore.printStackTrace();
+            }
+        }
+
         return ks;
     }
 
@@ -179,14 +219,14 @@ public class SSLServerStuffFactory {
      * @param privateKey Private key
      * @return Generated X509 Certificate
      */
-    private static X509Certificate createCACert(PublicKey publicKey, PrivateKey privateKey) throws CertIOException, CertificateException, OperatorCreationException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    private static X509Certificate createCACert(X509Certificate commonCertificate, String ownerUID, PublicKey publicKey, PrivateKey privateKey) throws CertIOException, CertificateException, OperatorCreationException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         final Date BEFORE = new Date(System.currentTimeMillis() - 5000);
         final Date AFTER = new Date(System.currentTimeMillis() + 24L*60*60*1000);
 
         // signers name
-        X500Name issuerName = new X500Name("CN=127.0.0.1, O=TorChat, L=World, ST=Universe, C=RU");
+        X500Name issuerName = new X500Name(commonCertificate.getIssuerX500Principal().getName());
         // subjects name - the same as we are self signed.
-        X500Name subjectName = issuerName;
+        X500Name subjectName = new X500Name("CN=" + ownerUID + ", O=TorChat, L=World, ST=Universe, C=RU");
 
         // serial
         BigInteger serial = BigInteger.valueOf(new SecureRandom().nextInt());
@@ -209,7 +249,7 @@ public class SSLServerStuffFactory {
 
         X509Certificate cert = signCertificate(builder, privateKey);
         cert.checkValidity(new Date());
-        cert.verify(publicKey);
+        cert.verify(commonCertificate.getPublicKey());
 
         return cert;
     }
