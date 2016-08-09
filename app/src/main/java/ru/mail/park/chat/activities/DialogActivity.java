@@ -110,7 +110,7 @@ public class DialogActivity
     protected ImageButton buttonDown;
 
     protected ActionBar mActionBar;
-    private DialogActionBar dialogActionBar;
+    protected DialogActionBar dialogActionBar;
 
     private String chatID;
     private String userID;

@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -150,6 +151,7 @@ public abstract class ANotificationServiceBindingActivity
             p2pService = binder.getService();
             boundToP2P = true;
             p2pService.setP2PEventListener(ANotificationServiceBindingActivity.this);
+            onSetP2PService(p2pService);
         }
 
         @Override
@@ -157,6 +159,10 @@ public abstract class ANotificationServiceBindingActivity
             boundToP2P = false;
         }
     };
+
+    protected void onSetP2PService(@NonNull P2PService p2pService) {
+
+    }
 
     private ServiceConnection mNotificationConnection = new ServiceConnection() {
         @Override
@@ -233,14 +239,14 @@ public abstract class ANotificationServiceBindingActivity
                 .setNegativeButton("Decline", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        p2pService.closeConnection();
+                        p2pService.getConnection().closeStreams();
                         dialogInterface.dismiss();
                     }
                 })
                 .create()
                 .show();
         } else {
-            p2pService.closeConnection();
+            p2pService.getConnection().closeStreams();
         }
     }
 

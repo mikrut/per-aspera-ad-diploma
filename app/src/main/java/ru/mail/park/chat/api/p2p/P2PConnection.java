@@ -32,6 +32,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -82,11 +84,22 @@ public class P2PConnection implements IMessageSender {
         this.destinationUID = destinationUID;
         this.p2pEventListener = p2pEventListener;
 
+        Handler handler = new Handler(Looper.getMainLooper());
+
         Log.d(TAG, "Starting thread");
         MessagesThread messagesThread = new MessagesThread();
         messagesThread.start();
 
         Log.d(TAG, "Finishing onCreate");
+
+        if (p2pEventListener instanceof IP2PConnectionStatusListener) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ((IP2PConnectionStatusListener) p2pEventListener).onConnectionStatusChange("Applying SSL ciphers");
+                }
+            });
+        }
 
         socket = wrapSocketWithSSL(socket, destinationUID != null);
         synchronized (outputSynchronizer) {
@@ -99,7 +112,6 @@ public class P2PConnection implements IMessageSender {
 
         if (p2pEventListener != null) {
             final String ourDestinationUID = this.destinationUID;
-            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -107,6 +119,10 @@ public class P2PConnection implements IMessageSender {
                 }
             });
         }
+    }
+
+    public String getDestinationUID() {
+        return destinationUID;
     }
 
     public void addListener(IChatListener chatListener) {
@@ -166,12 +182,22 @@ public class P2PConnection implements IMessageSender {
             String TAG = P2PConnection.TAG + "::TrustManager";
 
             private void checkAnyCertificate(X509Certificate[] chain, String authType) throws CertificateException {
-                X509Certificate certificate = chain[0];
+                X509Certificate certificate = null;
+                Pattern uidMatch = Pattern.compile("CN=(\\d+)");
+                for (X509Certificate cert : chain) {
+                    if (uidMatch.matcher(cert.getSubjectDN().getName()).find()) {
+                        certificate = cert;
+                        break;
+                    }
+                }
+
                 if (certificate != null) {
                     Log.v(TAG, certificate.toString());
 
                     if (destinationUID == null) {
-                        destinationUID = certificate.getIssuerDN().getName();
+                        Matcher matcher = uidMatch.matcher(certificate.getSubjectDN().getName());
+                        matcher.find();
+                        destinationUID = matcher.group(1);
 
                         if (destinationUID == null) {
                             throw new CertificateException("No UID was found in the presented certificate");
@@ -363,6 +389,7 @@ public class P2PConnection implements IMessageSender {
                 }
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
+                closeStreams();
             }
         }
     }

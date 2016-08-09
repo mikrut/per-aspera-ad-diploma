@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;

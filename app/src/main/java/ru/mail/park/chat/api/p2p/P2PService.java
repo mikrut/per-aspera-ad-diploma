@@ -64,10 +64,6 @@ public class P2PService extends Service {
     private static final String TAG = P2PService.class.getSimpleName();
 
     public static final String ACTION_START_SERVER = P2PService.class.getCanonicalName() + ".ACTION_START_SERVER";
-    public static final String ACTION_START_CLIENT = P2PService.class.getCanonicalName() + ".ACTION_START_CLIENT";
-
-    public static final String DESTINATION_URL = P2PService.class.getCanonicalName() + ".DESTINATION_URL";
-    public static final String DESTINATION_PORT = P2PService.class.getCanonicalName() + ".DESTINATION_PORT";
 
     private static final int DEFAULT_LISTENING_PORT = 8275;
 
@@ -123,27 +119,23 @@ public class P2PService extends Service {
     protected synchronized void onHandleIntent(Intent intent) {
         if (intent != null) {
             final String action = intent.getAction();
-            if (action.equals(ACTION_START_CLIENT)) {
-                String destination = intent.getStringExtra(DESTINATION_URL);
-                int port = intent.getIntExtra(DESTINATION_PORT, DEFAULT_LISTENING_PORT);
-                handleActionStartClient(destination, port);
-            } else if (action.equals(ACTION_START_SERVER)) {
+            if (action.equals(ACTION_START_SERVER)) {
                 int port = DEFAULT_LISTENING_PORT;
                 handleActionStartServer(port);
             }
         }
     }
 
-    public void startClient(final String destinationServerUID, final int port) {
+    public void startClient(final String destinationServerUID, final int port, final IP2PConnectionStatusListener listener) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                handleActionStartClient(destinationServerUID, port);
+                handleActionStartClient(destinationServerUID, port, listener);
             }
         }).start();
     }
 
-    private void handleActionStartClient(String destinationServerUID, int port) {
+    private void handleActionStartClient(String destinationServerUID, int port, final IP2PConnectionStatusListener listener) {
         if (connection == null) {
             synchronized (connectionLocker) {
                 if (connection == null) {
@@ -163,15 +155,24 @@ public class P2PService extends Service {
                     Log.d(TAG, "Destination: " + destination);
                     Log.d(TAG, "Port: " + String.valueOf(port));
 
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.onConnectionStatusChange("Opening the p2p socket");
+                        }
+                    });
+
                     ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
                     try {
                         Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
-                        connection = new P2PConnection(this, socket, destinationServerUID, p2pEventListener);
+                        connection = new P2PConnection(this, socket, destinationServerUID, listener);
 
                         Log.i(TAG, "got a connection");
                         Log.i(TAG, destination);
                     } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
                         e.printStackTrace();
+                        listener.onConnectionBreak();
                     }
                 }
             }
@@ -222,27 +223,35 @@ public class P2PService extends Service {
                         if (noStop && connection == null) {
                             synchronized (connectionLocker) {
                                 if (connection == null) {
-                                    Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
-                                    connection = new P2PConnection(P2PService.this, socket, p2pEventListener);
+                                    try {
+                                        Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+                                        connection = new P2PConnection(P2PService.this, socket, p2pEventListener);
 
-                                    Log.i(TAG, "connection finished!");
+                                        Log.i(TAG, "connection finished!");
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        p2pEventListener.onConnectionBreak();
+
+                                        try {
+                                            if (!socket.isClosed())
+                                                socket.close();
+                                            if (connection != null)
+                                                connection.closeStreams();
+                                        } catch (Exception ignore){
+                                            ignore.printStackTrace();
+                                        }
+
+                                        connection = null;
+                                        p2pEventListener.onConnectionBreak();
+                                    }
                                 }
                             }
+                        } else {
+                            socket.close();
                         }
                     }
-                } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void closeConnection() {
-        if (connection != null) {
-            synchronized (connectionLocker) {
-                if (connection != null) {
-                    connection.closeStreams();
-                    connection = null;
                 }
             }
         }
@@ -250,7 +259,6 @@ public class P2PService extends Service {
 
     private void closeStreams() {
         Log.v(TAG, "Closing streams");
-        closeConnection();
 
         if (serverSocket != null) {
             try {

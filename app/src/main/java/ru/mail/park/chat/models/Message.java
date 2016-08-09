@@ -151,7 +151,7 @@ public class Message implements Comparable<Message>, Serializable {
         return mid;
     }
 
-    private void setMid(@NonNull String mid) {
+    public void setMid(@NonNull String mid) {
         this.mid = mid;
     }
 
