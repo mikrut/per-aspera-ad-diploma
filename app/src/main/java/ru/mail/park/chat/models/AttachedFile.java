@@ -31,10 +31,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import ru.mail.park.chat.activities.adapters.MessagesAdapter;
 import ru.mail.park.chat.activities.tasks.DownloadFileTask;
 import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.database.AttachmentsContract;
 import ru.mail.park.chat.database.AttachmentsHelper;
+import ru.mail.park.chat.loaders.MessagesLoader;
 
 /**
  * Created by Михаил on 24.04.2016.
@@ -162,7 +164,26 @@ public class AttachedFile {
         }
     }
 
-    public void download(final Context context, @Nullable final TextView progressTextView) {
+    private DownloadFileTask.DownloadProgress progress;
+    private Boolean downloadSuccess = null;
+
+    public void setProgress(DownloadFileTask.DownloadProgress progress) {
+        this.progress = progress;
+    }
+
+    public void setDownloadSuccess(Boolean downloadSuccess) {
+        this.downloadSuccess = downloadSuccess;
+    }
+
+    public DownloadFileTask.DownloadProgress getProgress() {
+        return progress;
+    }
+
+    public Boolean getDownloadSuccess() {
+        return downloadSuccess;
+    }
+
+    public void download(final Context context, @Nullable final MessagesAdapter messagesLoader, final int position) {
         final String path;
         File torchatDir = null;
         if (fileSystemPath != null) {
@@ -197,7 +218,7 @@ public class AttachedFile {
 
                     path = name + "--" + hash + "." + extension;
                 } else {
-                    path = attachmentFile.getPath();
+                    path = FilenameUtils.getName(attachmentFile.getPath());
                 }
             } else {
                 path = null;
@@ -218,21 +239,17 @@ public class AttachedFile {
                 task.setDownloadProgressListener(new DownloadFileTask.IDownloadProgressListener() {
                     @Override
                     public void onProgressUpdate(@NonNull DownloadFileTask.DownloadProgress progress) {
-                        if (progressTextView != null) {
-                            String progressText =
-                                    AttachedFile.humanReadableByteCount(progress.totalWritten) +
-                                    '/' +
-                                    AttachedFile.humanReadableByteCount(progress.totalFileSize);
-                            progressTextView.setText(progressText);
-                            progressTextView.setVisibility(View.VISIBLE);
+                        setProgress(progress);
+                        if (messagesLoader != null) {
+                            messagesLoader.notifyItemChanged(position);
                         }
                     }
 
                     @Override
                     public void onPostExecute(boolean success) {
-                        if (progressTextView != null) {
-                            progressTextView.setText(success ? "Download success" : "Download failure");
-                            progressTextView.setVisibility(View.VISIBLE);
+                        downloadSuccess = success;
+                        if (messagesLoader != null) {
+                            messagesLoader.notifyItemChanged(position);
                         }
                     }
                 });

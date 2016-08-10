@@ -10,6 +10,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import ru.mail.park.chat.R;
+import ru.mail.park.chat.activities.tasks.DownloadFileTask;
 import ru.mail.park.chat.models.AttachedFile;
 
 /**
@@ -35,7 +36,21 @@ public class FilesSimpleAdapter extends ArrayAdapter<AttachedFile> {
             TextView fileSize = (TextView) v.findViewById(R.id.file_size_text_view);
 
             fileName.setText(file.getFileName());
-            fileSize.setText(null);
+            DownloadFileTask.DownloadProgress progress = file.getProgress();
+            if (progress == null) {
+                fileSize.setText(file.isDownloaded() ? "Downloaded" : "Not downloaded");
+            } else {
+                Boolean success = file.getDownloadSuccess();
+                if (success != null) {
+                    fileSize.setText(success ? "Download success" : "Download failure");
+                } else {
+                    String progressText =
+                            AttachedFile.humanReadableByteCount(progress.totalWritten) +
+                                    '/' +
+                                    AttachedFile.humanReadableByteCount(progress.totalFileSize);
+                    fileSize.setText(progressText);
+                }
+            }
         }
 
         return v;

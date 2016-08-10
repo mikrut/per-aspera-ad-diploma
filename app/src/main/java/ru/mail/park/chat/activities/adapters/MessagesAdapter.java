@@ -73,7 +73,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             messageTime = (TextView) itemView.findViewById(R.id.messageTime);
         }
 
-        public void setMessage(@NonNull final Message message) {
+        public void setMessage(@NonNull final Message message, final int messagePosition) {
             String imageURL = message.getImageURL();
             if (imageURL != null && !imageURL.equals("false") && imageDownloadManager != null) {
                 try {
@@ -104,7 +104,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                     if (fileIsDownloadedAndExists) {
                         attachment.openInNewActivity(view.getContext());
                     } else {
-                        attachment.download(view.getContext(), (TextView) view.findViewById(R.id.file_size_text_view));
+                        attachment.download(view.getContext(), MessagesAdapter.this, messagePosition);
                     }
                 }
             });
@@ -156,7 +156,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Message message = messagesSet.get(position);
-        holder.setMessage(message);
+        holder.setMessage(message, position);
     }
 
     @Override

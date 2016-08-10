@@ -33,8 +33,7 @@
 
     <TextView
         android:id="@+id/file_size_text_view"
-        tools:visibility="visible"
-        android:visibility="gone"
+        android:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/file_icon_image_view"

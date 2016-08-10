@@ -746,7 +746,7 @@ public class DialogActivity
                         Log.d(MessagesLoaderListener.class.getSimpleName(), "Required: " + pagination.getPageSize());
                     }
                 }
-            } else {
+            } else if (chatID != null) {
                 Toast.makeText(DialogActivity.this, "Connection error", Toast.LENGTH_SHORT).show();
             }
 
@@ -783,7 +783,7 @@ public class DialogActivity
                 thisChat = data;
             }
 
-            if (loader.getId() == CHAT_DB_LOADER) {
+            if (loader.getId() == CHAT_DB_LOADER && chatID != null) {
                 Bundle args = new Bundle();
                 args.putString(ChatInfoLoader.CID_ARG, chatID);
                 getLoaderManager().restartLoader(CHAT_WEB_LOADER, args, this);

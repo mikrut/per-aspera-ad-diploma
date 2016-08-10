@@ -7,7 +7,11 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import ru.mail.park.chat.activities.DialogActivity;
 import ru.mail.park.chat.api.rest.Chats;
@@ -37,24 +41,28 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
 
     @Override
     public List<Message> loadInBackground() {
-        Chats chats = new Chats(getContext());
-        try {
-            Log.d("[TP-diploma]", "trying getMessages");
-            messages = chats.getMessages(chatID, index);
-            MessagesHelper messagesHelper = new MessagesHelper(getContext());
-            if(messages == null) {
-                messages = messagesHelper.getMessages(chatID);
-            } else {
-                messagesHelper.updateMessageList(messages, chatID);
+        if (chatID != null) {
+            Chats chats = new Chats(getContext());
+            try {
+                Log.d("[TP-diploma]", "trying getMessages");
+                messages = chats.getMessages(chatID, index);
+                MessagesHelper messagesHelper = new MessagesHelper(getContext());
+                if(messages == null) {
+                    messages = messagesHelper.getMessages(chatID);
+                } else {
+                    messagesHelper.updateMessageList(messages, chatID);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
+            messages = new ArrayList<>();
         }
         return messages;
     }
 
-        @Override
-        protected void onStartLoading() {
+    @Override
+    protected void onStartLoading() {
         if (messages != null) {
             deliverResult(messages);
         } else {
@@ -67,8 +75,8 @@ public class MessagesLoader extends AsyncTaskLoader<List<Message>> {
         cancelLoad();
     }
 
-        @Override
-        protected void onReset() {
+    @Override
+    protected void onReset() {
         super.onReset();
         onStopLoading();
         messages = null;
