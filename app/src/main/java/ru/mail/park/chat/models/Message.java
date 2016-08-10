@@ -276,4 +276,43 @@ public class Message implements Comparable<Message>, Serializable {
         }
         return 1;
     }
+
+    private Message(MessageContainer m) {
+        mid = m.mid;
+        messageBody = m.messageBody;
+        cid = m.cid;
+        uid = m.uid;
+        date = m.date;
+        title = m.title;
+        uniqueID = m.uniqueID;
+        imageURL = m.imageURL;
+    }
+
+    public static class MessageContainer implements Serializable {
+        private static final long serialVersionUID = 1;
+
+        private @Nullable String mid;
+        private @NonNull String messageBody;
+        private @Nullable String cid;
+        private @NonNull String uid;
+        private @Nullable Calendar date;
+        private @NonNull String title;
+        private long uniqueID;
+        private @Nullable String imageURL;
+
+        public MessageContainer(Message m) {
+            mid = m.mid;
+            messageBody = m.messageBody;
+            cid = m.cid;
+            uid = m.uid;
+            date = m.date;
+            title = m.title;
+            uniqueID = m.uniqueID;
+            imageURL = m.imageURL;
+        }
+
+        public Message toMessage() {
+            return new Message(this);
+        }
+    }
 }

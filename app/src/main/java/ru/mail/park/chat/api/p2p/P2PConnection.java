@@ -101,20 +101,20 @@ public class P2PConnection implements IMessageSender {
     private volatile IChatListener chatListener;
     private volatile boolean noStop = true;
 
-    public P2PConnection(P2PService context, Socket socket, IP2PEventListener p2pEventListener)
-            throws NoSuchAlgorithmException, IOException, KeyManagementException {
+    public P2PConnection(P2PService context, Socket socket, IP2PEventListener p2pEventListener) {
         this(context, socket, null, p2pEventListener);
     }
 
     public P2PConnection(P2PService context, Socket socket, @Nullable final String destinationUID,
-                         final IP2PEventListener p2pEventListener)
-            throws IOException, KeyManagementException, NoSuchAlgorithmException {
+                         final IP2PEventListener p2pEventListener) {
         this.context = context;
         this.destinationUID = destinationUID;
         this.p2pEventListener = p2pEventListener;
 
         this.socket = socket;
+    }
 
+    public void startConnecting() throws NoSuchAlgorithmException, IOException, KeyManagementException {
         Handler handler = new Handler(Looper.getMainLooper());
 
         Log.d(TAG, "Starting thread");
@@ -179,7 +179,7 @@ public class P2PConnection implements IMessageSender {
                                 if (output != null) {
                                     synchronized (outputSynchronizer) {
                                         if (output != null) {
-                                            output.writeObject(message);
+                                            output.writeObject(new Message.MessageContainer(message));
                                             acknowledgeOutgoingMessage(message);
                                         }
                                     }
@@ -411,8 +411,8 @@ public class P2PConnection implements IMessageSender {
                         }
                         if (is != null) {
                             Object object = is.readObject();
-                            if (object instanceof Message) {
-                                message = (Message) object;
+                            if (object instanceof Message.MessageContainer) {
+                                message = ((Message.MessageContainer) object).toMessage();
                             }
                         }
                     }

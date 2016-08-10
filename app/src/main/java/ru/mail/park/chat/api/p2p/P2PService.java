@@ -129,17 +129,17 @@ public class P2PService extends Service {
     }
 
     private void handleActionStartClient(String destinationServerUID, int port, final IP2PConnectionStatusListener listener) {
-        if (connection != null) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        try
+        {
+            P2PConnection conn = null;
+
             synchronized (connectionLocker) {
                 if (connection != null) {
                     connection.closeStreams();
                     connection = null;
                 }
-            }
-        }
 
-        if (connection == null) {
-            synchronized (connectionLocker) {
                 if (connection == null) {
                     final Random rndForTorCircuits = new Random();
                     final String user = rndForTorCircuits.nextInt(100000) + "";
@@ -157,7 +157,6 @@ public class P2PService extends Service {
                     Log.d(TAG, "Destination: " + destination);
                     Log.d(TAG, "Port: " + String.valueOf(port));
 
-                    Handler handler = new Handler(Looper.getMainLooper());
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -166,22 +165,28 @@ public class P2PService extends Service {
                     });
 
                     ProxyInfo proxyInfo = new ProxyInfo(ProxyInfo.ProxyType.SOCKS5, proxyHost, proxyPort, user, pass);
-                    try {
-                        Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
-                        connection = new P2PConnection(this, socket, destinationServerUID, listener);
 
-                        Log.i(TAG, "got a connection");
-                        Log.i(TAG, destination);
-                    } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
-                        e.printStackTrace();
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.onConnectionBreak();
-                            }});
-                    }
+                    Socket socket = proxyInfo.getSocketFactory().createSocket(destination, port);
+                    conn = new P2PConnection(this, socket, destinationServerUID, listener);
+                    connection  = conn;
+
+                    Log.i(TAG, "got a connection");
+                    Log.i(TAG, destination);
+
                 }
             }
+
+            if (conn != null) {
+                conn.startConnecting();
+            }
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+            e.printStackTrace();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.onConnectionBreak();
+                }
+            });
         }
     }
 
@@ -225,41 +230,47 @@ public class P2PService extends Service {
                     Socket socket = serverSocket.accept();
                     Log.v(TAG, "Accepted a socket " + socket.getInetAddress());
 
+                    P2PConnection conn = null;
                     synchronized (noStopLocker) {
                         if (noStop && connection == null) {
                             synchronized (connectionLocker) {
                                 if (connection == null) {
-                                    try {
-                                        Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
-                                        connection = new P2PConnection(P2PService.this, socket, p2pEventListener);
-
-                                        Log.i(TAG, "connection finished!");
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-
-                                        try {
-                                            if (!socket.isClosed())
-                                                socket.close();
-                                            if (connection != null)
-                                                connection.closeStreams();
-                                        } catch (Exception ignore){
-                                            ignore.printStackTrace();
-                                        }
-
-                                        connection = null;
-
-                                        Handler handler = new Handler(Looper.getMainLooper());
-                                        handler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                p2pEventListener.onConnectionBreak();
-                                            }
-                                        });
-                                    }
+                                    Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+                                    conn = new P2PConnection(P2PService.this, socket, p2pEventListener);
+                                    connection = conn;
                                 }
                             }
                         } else {
                             socket.close();
+                        }
+                    }
+
+                    try {
+                        if (conn != null)
+                            conn.startConnecting();
+                        Log.i(TAG, "connection finished!");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                        synchronized (connectionLocker) {
+                            try {
+                                if (!socket.isClosed())
+                                    socket.close();
+                                if (connection != null)
+                                    connection.closeStreams();
+                            } catch (Exception ignore) {
+                                ignore.printStackTrace();
+                            }
+
+                            connection = null;
+
+                            Handler handler = new Handler(Looper.getMainLooper());
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    p2pEventListener.onConnectionBreak();
+                                }
+                            });
                         }
                     }
                 } catch (IOException e) {
@@ -291,10 +302,15 @@ public class P2PService extends Service {
     }
 
     public void onActivityPause() {
-        synchronized (connectionLocker) {
-            if (connection != null)
-                connection.setP2PEventListener(null);
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (connectionLocker) {
+                    if (connection != null)
+                        connection.setP2PEventListener(null);
+                }
+            }
+        }).start();
     }
 
 

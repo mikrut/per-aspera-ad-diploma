@@ -67,7 +67,8 @@ public class Messages extends WSConnection implements IMessageSender {
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    wsStatusListener.onUpdateWSStatus(newState);
+                    if (wsStatusListener != null)
+                        wsStatusListener.onUpdateWSStatus(newState);
                 }
             });
         }

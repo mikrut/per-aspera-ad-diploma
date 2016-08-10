@@ -137,9 +137,12 @@ public class P2PDialogActivity
             dialogActionBar.setSubtitle("Connected");
         }
 
-        P2PConnection connection = getP2PService().getConnection();
-        if (connection != null) {
-            connection.addListener(this);
+        P2PService p2PService = getP2PService();
+        if (p2PService != null) {
+            P2PConnection connection = p2PService.getConnection();
+            if (connection != null) {
+                connection.addListener(this);
+            }
         }
     }
 
@@ -149,10 +152,13 @@ public class P2PDialogActivity
             dialog.setMessage(status);
         }
 
-        P2PConnection connection = getP2PService().getConnection();
-        if (connection != null) {
-            connection.setP2PEventListener(this);
-            connection.addListener(this);
+        P2PService p2PService = getP2PService();
+        if (p2PService != null) {
+            P2PConnection connection = p2PService.getConnection();
+            if (connection != null) {
+                connection.setP2PEventListener(this);
+                connection.addListener(this);
+            }
         }
     }
 

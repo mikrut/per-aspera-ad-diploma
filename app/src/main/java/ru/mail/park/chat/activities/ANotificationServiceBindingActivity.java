@@ -230,6 +230,8 @@ public abstract class ANotificationServiceBindingActivity
 
     }
 
+    private AlertDialog incoming;
+
     // FIXME: Use string resources
     @Override
     public void onConnectionEstablished(String fromUid) {
@@ -240,7 +242,10 @@ public abstract class ANotificationServiceBindingActivity
         helper.close();
 
         if (contact != null) {
-            new AlertDialog.Builder(this)
+            if (incoming != null) {
+                incoming.dismiss();
+            }
+            incoming = new AlertDialog.Builder(this)
                 .setTitle("Incoming P2P connection")
                 .setMessage("Incoming P2P connection from user " + contact.getLogin())
                 .setCancelable(false)
@@ -259,8 +264,8 @@ public abstract class ANotificationServiceBindingActivity
                         dialogInterface.dismiss();
                     }
                 })
-                .create()
-                .show();
+                .create();
+            incoming.show();
         } else {
             p2pService.getConnection().closeStreams();
         }
@@ -269,5 +274,9 @@ public abstract class ANotificationServiceBindingActivity
     @Override
     public void onConnectionBreak() {
         Log.d(TAG + ".onConnectionBreak", "break of connection");
+        if (incoming != null) {
+            incoming.dismiss();
+            incoming = null;
+        }
     }
 }
