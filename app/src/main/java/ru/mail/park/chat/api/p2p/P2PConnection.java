@@ -12,6 +12,7 @@ import org.spongycastle.jcajce.provider.asymmetric.X509;
 import org.spongycastle.operator.OperatorCreationException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -32,6 +33,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,35 +57,63 @@ import ru.mail.park.chat.security.SSLServerStuffFactory;
 public class P2PConnection implements IMessageSender {
     private static final String TAG = P2PConnection.class.getSimpleName();
 
-    private Context context;
+    private P2PService context;
     private IP2PEventListener p2pEventListener;
 
     public void setP2PEventListener(IP2PEventListener p2pEventListener) {
         this.p2pEventListener = p2pEventListener;
+        if (p2pEventListener == null && detachTimer == null) {
+            synchronized (timerSynchronizer) {
+                detachTimer = new Timer();
+                detachTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        context.clearConnection();
+                        synchronized (timerSynchronizer) {
+                            if (detachTimer != null)
+                                detachTimer.cancel();
+                            detachTimer = null;
+                        }
+                    }
+                }, 5000);
+            }
+        } else if (p2pEventListener != null && detachTimer != null) {
+            synchronized (timerSynchronizer) {
+                if (detachTimer != null)
+                    detachTimer.cancel();
+                detachTimer = null;
+            }
+        }
     }
+
+    private final Object timerSynchronizer = new Object();
+    private volatile Timer detachTimer;
 
     private final Object inputSynchronizer = new Object();
     private final Object outputSynchronizer = new Object();
 
     private String destinationUID;
 
+    private volatile Socket socket;
     private volatile ObjectInputStream input;
     private volatile ObjectOutputStream output;
 
     private volatile IChatListener chatListener;
     private volatile boolean noStop = true;
 
-    public P2PConnection(Context context, Socket socket, IP2PEventListener p2pEventListener)
+    public P2PConnection(P2PService context, Socket socket, IP2PEventListener p2pEventListener)
             throws NoSuchAlgorithmException, IOException, KeyManagementException {
         this(context, socket, null, p2pEventListener);
     }
 
-    public P2PConnection(Context context, Socket socket, @Nullable final String destinationUID,
+    public P2PConnection(P2PService context, Socket socket, @Nullable final String destinationUID,
                          final IP2PEventListener p2pEventListener)
             throws IOException, KeyManagementException, NoSuchAlgorithmException {
         this.context = context;
         this.destinationUID = destinationUID;
         this.p2pEventListener = p2pEventListener;
+
+        this.socket = socket;
 
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -372,12 +403,16 @@ public class P2PConnection implements IMessageSender {
                 while (noStop) {
                     Message message = null;
                     if (input != null) {
+                        ObjectInputStream is = null;
                         synchronized (inputSynchronizer) {
                             if (input != null) {
-                                Object object = input.readObject();
-                                if (object instanceof Message) {
-                                    message = (Message) object;
-                                }
+                                is = input;
+                            }
+                        }
+                        if (is != null) {
+                            Object object = is.readObject();
+                            if (object instanceof Message) {
+                                message = (Message) object;
                             }
                         }
                     }
@@ -424,6 +459,13 @@ public class P2PConnection implements IMessageSender {
             }
         }
 
+        try {
+            if (socket != null)
+                socket.close();
+            socket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         noStop = false;
 
         if (p2pEventListener != null) {

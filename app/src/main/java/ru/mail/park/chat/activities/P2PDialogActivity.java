@@ -34,10 +34,12 @@ public class P2PDialogActivity
     private AlertDialog finishDialog;
 
     private boolean requestedService = false;
+    private boolean inFront = false;
 
     @Override
     protected void onResume() {
         super.onResume();
+        inFront = true;
         attachFile.setVisibility(View.GONE);
     }
 
@@ -47,7 +49,13 @@ public class P2PDialogActivity
         dialog = new AlertDialog.Builder(this)
                 .setTitle(P2P_STATUS_TITLE)
                 .setMessage("Starting a connection")
-                .setCancelable(false)
+                .setCancelable(true)
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        finish();
+                    }
+                })
                 .create();
         dialog.show();
     }
@@ -61,6 +69,7 @@ public class P2PDialogActivity
             dialog = null;
 
             p2PConnection.addListener(this);
+            p2PConnection.setP2PEventListener(this);
 
             ContactsHelper helper = new ContactsHelper(this);
             otherSide = helper.getContact(p2PConnection.getDestinationUID());
@@ -113,56 +122,67 @@ public class P2PDialogActivity
 
     @Override
     public void onConnectionEstablished(String fromUid) {
-        dialog.dismiss();
-        dialog = null;
+        if (inFront) {
+            dialog.dismiss();
+            dialog = null;
 
-        ContactsHelper helper = new ContactsHelper(this);
-        otherSide = helper.getContact(fromUid);
-        helper.close();
+            ContactsHelper helper = new ContactsHelper(this);
+            otherSide = helper.getContact(fromUid);
+            helper.close();
+
+            dialogActionBar.setProgress(false);
+            if (otherSide != null) {
+                dialogActionBar.setTitle(otherSide.getContactTitle());
+            }
+            dialogActionBar.setSubtitle("Connected");
+        }
 
         P2PConnection connection = getP2PService().getConnection();
         if (connection != null) {
             connection.addListener(this);
         }
-
-        dialogActionBar.setProgress(false);
-        if (otherSide != null) {
-            dialogActionBar.setTitle(otherSide.getContactTitle());
-        }
-        dialogActionBar.setSubtitle("Connected");
     }
 
     @Override
     public void onConnectionStatusChange(String status) {
-        if (dialog != null) {
+        if (inFront && dialog != null) {
             dialog.setMessage(status);
         }
 
         P2PConnection connection = getP2PService().getConnection();
         if (connection != null) {
+            connection.setP2PEventListener(this);
             connection.addListener(this);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        inFront = false;
+        super.onPause();
     }
 
     // FIXME: Use string resources
     @Override
     public void onConnectionBreak() {
-        if (dialog != null) {
-            dialog.dismiss();
-            dialog = null;
-        }
+        if (inFront) {
+            if (dialog != null) {
+                dialog.dismiss();
+                dialog = null;
+            }
 
-        finishDialog = new AlertDialog.Builder(this)
-                .setTitle("No connection")
-                .setMessage("The connection was cancelled.")
-                .setCancelable(false)
-                .setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                finish();
-                            }
-                        }).create();
-        finishDialog.show();
+            finishDialog = new AlertDialog.Builder(this)
+                    .setTitle("No connection")
+                    .setMessage("The connection was cancelled.")
+                    .setCancelable(false)
+                    .setPositiveButton(android.R.string.ok,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    finish();
+                                }
+                            }).create();
+            finishDialog.show();
+        }
     }
 }

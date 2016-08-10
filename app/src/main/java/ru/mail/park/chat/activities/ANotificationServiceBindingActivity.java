@@ -46,13 +46,15 @@ public abstract class ANotificationServiceBindingActivity
         Intent notificationsIntent = new Intent(this, NotificationService.class);
         bindService(notificationsIntent, mNotificationConnection, Context.BIND_AUTO_CREATE);
 
-        SharedPreferences preferences =
-                getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
-        String hostname = preferences.getString(PreferenceConstants.P2P_HOSTNAME, null);
-        if (hostname == null) {
-            OrbotHelper.requestHiddenServiceOnPort(this, LISTENER_DEFAULT_PORT);
-        } else {
-            startP2PService();
+        if (OrbotHelper.isOrbotInstalled(this)) {
+            SharedPreferences preferences =
+                    getSharedPreferences(PreferenceConstants.PREFERENCE_NAME, MODE_PRIVATE);
+            String hostname = preferences.getString(PreferenceConstants.P2P_HOSTNAME, null);
+            if (hostname == null) {
+                OrbotHelper.requestHiddenServiceOnPort(this, LISTENER_DEFAULT_PORT);
+            } else {
+                startP2PService();
+            }
         }
     }
 
@@ -61,9 +63,11 @@ public abstract class ANotificationServiceBindingActivity
     private DispatcherOfDialog dispatcherOfDialog;
 
     private void startP2PService() {
-        Intent p2pIntent = new Intent(this, P2PService.class);
-        p2pIntent.setAction(P2PService.ACTION_START_SERVER);
-        bindService(p2pIntent, mP2PConnection, Context.BIND_AUTO_CREATE);
+        if (OrbotHelper.isOrbotInstalled(this)) {
+            Intent p2pIntent = new Intent(this, P2PService.class);
+            p2pIntent.setAction(P2PService.ACTION_START_SERVER);
+            bindService(p2pIntent, mP2PConnection, Context.BIND_AUTO_CREATE);
+        }
     }
 
     private P2PService p2pService;
@@ -128,6 +132,15 @@ public abstract class ANotificationServiceBindingActivity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (p2pService != null) {
+            p2pService.onActivityPause();
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         if (boundToNotifications) {
@@ -135,11 +148,14 @@ public abstract class ANotificationServiceBindingActivity
             
             unbindService(mNotificationConnection);
             boundToNotifications = false;
+            notificationService = null;
+            dispatcherOfDialog = null;
         }
 
         if (boundToP2P) {
             unbindService(mP2PConnection);
             boundToP2P = false;
+            p2pService = null;
         }
     }
 
