@@ -1,7 +1,9 @@
 package ru.mail.park.chat.activities.adapters;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -11,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +37,7 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final String email;
     private Bitmap bmBlurred;
     private Bitmap bmUserImage;
+    private Context context;
     private final View.OnClickListener[] listeners;
 
     private static final int HEADER = 0;
@@ -111,15 +115,17 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    public MenuAdapter(String name, String email, String titles[],
+    public MenuAdapter(Context context, String name, String email, String titles[],
                        @NonNull View.OnClickListener[] listeners, @DrawableRes int... icons) {
         this.titles = titles;
         this.icons = icons;
         this.name = name;
         this.email = email;
         this.listeners = listeners;
+        this.context = context;
     }
 
+    @NonNull
     public IImageSettable getBlurSettable() {
         return new IImageSettable() {
             @Override
@@ -127,15 +133,40 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 bmBlurred = image;
                 notifyItemChanged(0);
             }
+
+            @Override
+            public int getWidth() {
+                Resources r = context.getResources();
+                return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 320, r.getDisplayMetrics());
+            }
+
+            @Override
+            public int getHeight() {
+                Resources r = context.getResources();
+                return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 56, r.getDisplayMetrics());
+            }
         };
     }
 
+    @NonNull
     public IImageSettable getUserImageSettable() {
         return new IImageSettable() {
             @Override
             public void setImage(Bitmap image) {
                 bmUserImage = image;
                 notifyItemChanged(0);
+            }
+
+            @Override
+            public int getWidth() {
+                Resources r = context.getResources();
+                return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, r.getDisplayMetrics());
+            }
+
+            @Override
+            public int getHeight() {
+                Resources r = context.getResources();
+                return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, r.getDisplayMetrics());
             }
         };
     }

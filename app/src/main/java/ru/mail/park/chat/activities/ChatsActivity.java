@@ -186,6 +186,7 @@ public class ChatsActivity
         OwnerProfile owner = new OwnerProfile(this);
 
         menuAdapter = new MenuAdapter(
+                this,
                 owner.getLogin(),
                 owner.getEmail(),
                 titles,
@@ -211,8 +212,8 @@ public class ChatsActivity
             if (img != null) {
                 try {
                     URL url = new URL(ApiSection.SERVER_URL + img);
-                    mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
-                    mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
+                    mgr.setImage(menuAdapter.getUserImageSettable(), url);
+                    mgr.setImage(menuAdapter.getBlurSettable(), url, new BlurBuilder());
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }

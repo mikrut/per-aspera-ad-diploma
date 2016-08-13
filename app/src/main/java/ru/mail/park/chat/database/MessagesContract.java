@@ -16,7 +16,8 @@ public abstract class MessagesContract {
                     MessagesEntry.COLUMN_NAME_UID + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_MESSAGE_BODY + " TEXT NOT NULL" + COMMA_SEP +
                     MessagesEntry.COLUMN_NAME_DATETIME + " TEXT" + COMMA_SEP +
-                    MessagesEntry.COLUMN_NAME_TITLE + " TEXT NOT NULL" +
+                    MessagesEntry.COLUMN_NAME_TITLE + " TEXT NOT NULL" + COMMA_SEP +
+                    MessagesEntry.COLUMN_NAME_IMAGE_URL + " TEXT" +
                     ")";
     static final String CREATE_FTS_TABLE = "" +
             "CREATE VIRTUAL TABLE fts_" + MessagesEntry.TABLE_NAME +
@@ -34,7 +35,8 @@ public abstract class MessagesContract {
             MessagesEntry.COLUMN_NAME_UID,
             MessagesEntry.COLUMN_NAME_MESSAGE_BODY,
             MessagesEntry.COLUMN_NAME_DATETIME,
-            MessagesEntry.COLUMN_NAME_TITLE
+            MessagesEntry.COLUMN_NAME_TITLE,
+            MessagesEntry.COLUMN_NAME_IMAGE_URL
     };
 
     public static final int PROJECTION_MID_INDEX = 0;
@@ -43,6 +45,7 @@ public abstract class MessagesContract {
     public static final int PROJECTION_MESSAGE_BODY_INDEX = 3;
     public static final int PROJECTION_DATETIME_INDEX = 4;
     public static final int PROJECTION_TITLE_INDEX = 5;
+    public static final int PROJECTION_IMAGE_URL_INDEX = 6;
 
     public static abstract class MessagesEntry implements BaseColumns {
         public static final String TABLE_NAME = "messages";
@@ -52,5 +55,6 @@ public abstract class MessagesContract {
         public static final String COLUMN_NAME_MESSAGE_BODY = "message_body";
         public static final String COLUMN_NAME_DATETIME = "datetime";
         public static final String COLUMN_NAME_TITLE = "title";
+        public static final String COLUMN_NAME_IMAGE_URL = "imageURL";
     }
 }

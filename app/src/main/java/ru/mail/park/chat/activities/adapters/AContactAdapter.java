@@ -91,11 +91,16 @@ public abstract class AContactAdapter
             });
         }
 
-        public void setContact(Contact contact, ImageDownloadManager imageManager, OnContactActionListener contactActionListener, Drawable contactActionDrawable) {
+        public void setContact(Contact contact, final ImageDownloadManager imageManager, OnContactActionListener contactActionListener, Drawable contactActionDrawable) {
             if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
                 try {
-                    URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
-                    imageManager.setImage(this, url, ImageDownloadManager.Size.SMALL);
+                    final URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
+                    contactImage.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageManager.setImage(ContactHolder.this, url);
+                        }
+                    });
                 } catch (MalformedURLException e) {
                     Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
                 }

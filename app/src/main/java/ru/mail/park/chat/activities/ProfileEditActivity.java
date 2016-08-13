@@ -244,7 +244,7 @@ public class ProfileEditActivity
         if (selectedFilePath == null) {
             try {
                 URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
-                mgr.setImage(currentAvatar, url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+                mgr.setImage(currentAvatar, url);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }

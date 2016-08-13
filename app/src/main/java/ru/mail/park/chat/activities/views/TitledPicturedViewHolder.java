@@ -1,10 +1,13 @@
 package ru.mail.park.chat.activities.views;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -70,5 +73,15 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements
         if (bitmapIsSet) {
             imageText.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public int getWidth() {
+        return image.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return image.getHeight();
     }
 }

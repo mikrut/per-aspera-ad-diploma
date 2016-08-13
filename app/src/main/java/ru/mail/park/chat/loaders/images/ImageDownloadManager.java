@@ -1,24 +1,18 @@
 package ru.mail.park.chat.loaders.images;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.annotation.Dimension;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Pair;
-import android.view.Display;
-import android.view.WindowManager;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.jakewharton.disklrucache.DiskLruCache;
@@ -31,7 +25,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -40,39 +33,6 @@ import java.util.concurrent.TimeUnit;
  * Created by Михаил on 22.05.2016.
  */
 public class ImageDownloadManager extends Service {
-    public enum Size {
-        SMALL,
-        HEADER_USER_PICTURE,
-        HEADER_BACKGROUND,
-        SCREEN_SIZE,
-        NORMAL;
-
-        public int toInteger(Context context) {
-            switch (this) {
-                case SMALL:
-                    return 50;
-                case HEADER_USER_PICTURE:
-                    return 70;
-                case HEADER_BACKGROUND:
-                    return 320;
-                case SCREEN_SIZE:
-                default:
-                    Pair<Integer, Integer> maxDimens = getMaxWidthHeight(context);
-                    float density = context.getResources().getDisplayMetrics().density;
-                    float maxDimension = Math.max(maxDimens.first, maxDimens.second) / density;
-                    return (int) maxDimension;
-            }
-        }
-    }
-
-    public static Pair<Integer, Integer> getMaxWidthHeight(Context context) {
-        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = manager.getDefaultDisplay();
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        return new Pair<>(metrics.heightPixels, metrics.widthPixels);
-    }
-
     private final IBinder mBinder = new ImageDownloadBinder();
 
     @Nullable
@@ -128,18 +88,18 @@ public class ImageDownloadManager extends Service {
         );
     }
 
-    private static String paramsToName(URL url, Size size) {
-        return (url.getFile().replace('/','_').replace('.','_') + "_" + size.toString()).toLowerCase();
+    private static String paramsToName(URL url, int width, int height, IImageFilter filter) {
+        return url.getFile().replace('/','_').replace('.','_') + "_w" + width + "_h" + height + (filter != null ? "_f" + filter.toString() : "");
     }
 
-    public void addBitmapToCache(URL url, Bitmap bitmap, Size size) {
-        addBitmapToMemCache(url, bitmap, size);
-        addBitmapToDiskCache(url, bitmap, size);
+    public void addBitmapToCache(URL url, Bitmap bitmap, int width, int height, IImageFilter filter) {
+        addBitmapToMemCache(url, bitmap, width, height, filter);
+        addBitmapToDiskCache(url, bitmap, width, height, filter);
     }
 
-    public void addBitmapToDiskCache(URL url, Bitmap bitmap, Size size) {
+    public void addBitmapToDiskCache(URL url, Bitmap bitmap, int width, int height, IImageFilter filter) {
         try {
-            String bitmapName = paramsToName(url, size);
+            String bitmapName = paramsToName(url, width, height, filter);
             synchronized (diskCacheLock) {
                 DiskLruCache.Editor editor = diskCache.edit(bitmapName);
                 if (editor != null) {
@@ -157,21 +117,21 @@ public class ImageDownloadManager extends Service {
         }
     }
 
-    public void addBitmapToMemCache(URL url, Bitmap bitmap, Size size) {
-        String bitmapName = paramsToName(url, size);
+    public void addBitmapToMemCache(URL url, Bitmap bitmap, int width, int height, IImageFilter filter) {
+        String bitmapName = paramsToName(url, width, height, filter);
         memoryCache.put(bitmapName, bitmap);
         Log.v(ImageDownloadManager.class.getSimpleName(), "Put in memory cache " + bitmapName);
     }
 
     @Nullable
-    Bitmap getBitmapFromMemoryCache(URL url, Size size) {
-        String bitmapName = paramsToName(url, size);
+    Bitmap getBitmapFromMemoryCache(URL url, int width, int height, IImageFilter filter) {
+        String bitmapName = paramsToName(url, width, height, filter);
         return memoryCache.get(bitmapName);
     }
 
     @Nullable
-    Bitmap getBitmapFromDiskCache(URL url, Size size) {
-        String bitmapName = paramsToName(url, size);
+    Bitmap getBitmapFromDiskCache(URL url, int width, int height, IImageFilter filter) {
+        String bitmapName = paramsToName(url, width, height, filter);
         try {
             DiskLruCache.Snapshot snapshot = diskCache.get(bitmapName);
             if (snapshot != null) {
@@ -189,31 +149,52 @@ public class ImageDownloadManager extends Service {
         return null;
     }
 
-    public void setImage(@NonNull final ImageView imageView, @NonNull URL path,
-                         @NonNull Size size) {
-        IImageSettable imageWrapperAdapter = new IImageSettable() {
+    public void setImage(@NonNull final ImageView imageView, @NonNull URL path) {
+        setImage(imageView, path, null);
+    }
+
+    public void setImage(@NonNull IImageSettable imageView, @NonNull URL path) {
+        setImage(imageView, path, null);
+    }
+
+    public void setImage(@NonNull final ImageView imageView, final @NonNull URL path, final @Nullable IImageFilter filter) {
+        final IImageSettable imageWrapperAdapter = new IImageSettable() {
             @Override
             public void setImage(Bitmap image) {
                 imageView.setImageBitmap(image);
             }
+
+            @Override
+            public int getWidth() {
+                return imageView.getWidth();
+            }
+
+            @Override
+            public int getHeight() {
+                return imageView.getHeight();
+            }
         };
-        setImage(imageWrapperAdapter, path, size);
+        imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                setImage(imageWrapperAdapter, path, filter);
+            }
+        });
     }
 
-    public void setImage(@NonNull IImageSettable imageView, @NonNull URL path,
-                         @NonNull Size size) {
+    public void setImage(@NonNull IImageSettable imageView, @NonNull URL path, @Nullable IImageFilter filter) {
         Log.v(ImageDownloadManager.class.getSimpleName(), ".setImage()");
-        if (cancleGetImage(imageView, path, size)) {
-            ImageFetchTask task = new ImageFetchTask(imageView, size, this, path);
+        if (cancelGetImage(imageView, path)) {
+            ImageFetchTask task = new ImageFetchTask(imageView, this, path, filter);
             tasks.put(imageView, task);
             task.executeOnExecutor(downloadThreadPool);
         }
     }
 
-    private boolean cancleGetImage(@NonNull IImageSettable imageView, @NonNull URL path, @NonNull Size size) {
+    public boolean cancelGetImage(@NonNull IImageSettable imageView, @NonNull URL path) {
         ImageFetchTask task = tasks.get(imageView);
         if (task != null) {
-            if (task.getUrl().equals(path) && task.getSize().equals(size)) {
+            if (task.getUrl().equals(path)) {
                 return false;
             } else {
                 task.cancel(false);

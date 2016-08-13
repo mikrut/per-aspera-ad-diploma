@@ -7,14 +7,16 @@ import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 
+import ru.mail.park.chat.loaders.images.IImageFilter;
+
 /**
  * Created by 1запуск BeCompact on 03.05.2016.
  */
-public class BlurBuilder {
+public class BlurBuilder implements IImageFilter {
     private static final float BITMAP_SCALE = 0.1f;
     private static final float BLUR_RADIUS = 15f;
 
-    public static Bitmap blur(Context context, Bitmap image) {
+    public Bitmap filter(Context context, Bitmap image) {
         int width = Math.round(image.getWidth() * BITMAP_SCALE);
         int height = Math.round(image.getHeight() * BITMAP_SCALE);
 
@@ -31,5 +33,10 @@ public class BlurBuilder {
         tmpOut.copyTo(outputBitmap);
 
         return outputBitmap;
+    }
+
+    @Override
+    public String toString() {
+        return "blur";
     }
 }

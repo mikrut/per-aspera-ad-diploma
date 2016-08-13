@@ -103,13 +103,18 @@ public class DialogActionBar
         dialogImageView.setImageBitmap(image);
     }
 
-    public void setChatData(@NonNull Chat chat, @Nullable ImageDownloadManager imageDownloadManager) {
+    public void setChatData(@NonNull Chat chat, @Nullable final ImageDownloadManager imageDownloadManager) {
         setTitle(chat.getName());
 
-        URL imageURL = chat.getImagePath();
+        final URL imageURL = chat.getImagePath();
         if (oldUrl == null || (imageURL != null && !oldUrl.equals(imageURL))) {
             if (imageDownloadManager != null && imageURL != null) {
-                imageDownloadManager.setImage(this, imageURL, ImageDownloadManager.Size.SMALL);
+                dialogImageView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageDownloadManager.setImage(DialogActionBar.this, imageURL);
+                    }
+                });
                 imageTitle.setVisibility(View.GONE);
                 oldUrl = imageURL;
             }
@@ -132,15 +137,20 @@ public class DialogActionBar
         }
     }
 
-    public void setUserData(@NonNull Contact user, @Nullable ImageDownloadManager imageDownloadManager) {
+    public void setUserData(@NonNull Contact user, @Nullable final ImageDownloadManager imageDownloadManager) {
         setTitle(user.getContactTitle());
 
         String userImg = user.getImg();
         if (userImg != null) {
             try {
-                URL imageURL = new URL(ApiSection.SERVER_URL + user.getImg());
+                final URL imageURL = new URL(ApiSection.SERVER_URL + user.getImg());
                 if ((oldUrl == null || !oldUrl.equals(imageURL)) && imageDownloadManager != null) {
-                    imageDownloadManager.setImage(this, imageURL, ImageDownloadManager.Size.SMALL);
+                    dialogImageView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageDownloadManager.setImage(DialogActionBar.this, imageURL);
+                        }
+                    });
                     imageTitle.setVisibility(View.GONE);
                     oldUrl = imageURL;
                 }

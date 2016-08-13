@@ -189,7 +189,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         if (contact != null) {
             try {
                 URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
-                mgr.setImage(userPicture, url, ImageDownloadManager.Size.SCREEN_SIZE);
+                mgr.setImage(userPicture, url);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -299,7 +299,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         ImageDownloadManager manager = getImageDownloadManager();
         if (manager != null) {
             try {
-                manager.setImage(userPicture, new URL(ApiSection.SERVER_URL + user.getImg()), ImageDownloadManager.Size.SCREEN_SIZE);
+                manager.setImage(userPicture, new URL(ApiSection.SERVER_URL + user.getImg()));
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }

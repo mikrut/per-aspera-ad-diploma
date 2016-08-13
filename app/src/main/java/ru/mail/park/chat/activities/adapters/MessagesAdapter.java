@@ -77,8 +77,13 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             String imageURL = message.getImageURL();
             if (imageURL != null && !imageURL.equals("false") && imageDownloadManager != null) {
                 try {
-                    URL url = new URL(ApiSection.SERVER_URL + imageURL);
-                    imageDownloadManager.setImage(this, url, ImageDownloadManager.Size.SMALL);
+                    final URL url = new URL(ApiSection.SERVER_URL + imageURL);
+                    image.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageDownloadManager.setImage(ViewHolder.this, url);
+                        }
+                    });
                 } catch (MalformedURLException e) {
                     Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
                 }

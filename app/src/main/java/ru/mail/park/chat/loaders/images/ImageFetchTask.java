@@ -18,6 +18,8 @@ import android.util.Pair;
 import android.util.TypedValue;
 import android.widget.ImageView;
 
+import com.google.android.gms.common.api.Api;
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
@@ -40,74 +42,60 @@ import ru.mail.park.chat.models.OwnerProfile;
 /**
  * Created by Михаил on 22.05.2016.
  */
-public class ImageFetchTask extends AsyncTask<Void, Bitmap, Void> {
+public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
     private static final String TAG = ImageFetchTask.class.getSimpleName();
 
     private IImageSettable imageView;
     private URL url;
-    private ImageDownloadManager.Size size;
     private ImageDownloadManager manager;
+    @Nullable
+    private IImageFilter filter;
+    private int width;
+    private int height;
 
-    public ImageFetchTask(IImageSettable imageView, ImageDownloadManager.Size size,
-                          ImageDownloadManager manager, URL url) {
+    public ImageFetchTask(@NonNull IImageSettable imageView, @NonNull ImageDownloadManager manager, URL url, @Nullable IImageFilter filter) {
         this.imageView = imageView;
         this.url = url;
-        this.size = size;
         this.manager = manager;
+        this.filter = filter;
+
+        width = imageView.getWidth();
+        height = imageView.getHeight();
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Bitmap doInBackground(Void... params) {
         try {
             Log.v(TAG, "Fetching an image " + url.toString());
 
             Bitmap bm;
-            bm = manager.getBitmapFromMemoryCache(url, size);
+            bm = manager.getBitmapFromMemoryCache(url, width, height, filter);
             if (bm == null) {
-                bm = manager.getBitmapFromDiskCache(url, size);
+                bm = manager.getBitmapFromDiskCache(url, width, height, filter);
                 if (bm != null) {
                     Log.v(TAG, "Fetching an image from disk");
-                    manager.addBitmapToMemCache(url, bm, size);
+                    manager.addBitmapToMemCache(url, bm, width, height, filter);
                 }
             } else {
                 Log.v(TAG, "Fetching an image from cache");
             }
 
             if (bm != null) {
-                publishProgress(bm);
-                return null;
+                return bm;
             } else {
                 Log.v(TAG, "Fetching an image from web");
                 try {
-                    bm = downloadBitmap(manager, url);
+                    bm = downloadBitmap(manager, url, width, height);
 
-                    Bitmap returnedBitmap = null;
                     if (bm != null) {
-                        final ImageDownloadManager.Size[] sizes = ImageDownloadManager.Size.values();
-
-                        for (ImageDownloadManager.Size iterationSize : sizes) {
-                            Integer resize = iterationSize.toInteger(manager);
-
-                            Resources r = manager.getResources();
-                            float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, resize, r.getDisplayMetrics());
-                            Bitmap scaled = scaleDown(bm, px);
-                            if (iterationSize == ImageDownloadManager.Size.HEADER_BACKGROUND) {
-                                scaled = BlurBuilder.blur(manager, scaled);
-                            }
-
-                            manager.addBitmapToDiskCache(url, scaled, iterationSize);
-                            if (iterationSize == size) {
-                                returnedBitmap = scaled;
-                                manager.addBitmapToMemCache(url, scaled, iterationSize);
-                            } else {
-                                scaled.recycle();
-                            }
+                        if (filter != null) {
+                            bm = filter.filter(manager, bm);
                         }
-
-                        bm.recycle();
+                        manager.addBitmapToDiskCache(url, bm, width, height, filter);
+                        manager.addBitmapToMemCache(url, bm, width, height, filter);
                     }
-                    publishProgress(returnedBitmap);
-                    return null;
+
+                    return bm;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -119,36 +107,17 @@ public class ImageFetchTask extends AsyncTask<Void, Bitmap, Void> {
         return null;
     }
 
-    public static Bitmap runConversions(@NonNull ImageDownloadManager manager, @NonNull URL url,
-                                        @Nullable ImageDownloadManager.Size size, @NonNull Bitmap bm) {
-        final ImageDownloadManager.Size[] sizes = ImageDownloadManager.Size.values();
-        Bitmap returnedBitmap = null;
-
-        for (ImageDownloadManager.Size iterationSize : sizes) {
-            Integer resize = iterationSize.toInteger(manager);
-
-            Resources r = manager.getResources();
-            float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, resize, r.getDisplayMetrics());
-            Bitmap scaled = scaleDown(bm, px);
-            if (iterationSize == ImageDownloadManager.Size.HEADER_BACKGROUND) {
-                scaled = BlurBuilder.blur(manager, scaled);
-            }
-
-            manager.addBitmapToDiskCache(url, scaled, iterationSize);
-            if (iterationSize == size) {
-                returnedBitmap = scaled;
-                manager.addBitmapToMemCache(url, scaled, iterationSize);
-            } else {
-                scaled.recycle();
-            }
-        }
-
-        return returnedBitmap;
-    }
-
     @Nullable
-    private static Bitmap downloadBitmap(Context context, URL url) throws IOException {
-        final ServerConnection connection = new ServerConnection(context, url.toString());
+    private static Bitmap downloadBitmap(Context context, URL url, int width, int height) throws IOException {
+        final ServerConnection connection = new ServerConnection(context, ApiSection.SERVER_URL + "/file/image");
+
+        final List<Pair<String, Object>> paramters = new ArrayList<>();
+        paramters.add(new Pair<String, Object>("path", url.getPath()));
+        paramters.add(new Pair<String, Object>("width", width));
+        paramters.add(new Pair<String, Object>("height", height));
+        paramters.add(new Pair<String, Object>(ApiSection.AUTH_TOKEN_PARAMETER_NAME, (new OwnerProfile(context).getAuthToken())));
+        connection.setParameters(paramters);
+
         connection.setRequestMethod("GET");
         final HttpURLConnection httpURLConnection = connection.getConnection();
 
@@ -178,29 +147,26 @@ public class ImageFetchTask extends AsyncTask<Void, Bitmap, Void> {
         return null;
     }
 
-    private static long getBitmapSize(@NonNull Bitmap bitmap) {
-        long size;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            size = bitmap.getAllocationByteCount();
-        } else {
-            size = bitmap.getByteCount();
+    private static long getBitmapSize(@Nullable Bitmap bitmap) {
+        if (bitmap != null) {
+            long size;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                size = bitmap.getAllocationByteCount();
+            } else {
+                size = bitmap.getByteCount();
+            }
+            return size;
         }
-        return size;
+        return 0;
     }
 
     @Override
-    protected void onProgressUpdate(Bitmap... values) {
-        super.onProgressUpdate(values);
-        Bitmap bitmap = values[0];
+    protected void onPostExecute(Bitmap bitmap) {
+        manager.remove(imageView);
         if (bitmap != null) {
             Log.v(TAG, "Setting image with " + AttachedFile.humanReadableByteCount(getBitmapSize(bitmap)) + " size");
             imageView.setImage(bitmap);
         }
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        manager.remove(imageView);
     }
 
     private static Bitmap scaleDown(Bitmap realImage, float maxImageSizePx) {
@@ -215,10 +181,6 @@ public class ImageFetchTask extends AsyncTask<Void, Bitmap, Void> {
 
     public URL getUrl() {
         return url;
-    }
-
-    public ImageDownloadManager.Size getSize() {
-        return size;
     }
 
     private static Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth)

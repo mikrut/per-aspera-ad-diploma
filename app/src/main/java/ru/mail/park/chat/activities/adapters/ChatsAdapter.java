@@ -90,9 +90,14 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
             chatName.setText(title);
         }
 
-        public void initView(Chat chat) {
+        public void initView(final Chat chat) {
             if (chat.getImagePath() != null && downloadManager != null) {
-                downloadManager.setImage(this, chat.getImagePath(), ImageDownloadManager.Size.SMALL);
+                image.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        downloadManager.setImage(ViewHolder.this, chat.getImagePath());
+                    }
+                });
             } else {
                 setImage(null);
             }

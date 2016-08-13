@@ -140,6 +140,7 @@ public class Message implements Comparable<Message>, Serializable {
         cid = message.getString(MessagesContract.PROJECTION_CID_INDEX);
         uid = message.getString(MessagesContract.PROJECTION_UID_INDEX);
         title = message.getString(MessagesContract.PROJECTION_TITLE_INDEX);
+        imageURL = message.getString(MessagesContract.PROJECTION_IMAGE_URL_INDEX);
 
         mid = message.getString(MessagesContract.PROJECTION_MID_INDEX);
         String dateString = message.getString(MessagesContract.PROJECTION_DATETIME_INDEX);
@@ -216,6 +217,7 @@ public class Message implements Comparable<Message>, Serializable {
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_CID, getCid());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_MESSAGE_BODY, getMessageBody());
             contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_TITLE, getTitle());
+            contentValues.put(MessagesContract.MessagesEntry.COLUMN_NAME_IMAGE_URL, getImageURL());
 
             String isoDate = null;
             if (getDate() != null) {

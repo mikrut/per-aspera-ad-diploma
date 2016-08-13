@@ -465,8 +465,8 @@ public class DialogActivity
         args.putString(MessagesLoader.CID_ARG, chatID);
         args.putString(ChatInfoLoader.CID_ARG, chatID);
         args.putString(MessagesLoader.UID_ARG, userID);
-        getLoaderManager().initLoader(MESSAGES_DB_LOADER, args, messagesLoaderListener);
-        getLoaderManager().initLoader(CHAT_DB_LOADER, args, chatLoaderListener);
+        getLoaderManager().restartLoader(MESSAGES_DB_LOADER, args, messagesLoaderListener).forceLoad();
+        getLoaderManager().restartLoader(CHAT_DB_LOADER, args, chatLoaderListener).forceLoad();
     }
 
     private void sendMessage() {
@@ -775,9 +775,9 @@ public class DialogActivity
         @Override
         public Loader<Chat> onCreateLoader(int id, Bundle args) {
             switch (id) {
-                case MESSAGES_WEB_LOADER:
+                case CHAT_WEB_LOADER:
                     return new ChatInfoWebLoader(DialogActivity.this, args);
-                case MESSAGES_DB_LOADER:
+                case CHAT_DB_LOADER:
                 default:
                     return new ChatInfoLoader(DialogActivity.this, args);
             }

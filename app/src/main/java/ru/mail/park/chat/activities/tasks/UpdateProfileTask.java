@@ -40,7 +40,6 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
     @Override
     protected Boolean doInBackground(OwnerProfile... params) {
         OwnerProfile profile = params[0];
-        String newImgPath = profile.getImg();
 
         publishProgress("Sending data to server");
         Users usersAPI = new Users(alertDialog.getContext());
@@ -54,24 +53,6 @@ public class UpdateProfileTask extends AsyncTask<OwnerProfile, String, Boolean> 
                 if (thisUser != null) {
                     profile = new OwnerProfile(thisUser, alertDialog.getContext());
                     profile.saveToPreferences(alertDialog.getContext());
-
-                    if (imageDownloadManager != null && newImgPath != null) {
-                        publishProgress("Updating image");
-
-                        try {
-                            URL imageURL = new URL(ApiSection.SERVER_URL + profile.getImg());
-
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            File file = new File(newImgPath);
-                            FileInputStream inputStream = new FileInputStream(file);
-                            options.inPreferredConfig = Bitmap.Config.RGB_565;
-                            Bitmap bm = BitmapFactory.decodeStream(inputStream, null, options);
-
-                            ImageFetchTask.runConversions(imageDownloadManager, imageURL, ImageDownloadManager.Size.SCREEN_SIZE, bm);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }
 

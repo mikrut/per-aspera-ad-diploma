@@ -7,4 +7,6 @@ import android.graphics.Bitmap;
  */
 public interface IImageSettable {
     void setImage(Bitmap image);
+    int getWidth();
+    int getHeight();
 }
