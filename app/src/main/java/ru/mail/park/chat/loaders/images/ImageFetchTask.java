@@ -59,8 +59,8 @@ public class ImageFetchTask extends AsyncTask<Void, Void, Bitmap> {
         this.manager = manager;
         this.filter = filter;
 
-        width = imageView.getWidth();
-        height = imageView.getHeight();
+        width = imageView.getImageWidth();
+        height = imageView.getImageHeight();
     }
 
     @Override
