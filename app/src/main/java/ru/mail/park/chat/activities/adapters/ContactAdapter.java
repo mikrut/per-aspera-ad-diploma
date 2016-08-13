@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +34,7 @@ import ru.mail.park.chat.models.Contact;
 public class ContactAdapter extends AContactAdapter {
     private TreeSet<Contact> choosenContacts;
 
-    private final Map<Character, List<Contact>> contactGroups;
+    private final SparseArray<List<Contact>> contactGroups;
     private List<Contact> contacts;
     private ContactHolder.OnContactClickListener contactClickListener;
     private int itemCount;
@@ -47,18 +49,18 @@ public class ContactAdapter extends AContactAdapter {
 
     public ContactAdapter(@NonNull List<Contact> contactList) {
         contacts = contactList;
-        contactGroups = new TreeMap<>();
+        contactGroups = new SparseArray();
         Collections.sort(contactList);
         itemCount = contactList.size();
 
         if (contactList.size() > 0) {
-            Character lastChar = contactList.get(0).getContactTitle().charAt(0);
+            char lastChar = Character.toUpperCase(contactList.get(0).getContactTitle().charAt(0));
             List<Contact> currentGroup = new LinkedList<>();
             contactGroups.put(lastChar, currentGroup);
 
             for (Contact contact : contactList) {
-                Character currentChar = contact.getContactTitle().charAt(0);
-                if (!lastChar.equals(currentChar)) {
+                char currentChar = Character.toUpperCase(contact.getContactTitle().charAt(0));
+                if (lastChar != currentChar) {
                     lastChar = currentChar;
                     currentGroup = new LinkedList<>();
                     contactGroups.put(lastChar, currentGroup);
@@ -114,19 +116,17 @@ public class ContactAdapter extends AContactAdapter {
 
     private Pair<Character, Integer> getKeyForPosition(int position) {
         int currentPosition = 0;
-
-        Set<Character> keys = contactGroups.keySet();
-        Iterator<Character> iKey;
         char key = '\0';
-        iKey = keys.iterator();
-        while (iKey.hasNext()) {
-            key = iKey.next();
+
+        for (int i = 0; i < contactGroups.size(); i++) {
+            key = (char) contactGroups.keyAt(i);
             if (currentPosition + contactGroups.get(key).size() >= position) {
                 break;
             } else {
                 currentPosition += contactGroups.get(key).size() + 1;
             }
         }
+
         return new Pair<>(key, currentPosition);
     }
 
@@ -150,7 +150,8 @@ public class ContactAdapter extends AContactAdapter {
     public int getItemViewType(int position) {
         int currentPosition = 0;
 
-        for(Character key : contactGroups.keySet()) {
+        for (int i = 0; i < contactGroups.size(); i++) {
+            char key = (char) contactGroups.keyAt(i);
             if (currentPosition == position) {
                 return LETTER;
             } else if (currentPosition + contactGroups.get(key).size() >= position) {
@@ -159,6 +160,7 @@ public class ContactAdapter extends AContactAdapter {
                 currentPosition += contactGroups.get(key).size() + 1;
             }
         }
+
         return LETTER;
     }
 

@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.spongycastle.crypto.engines.GOST28147Engine;
+
 import java.util.TreeSet;
 
 import ru.mail.park.chat.R;
@@ -19,6 +21,7 @@ import ru.mail.park.chat.models.Contact;
  */
 public class ContactsCurrentFragment extends ContactsFragment {
     private LinearLayout findFriends;
+    private boolean shouldHide = false;
 
     @Override
     protected View inflateView(LayoutInflater inflater, ViewGroup container) {
@@ -30,6 +33,13 @@ public class ContactsCurrentFragment extends ContactsFragment {
         super.onViewCreated(view, savedInstanceState);
         findFriends = (LinearLayout) view.findViewById(R.id.findFriends);
         findFriends.setOnClickListener(findFriendsListener);
+        findFriends.setVisibility(shouldHide ? View.GONE : View.VISIBLE);
+    }
+
+    public void hideFindFriends(boolean shouldHide) {
+        this.shouldHide = shouldHide;
+        if (findFriends != null)
+            findFriends.setVisibility(shouldHide ? View.GONE: View.VISIBLE);
     }
 
     private final View.OnClickListener findFriendsListener = new View.OnClickListener() {

@@ -212,6 +212,7 @@ public class GroupDialogEditActivity
             case R.id.action_edit_name:
                 final EditTextDialogBuilder builder = new EditTextDialogBuilder(this);
                 AlertDialog dialog = builder
+                .setText(chat.getName())
                 .setTitle("Edit name")
                 .setMessage("Input name")
                 .setIcon(R.drawable.ic_edit_black_24dp)

@@ -55,7 +55,6 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int GET_FROM_GALLERY = 3;
-    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
     private String selectedFilePath;
     private Uri mImageUri;
 
@@ -144,34 +143,28 @@ public class RegisterActivity extends AppCompatActivity implements IRegisterCall
             Log.d("[TP-diploma]", "RegisterActivity onActivityResult");
 
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
-                if(resultCode == Activity.RESULT_OK) {
-                    Log.d("[TP-diploma]", "sending file started");
-                    try {
-                        selectedFilePath = mImageUri.getPath();
-                        Toast.makeText(RegisterActivity.this, "camera shot: "+selectedFilePath, Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                Log.d("[TP-diploma]", "sending file started");
+                try {
+                    selectedFilePath = mImageUri.getPath();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             } else if(requestCode == GET_FROM_GALLERY) {
-                if(resultCode == Activity.RESULT_OK) {
-                    try {
-                        Uri selectedImage = data.getData();
-                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                try {
+                    Uri selectedImage = data.getData();
+                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-                        Cursor cursor = getContentResolver().query(
-                                selectedImage, filePathColumn, null, null, null);
-                        cursor.moveToFirst();
+                    Cursor cursor = getContentResolver().query(
+                            selectedImage, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
 
-                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                        filePath = cursor.getString(columnIndex);
-                        cursor.close();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    filePath = cursor.getString(columnIndex);
+                    cursor.close();
 
-                        selectedFilePath = filePath;
-                        Toast.makeText(RegisterActivity.this, "from gallery: "+selectedFilePath, Toast.LENGTH_SHORT).show();
-                    } catch(Exception e) {
-                        Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
-                    }
+                    selectedFilePath = filePath;
+                } catch(Exception e) {
+                    Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
                 }
             }
 

@@ -16,9 +16,19 @@ import ru.mail.park.chat.api.rest.Contacts;
 public class AddContactTask extends AsyncTask<String, Void, Boolean> {
     private final Context context;
     private String uid;
+    private IAddContactListener listener;
+
+    public interface IAddContactListener {
+        void OnAddContact(String uid);
+        void OnAddContactFailed(String uid);
+    }
 
     public AddContactTask(Context context) {
         this.context = context;
+    }
+
+    public void setListener(IAddContactListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -36,11 +46,21 @@ public class AddContactTask extends AsyncTask<String, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean aBoolean) {
         if (aBoolean) {
+            Toast.makeText(context, "Contact added. Wait for his ACK", Toast.LENGTH_SHORT).show();
+
             Intent intent = new Intent(context, ProfileViewActivity.class);
             intent.putExtra(ProfileViewActivity.UID_EXTRA, uid);
             context.startActivity(intent);
+
+            if (listener != null) {
+                listener.OnAddContact(uid);
+            }
         } else {
             Toast.makeText(context, "Failed to add contact", Toast.LENGTH_SHORT).show();
+
+            if (listener != null) {
+                listener.OnAddContactFailed(uid);
+            }
         }
     }
 }

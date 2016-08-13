@@ -182,7 +182,7 @@ public class Chat implements Serializable {
         return name;
     }
 
-    private void setName(@NonNull String name) {
+    public void setName(@NonNull String name) {
         this.name = name;
     }
 
@@ -201,6 +201,10 @@ public class Chat implements Serializable {
 
     public int getMembersCount() {
         return membersCount;
+    }
+
+    public void setMembersCount(int membersCount) {
+        this.membersCount = membersCount;
     }
 
     @Nullable

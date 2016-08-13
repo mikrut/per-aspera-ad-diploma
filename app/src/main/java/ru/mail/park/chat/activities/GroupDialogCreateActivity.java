@@ -25,6 +25,7 @@ import ru.mail.park.chat.api.websocket.DispatcherOfGroupCreate;
 import ru.mail.park.chat.api.websocket.Messages;
 import ru.mail.park.chat.api.websocket.IGroupCreateListener;
 import ru.mail.park.chat.api.websocket.NotificationService;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
@@ -136,9 +137,15 @@ public class GroupDialogCreateActivity
                     if (contactsFragment != null && contactsFragment.isVisible() && uids.size() > 0) {
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         ContactsSimpleListFragment contactsSimpleListFragment = new ContactsSimpleListFragment();
+
+                        ImageDownloadManager manager = getImageDownloadManager();
+                        if (manager != null)
+                            contactsSimpleListFragment.onImageDownloadManagerAvailable(manager);
+
                         Bundle args = new Bundle();
                         args.putSerializable(ContactsFragment.PICKED_CONTACTS, contactsFragment.getChosenContacts());
                         contactsSimpleListFragment.setArguments(args);
+
                         fragmentTransaction.replace(R.id.contacts_fragment_container, contactsSimpleListFragment, SIMPLE_TAG);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);

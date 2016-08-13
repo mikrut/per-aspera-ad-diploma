@@ -9,7 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.List;
 
+import ru.mail.park.chat.database.ChatsHelper;
 import ru.mail.park.chat.models.Chat;
 import ru.mail.park.chat.models.Contact;
 
@@ -50,13 +52,24 @@ public class DispatcherOfGroupEdit implements IDispatcher {
         JSONObject user = data.getJSONObject("userNew");
         String cid = data.getString("idRoom");
 
-        if (groupEditListener != null) {
-            try {
-                Contact contact = new Contact(user, getContext());
-                groupEditListener.onAddUser(cid, contact);
-            } catch (ParseException e) {
-                e.printStackTrace();
+        try {
+            Contact contact = new Contact(user, getContext());
+
+            ChatsHelper helper = new ChatsHelper(getContext());
+            Chat chat = helper.getChat(cid);
+            if (chat != null) {
+                List<Contact> users = chat.getChatUsers();
+                users.add(contact);
+                chat.setMembersCount(users.size());
+                helper.saveChat(chat);
             }
+            helper.close();
+
+            if (groupEditListener != null) {
+                    groupEditListener.onAddUser(cid, contact);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 
@@ -65,6 +78,14 @@ public class DispatcherOfGroupEdit implements IDispatcher {
 
         String cid = data.getString("idRoom");
         String name = data.getString("name");
+
+        ChatsHelper helper = new ChatsHelper(getContext());
+        Chat chat = helper.getChat(cid);
+        if (chat != null) {
+            chat.setName(name);
+            helper.saveChat(chat);
+        }
+        helper.close();
 
         if (groupEditListener != null) {
             groupEditListener.onUpdateName(cid, name);

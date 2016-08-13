@@ -21,6 +21,11 @@ public class EditTextDialogBuilder extends AlertDialog.Builder {
         setView(input);
     }
 
+    public EditTextDialogBuilder setText(CharSequence text) {
+        input.setText(text);
+        return this;
+    }
+
     public EditText getInput() {
         return input;
     }

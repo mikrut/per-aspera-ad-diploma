@@ -42,7 +42,7 @@ import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
-        implements DeleteContactTask.DeleteContactCallbacks {
+        implements DeleteContactTask.DeleteContactCallbacks, AddContactTask.IAddContactListener {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
@@ -137,6 +137,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
                 if (addTask != null)
                     addTask.cancel(true);
                 addTask = new AddContactTask(ProfileViewActivity.this);
+                addTask.setListener(ProfileViewActivity.this);
                 addTask.execute(uid);
             }
         });
@@ -271,6 +272,16 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         }
     }
 
+    @Override
+    public void OnAddContact(String uid) {
+        finish();
+    }
+
+    @Override
+    public void OnAddContactFailed(String uid) {
+
+    }
+
     private void setUserData(Contact user, Contact.Relation relation) {
         contact = user;
 
@@ -278,7 +289,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         userLogin.setText(user.getFirstName()); //userLogin is firstName
         userLastName.setText(user.getLastName());
 
-        if (user.getEmail() != null) {
+        if (user.getEmail() != null && !user.getEmail().equals("")) {
             userEmail.setText(user.getEmail());
             userEmail.setVisibility(View.VISIBLE);
         } else {
@@ -296,7 +307,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
 
         Calendar lastSeen = user.getLastSeen();
 
-        if(user.getAbout() != null) {
+        if(user.getAbout() != null && !user.getAbout().equals("")) {
             aboutUser.setText(user.getAbout());
             aboutUser.setVisibility(View.VISIBLE);
         } else {
@@ -312,7 +323,7 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
                 onlineIndicator.setText("offline");
         }
 
-        if (user.getPhone() != null) {
+        if (user.getPhone() != null && !user.getPhone().equals("")) {
             userPhone.setText(user.getPhone());
             userPhone.setVisibility(View.VISIBLE);
         } else {

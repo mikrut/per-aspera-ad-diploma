@@ -1,5 +1,6 @@
 package ru.mail.park.chat.activities.adapters;
 
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
+import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Contact;
 
 /**
@@ -34,6 +36,12 @@ public class ContactSearchAdapter extends AContactAdapter {
                     new AddContactTask(itemView.getContext()).execute(uid);
                 }
             });
+        }
+
+        @Override
+        public void setContact(Contact contact, ImageDownloadManager imageManager, OnContactActionListener contactActionListener, Drawable contactActionDrawable) {
+            super.setContact(contact, imageManager, contactActionListener, contactActionDrawable);
+            setContactLastSeen(contact.getLogin());
         }
 
         public void setAddible(boolean addible) {

@@ -52,35 +52,7 @@ public abstract class AContactAdapter
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ContactHolder contactHolder = (ContactHolder) holder;
         Contact contact = getContactForPosition(position);
-
-        if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
-            try {
-                URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
-                imageManager.setImage(contactHolder, url, ImageDownloadManager.Size.SMALL);
-            } catch (MalformedURLException e) {
-                Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
-            }
-        } else {
-            contactHolder.setImage(null);
-        }
-
-        contactHolder.setTitle(contact.getContactTitle());
-        contactHolder.setUid(contact.getUid());
-
-        Calendar lastSeen = contact.getLastSeen();
-        if (lastSeen != null) {
-            Log.d("[TP-diploma]", "got lastSeen field");
-            contactHolder.setContactLastSeen(ProfileViewActivity.formatLastSeenTime(lastSeen));
-        } else {
-            Log.d("[TP-diploma]", "dont have lastSeen");
-            contactHolder.setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
-        }
-
-        contactHolder.setContact(contact);
-
-        if (contactActionListener != null && contactActionDrawable != null) {
-            contactHolder.setContactAction(contactActionDrawable, contactActionListener);
-        }
+        contactHolder.setContact(contact, imageManager, contactActionListener, contactActionDrawable);
     }
 
     protected abstract Contact getContactForPosition(int position);
@@ -119,6 +91,37 @@ public abstract class AContactAdapter
             });
         }
 
+        public void setContact(Contact contact, ImageDownloadManager imageManager, OnContactActionListener contactActionListener, Drawable contactActionDrawable) {
+            if (contact.getImg() != null && !contact.getImg().equals("false") && imageManager != null) {
+                try {
+                    URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
+                    imageManager.setImage(this, url, ImageDownloadManager.Size.SMALL);
+                } catch (MalformedURLException e) {
+                    Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
+                }
+            } else {
+                setImage(null);
+            }
+
+            setTitle(contact.getContactTitle());
+            this.uid = contact.getUid();
+
+            Calendar lastSeen = contact.getLastSeen();
+            if (lastSeen != null) {
+                Log.d("[TP-diploma]", "got lastSeen field");
+                setContactLastSeen(ProfileViewActivity.formatLastSeenTime(lastSeen));
+            } else {
+                Log.d("[TP-diploma]", "dont have lastSeen");
+                setContactLastSeen(contact.isOnline() ? "Online" : "Offline");
+            }
+
+            this.contact = contact;
+
+            if (contactActionListener != null && contactActionDrawable != null) {
+                setContactAction(contactActionDrawable, contactActionListener);
+            }
+        }
+
         public interface OnContactActionListener {
             void onContactAction(Contact contact);
         }
@@ -143,12 +146,6 @@ public abstract class AContactAdapter
             }
         }
 
-        public void setActionDrawable(Drawable icon) {
-            if (contactAction != null) {
-                contactAction.setImageDrawable(icon);
-            }
-        }
-
         public void setActionEnabled(boolean enabled) {
             contactAction.setVisibility(enabled ? View.VISIBLE : View.GONE);
         }
@@ -165,10 +162,6 @@ public abstract class AContactAdapter
                             chosen ? R.anim.done_appearence : R.anim.done_disappearence);
                 choosenImage.startAnimation(chosenAnimation);
             }
-        }
-
-        public void setContact(Contact contact) {
-            this.contact = contact;
         }
 
         public Contact getContact() {

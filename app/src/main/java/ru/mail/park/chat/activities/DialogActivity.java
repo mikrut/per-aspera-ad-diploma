@@ -69,6 +69,7 @@ import ru.mail.park.chat.api.websocket.Messages;
 import ru.mail.park.chat.api.websocket.IWSStatusListener;
 import ru.mail.park.chat.api.websocket.NotificationService;
 import ru.mail.park.chat.database.ChatsHelper;
+import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.file_dialog.FileDialog;
 import ru.mail.park.chat.helpers.DialogEndlessPagination;
 import ru.mail.park.chat.helpers.ScrollEndlessPagination;
@@ -96,7 +97,6 @@ public class DialogActivity
     public static final String CHAT_ID = DialogActivity.class.getCanonicalName() + ".CHAT_ID";
     private static final int REQUEST_WRITE_STORAGE = 112;
     private static final int CODE_FILE_SELECTED = 3;
-    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
     private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/file/upload";
     public static final String USER_ID = DialogActivity.class.getCanonicalName() + ".USER_ID";
 
@@ -167,6 +167,13 @@ public class DialogActivity
         if (chatID != null) {
             Log.d("[TP-diploma]", "calling onUpdateChatID");
             onUpdateChatID();
+        } else if (userID != null) {
+            ContactsHelper helper = new ContactsHelper(this);
+            Contact contact = helper.getContact(userID);
+            helper.close();
+            if (contact != null) {
+                dialogActionBar.setUserData(contact, getImageDownloadManager());
+            }
         }
 
         boolean hasPermission = (ContextCompat.checkSelfPermission(this,

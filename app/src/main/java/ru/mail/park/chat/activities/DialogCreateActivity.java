@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import java.util.TreeSet;
 
+import info.guardianproject.netcipher.proxy.OrbotHelper;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.fragments.ContactsFragment;
 import ru.mail.park.chat.activities.fragments.FSM;
@@ -117,7 +118,12 @@ public class DialogCreateActivity
                 case NEW_GROUP_PRESSED:
                     return UIState.OUT_NEW_GROUP;
                 case NEW_P2P_CHAT_PRESSED:
-                    return UIState.CREATE_P2P;
+                    if (OrbotHelper.isOrbotInstalled(DialogCreateActivity.this)) {
+                        return UIState.CREATE_P2P;
+                    } else {
+                        Toast.makeText(DialogCreateActivity.this, "Install OrbotHelper to use P2P!", Toast.LENGTH_SHORT).show();
+                        return currentState;
+                    }
                 case BACK_PRESSED:
                     switch (currentState) {
                         case CREATE_P2P:

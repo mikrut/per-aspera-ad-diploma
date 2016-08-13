@@ -38,6 +38,7 @@ public class PagerContactsAdapter extends FragmentPagerAdapter {
             args.putBoolean(ContactsSubscribersFragment.MY_ARG, true);
             addibleFragment.setArguments(args);
         } else {
+            currentFragment.hideFindFriends(true);
             subscriptionsFragment = null;
             addibleFragment = null;
         }

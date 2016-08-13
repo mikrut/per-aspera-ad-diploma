@@ -207,12 +207,15 @@ public class ChatsActivity
             }
 
             OwnerProfile owner = new OwnerProfile(this);
-            try {
-                URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
-                mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
-                mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+            String img = owner.getImg();
+            if (img != null) {
+                try {
+                    URL url = new URL(ApiSection.SERVER_URL + img);
+                    mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+                    mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -225,7 +228,7 @@ public class ChatsActivity
         ((AnalyticsApplication) getApplication()).getDefaultTracker();
         GoogleAnalytics.getInstance(this).reportActivityStart(this);
 
-        getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener);
+        getLoaderManager().restartLoader(CHAT_DB_LOADER, null, chatsLoaderListener).forceLoad();
     }
 
     @Override

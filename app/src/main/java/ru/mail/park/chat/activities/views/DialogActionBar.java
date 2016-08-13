@@ -19,13 +19,16 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.ProfileViewActivity;
+import ru.mail.park.chat.api.ApiSection;
 import ru.mail.park.chat.loaders.images.IImageSettable;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
 import ru.mail.park.chat.models.Chat;
+import ru.mail.park.chat.models.Contact;
 
 /**
  * Created by Михаил on 03.06.2016.
@@ -127,6 +130,28 @@ public class DialogActionBar
             default:
                 break;
         }
+    }
+
+    public void setUserData(@NonNull Contact user, @Nullable ImageDownloadManager imageDownloadManager) {
+        setTitle(user.getContactTitle());
+
+        String userImg = user.getImg();
+        if (userImg != null) {
+            try {
+                URL imageURL = new URL(ApiSection.SERVER_URL + user.getImg());
+                if ((oldUrl == null || !oldUrl.equals(imageURL)) && imageDownloadManager != null) {
+                    imageDownloadManager.setImage(this, imageURL, ImageDownloadManager.Size.SMALL);
+                    imageTitle.setVisibility(View.GONE);
+                    oldUrl = imageURL;
+                }
+            } catch (MalformedURLException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        Intent intent = new Intent(getContext(), ProfileViewActivity.class);
+        intent.putExtra(ProfileViewActivity.UID_EXTRA, user.getUid());
+        setTransitionIntent(intent);
     }
 
     public void setTransitionIntent(final Intent intent) {
