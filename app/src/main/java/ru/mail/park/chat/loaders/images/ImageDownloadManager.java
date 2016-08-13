@@ -165,12 +165,12 @@ public class ImageDownloadManager extends Service {
             }
 
             @Override
-            public int getWidth() {
+            public int getImageWidth() {
                 return imageView.getWidth();
             }
 
             @Override
-            public int getHeight() {
+            public int getImageHeight() {
                 return imageView.getHeight();
             }
         };

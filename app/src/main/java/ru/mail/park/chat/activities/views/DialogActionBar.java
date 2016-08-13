@@ -103,6 +103,16 @@ public class DialogActionBar
         dialogImageView.setImageBitmap(image);
     }
 
+    @Override
+    public int getImageWidth() {
+        return dialogImageView.getWidth();
+    }
+
+    @Override
+    public int getImageHeight() {
+        return dialogImageView.getHeight();
+    }
+
     public void setChatData(@NonNull Chat chat, @Nullable final ImageDownloadManager imageDownloadManager) {
         setTitle(chat.getName());
 
@@ -149,9 +159,9 @@ public class DialogActionBar
                         @Override
                         public void run() {
                             imageDownloadManager.setImage(DialogActionBar.this, imageURL);
+                            imageTitle.setVisibility(View.GONE);
                         }
                     });
-                    imageTitle.setVisibility(View.GONE);
                     oldUrl = imageURL;
                 }
             } catch (MalformedURLException ex) {

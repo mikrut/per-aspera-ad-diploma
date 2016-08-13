@@ -135,13 +135,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             @Override
-            public int getWidth() {
+            public int getImageWidth() {
                 Resources r = context.getResources();
                 return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 320, r.getDisplayMetrics());
             }
 
             @Override
-            public int getHeight() {
+            public int getImageHeight() {
                 Resources r = context.getResources();
                 return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 56, r.getDisplayMetrics());
             }
@@ -158,13 +158,13 @@ public class MenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             @Override
-            public int getWidth() {
+            public int getImageWidth() {
                 Resources r = context.getResources();
                 return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, r.getDisplayMetrics());
             }
 
             @Override
-            public int getHeight() {
+            public int getImageHeight() {
                 Resources r = context.getResources();
                 return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, r.getDisplayMetrics());
             }

@@ -76,12 +76,12 @@ public class TitledPicturedViewHolder extends RecyclerView.ViewHolder implements
     }
 
     @Override
-    public int getWidth() {
+    public int getImageWidth() {
         return image.getWidth();
     }
 
     @Override
-    public int getHeight() {
+    public int getImageHeight() {
         return image.getHeight();
     }
 }
