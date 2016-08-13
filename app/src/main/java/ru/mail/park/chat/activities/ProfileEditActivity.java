@@ -7,10 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -18,7 +15,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,8 +29,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,28 +36,23 @@ import java.util.HashMap;
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.UpdateProfileTask;
 import ru.mail.park.chat.api.ApiSection;
-import ru.mail.park.chat.api.BlurBuilder;
 import ru.mail.park.chat.api.HttpFileUpload;
-import ru.mail.park.chat.api.MultipartProfileUpdater;
+import ru.mail.park.chat.activities.interfaces.IUploadListener;
 import ru.mail.park.chat.loaders.images.ImageDownloadManager;
-import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
 public class ProfileEditActivity
         extends AImageDownloadServiceBindingActivity
-        implements MultipartProfileUpdater.IUploadListener {
+        implements IUploadListener {
     private static final int REQUEST_WRITE_STORAGE = 112;
+
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int GET_FROM_GALLERY = 3;
 
     private ImageView imgCameraShot;
     private ImageView imgUploadPicture;
     private ImageView currentAvatar;
     private TextView  userTitle;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int GET_FROM_GALLERY = 3;
-    private static final String FILE_UPLOAD_URL = "http://p30480.lab1.stud.tech-mail.ru/files/upload";
-    private String accessToken;
-    private String uid;
-    private String selectedFilePath;
 
     private EditText userLogin;
     private EditText userEmail;
@@ -73,18 +62,21 @@ public class ProfileEditActivity
 
     private Intent takePictureIntent;
 
+    private static final String SELECTED_FILE_PATH_KEY = "selectedFilePath";
+    private static final String M_IMAGE_URI = "mImageUri";
+    private static final String CHANGED_FIELDS = "changedFields";
+
+    private String selectedFilePath;
     private Uri mImageUri;
-
-    private ProfileEditActivity thisAct = null;
-
     private HashMap<String, Boolean> changedFields;
+
+    private UpdateProfileTask updateProfileTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_edit);
 
-        thisAct = this;
         changedFields = new HashMap<>();
 
         imgCameraShot = (ImageView) findViewById(R.id.user_camera_shot);
@@ -105,9 +97,6 @@ public class ProfileEditActivity
         firstName.setText(ownerProfile.getFirstName());
         lastName.setText(ownerProfile.getLastName());
         userAbout.setText(ownerProfile.getAbout());
-
-        accessToken = ownerProfile.getAuthToken();
-        uid = ownerProfile.getUid();
 
         userLogin.addTextChangedListener(new TextWatcher() {
             @Override
@@ -213,7 +202,7 @@ public class ProfileEditActivity
                 try {
                     // place where to store camera taken picture
                     Log.d("[TP-diploma]", "creating tmp file");
-                    photo = thisAct.createTemporaryFile("picture", ".jpg");
+                    photo = ProfileEditActivity.this.createTemporaryFile("picture", ".jpg");
                     photo.delete();
                 } catch (Exception e) {
                     Log.d("[TP-diploma]", "Can't create file to take picture!");
@@ -252,11 +241,13 @@ public class ProfileEditActivity
     @Override
     protected void onSetImageManager(ImageDownloadManager mgr) {
         OwnerProfile owner = new OwnerProfile(this);
-        try {
-            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
-            mgr.setImage(currentAvatar, url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (selectedFilePath == null) {
+            try {
+                URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
+                mgr.setImage(currentAvatar, url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -371,8 +362,11 @@ public class ProfileEditActivity
         if(changedFields.containsKey("lastName"))
             profile.setLastName(lastName.getText().toString());
 
-        if(changedFields.containsKey("img"))
+        if(changedFields.containsKey("img")) {
             profile.setImg(selectedFilePath);
+        } else {
+            profile.setImg(null);
+        }
 
         if(changedFields.containsKey("userAbout"))
             profile.setAbout(userAbout.getText().toString());
@@ -392,10 +386,11 @@ public class ProfileEditActivity
                     dialogBuilder.setTitle("Saving user data");
                     dialogBuilder.setMessage("Sending data to server");
                     dialogBuilder.setCancelable(false);
-                    new UpdateProfileTask(dialogBuilder.show(), this).execute(profile);
 
-                    if(changedFields.containsKey("img"))
-                        new UpdateLocalBlurImage(profile).execute();
+                    if (updateProfileTask != null)
+                        updateProfileTask.cancel(true);
+                    updateProfileTask = new UpdateProfileTask(dialogBuilder.show(), getImageDownloadManager(), this);
+                    updateProfileTask.execute(profile);
                 } else {
                     onBackPressed();
                 }
@@ -406,40 +401,6 @@ public class ProfileEditActivity
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void updateLocalImages(String imgPath, String uid) {
-        String savePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-        String saveBlurPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + "_blur.bmp";
-
-        Bitmap bm = BitmapFactory.decodeFile(imgPath);
-        Bitmap blurBm = BlurBuilder.blur(ProfileEditActivity.this, bm);
-
-        File file = new File(savePath);
-
-        try {
-            if (!file.exists())
-                file.createNewFile();
-
-            FileOutputStream fos = new FileOutputStream(file);
-            bm.compress(Bitmap.CompressFormat.PNG, 90, fos);
-            fos.close();
-        } catch (IOException e) {
-
-        }
-
-        file = new File(saveBlurPath);
-
-        try {
-            if (!file.exists())
-                file.createNewFile();
-
-            FileOutputStream fos = new FileOutputStream(file);
-            blurBm.compress(Bitmap.CompressFormat.PNG, 90, fos);
-            fos.close();
-        } catch (IOException e) {
-
         }
     }
 
@@ -456,22 +417,12 @@ public class ProfileEditActivity
                 }
             }
         }
-
     }
 
-    private class UpdateLocalBlurImage extends AsyncTask<Void, Void, Void> {
-        Contact profile;
-
-        public UpdateLocalBlurImage(Contact profile) {
-            this.profile = profile;
-        }
-
-        protected Void doInBackground(Void... urls) {
-            updateLocalImages(profile.getImg(), profile.getUid());
-            return null;
-        }
-
-        protected void onPostExecute(Void result) {
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (updateProfileTask != null)
+            updateProfileTask.cancel(true);
     }
 }

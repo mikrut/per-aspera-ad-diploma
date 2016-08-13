@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -46,8 +47,7 @@ public class ImageDownloadManager extends Service {
         SCREEN_SIZE,
         NORMAL;
 
-        @Nullable
-        public Integer toInteger(Context context) {
+        public int toInteger(Context context) {
             switch (this) {
                 case SMALL:
                     return 50;
@@ -56,19 +56,21 @@ public class ImageDownloadManager extends Service {
                 case HEADER_BACKGROUND:
                     return 320;
                 case SCREEN_SIZE:
-                    WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                    Display display = manager.getDefaultDisplay();
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    display.getMetrics(metrics);
-
-                    float density = context.getResources().getDisplayMetrics().density;
-                    float maxDimension = Math.max(metrics.heightPixels, metrics.widthPixels) / density;
-                    return (int) maxDimension;
-                case NORMAL:
                 default:
-                    return null;
+                    Pair<Integer, Integer> maxDimens = getMaxWidthHeight(context);
+                    float density = context.getResources().getDisplayMetrics().density;
+                    float maxDimension = Math.max(maxDimens.first, maxDimens.second) / density;
+                    return (int) maxDimension;
             }
         }
+    }
+
+    public static Pair<Integer, Integer> getMaxWidthHeight(Context context) {
+        WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = manager.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        return new Pair<>(metrics.heightPixels, metrics.widthPixels);
     }
 
     private final IBinder mBinder = new ImageDownloadBinder();
@@ -94,6 +96,7 @@ public class ImageDownloadManager extends Service {
     private static final String UNIQUE_NAME = "images";
 
     private DiskLruCache diskCache;
+    private final Object diskCacheLock = new Object();
     private static final int VALUE_COUNT = 1;
     private static final long MAX_SIZE = (long)(20 * Math.pow(2, 20));
 
@@ -137,15 +140,17 @@ public class ImageDownloadManager extends Service {
     public void addBitmapToDiskCache(URL url, Bitmap bitmap, Size size) {
         try {
             String bitmapName = paramsToName(url, size);
-            DiskLruCache.Editor editor = diskCache.edit(bitmapName);
-            if (editor != null) {
-                OutputStream out = editor.newOutputStream(0);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 0, out);
-                diskCache.flush();
-                editor.commit();
-                Log.v(ImageDownloadManager.class.getSimpleName(), "Saved " + bitmapName);
-            } else {
-                Log.v(ImageDownloadManager.class.getSimpleName(), "Disk cache unavailable");
+            synchronized (diskCacheLock) {
+                DiskLruCache.Editor editor = diskCache.edit(bitmapName);
+                if (editor != null) {
+                    OutputStream out = editor.newOutputStream(0);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 0, out);
+                    diskCache.flush();
+                    editor.commit();
+                    Log.v(ImageDownloadManager.class.getSimpleName(), "Saved " + bitmapName);
+                } else {
+                    Log.v(ImageDownloadManager.class.getSimpleName(), "Disk cache unavailable");
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

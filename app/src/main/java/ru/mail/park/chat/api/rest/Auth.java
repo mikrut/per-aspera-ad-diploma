@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONException;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import ru.mail.park.chat.api.ApiSection;
-import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.auth_signup.IRegisterCallbacks;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -225,7 +223,7 @@ public class Auth extends ApiSection {
 
                         dos.flush();
                     } catch (FileNotFoundException e) {
-                        Log.e(MultipartProfileUpdater.class.getSimpleName() + ".doInBackground", e.getLocalizedMessage());
+                        Log.e(Auth.class.getSimpleName() + ".doInBackground", e.getLocalizedMessage());
                     }
                 }
             }
@@ -252,7 +250,7 @@ public class Auth extends ApiSection {
                 return null;
             }
         } catch (IOException e) {
-            Log.d("[TP-diploma]", "MultipartProfileUpdater exception: " + e.getMessage(), e);
+            Log.d("[TP-diploma]", "Auth exception: " + e.getMessage(), e);
             return null;
         }
     }

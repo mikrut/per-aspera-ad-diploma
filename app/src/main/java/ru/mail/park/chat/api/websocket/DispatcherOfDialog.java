@@ -38,7 +38,8 @@ public class DispatcherOfDialog implements IDispatcher {
         try{
             switch (method) {
                 case "newMessage":
-                    if (jsonIncome.has("user"))
+                    JSONObject data = jsonIncome.optJSONObject("data");
+                    if (jsonIncome.has("user") || (data != null && data.has("user")))
                         dispatchNewMessage(jsonIncome);
                     else
                         dispatchAckSend(jsonIncome);

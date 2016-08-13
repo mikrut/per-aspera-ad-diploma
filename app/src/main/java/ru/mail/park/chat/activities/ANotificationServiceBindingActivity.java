@@ -29,6 +29,7 @@ import ru.mail.park.chat.database.ContactsHelper;
 import ru.mail.park.chat.database.PreferenceConstants;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.Message;
+import ru.mail.park.chat.models.OwnerProfile;
 
 /**
  * Created by mikrut on 13.07.16.
@@ -199,20 +200,23 @@ public abstract class ANotificationServiceBindingActivity
 
     @Override
     public void onIncomeMessage(Message incomeMsg) {
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+        OwnerProfile owner = new OwnerProfile(this);
+        if (!owner.getUid().equals(incomeMsg.getUid())) {
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 
-        notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
-                .setContentTitle(incomeMsg.getTitle())
-                .setContentText(incomeMsg.getMessageBody());
-        Intent intent = new Intent(this, DialogActivity.class);
-        intent.putExtra(DialogActivity.CHAT_ID, incomeMsg.getCid());
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        notificationBuilder.setContentIntent(pendingIntent);
+            notificationBuilder.setSmallIcon(R.drawable.ic_message_black_24dp)
+                    .setContentTitle(incomeMsg.getTitle())
+                    .setContentText(incomeMsg.getMessageBody());
+            Intent intent = new Intent(this, DialogActivity.class);
+            intent.putExtra(DialogActivity.CHAT_ID, incomeMsg.getCid());
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            notificationBuilder.setContentIntent(pendingIntent);
 
-        Notification notification = notificationBuilder.build();
-        notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, notification);
+            Notification notification = notificationBuilder.build();
+            notification.flags = Notification.DEFAULT_LIGHTS | Notification.FLAG_AUTO_CANCEL;
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.notify(0, notification);
+        }
     }
 
     @Override

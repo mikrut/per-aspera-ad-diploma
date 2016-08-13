@@ -1,6 +1,7 @@
 package ru.mail.park.chat.activities.adapters;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,8 +14,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.DialogActivity;
@@ -28,6 +31,7 @@ import ru.mail.park.chat.models.Chat;
  */
 public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> {
     private final List<Chat> chats;
+
     private ImageDownloadManager downloadManager = null;
 
     public ChatsAdapter(List<Chat> chats) {

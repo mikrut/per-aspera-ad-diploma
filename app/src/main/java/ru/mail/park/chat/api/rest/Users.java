@@ -11,13 +11,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.mail.park.chat.api.ApiSection;
-import ru.mail.park.chat.api.MultipartProfileUpdater;
 import ru.mail.park.chat.models.Contact;
 import ru.mail.park.chat.models.OwnerProfile;
 
@@ -149,19 +149,21 @@ public class Users extends ApiSection {
     }
 
     public boolean updateProfile(OwnerProfile profile) throws IOException {
-        final String requestURL = "updateProfile";
+        final String requestURL = "update";
         final String requestMethod = "POST";
 
-        List<Pair<String, String>> parameters = new ArrayList<>(2);
-        parameters.add(new Pair<>("login", profile.getLogin()));
-        parameters.add(new Pair<>("email", profile.getEmail()));
-        parameters.add(new Pair<>("phone", profile.getPhone()));
-        parameters.add(new Pair<>("firstName", profile.getFirstName()));
-        parameters.add(new Pair<>("lastName", profile.getLastName()));
+        List<Pair<String, Object>> parameters = new ArrayList<>(8);
+        parameters.add(new Pair<String, Object>("login", profile.getLogin()));
+        parameters.add(new Pair<String, Object>("email", profile.getEmail()));
+        parameters.add(new Pair<String, Object>("phone", profile.getPhone()));
+        parameters.add(new Pair<String, Object>("firstName", profile.getFirstName()));
+        parameters.add(new Pair<String, Object>("lastName", profile.getLastName()));
+        if (profile.getImg() != null)
+            parameters.add(new Pair<String, Object>("img", new File(profile.getImg())));
+        parameters.add(new Pair<String, Object>("aboutMe", profile.getAbout()));
 
         try {
             String response = executeRequest(requestURL, requestMethod, parameters);
-            Log.d("[TP-diploma]", response);
             JSONObject result = new JSONObject(response);
             final int status = result.getInt("status");
             if (status == 200) {
@@ -173,43 +175,6 @@ public class Users extends ApiSection {
         } catch (JSONException e) {
             throw new IOException("Server error", e);
         }
-    }
-
-    public boolean updateProfileLikeAPro(OwnerProfile profile, String accessToken, MultipartProfileUpdater.IUploadListener listener) throws IOException {
-        final String requestURL = "users/update";
-        final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/";
-
-        List<Pair<String, String>> parameters = new ArrayList<>();
-
-        if(profile.getLogin() != null)
-            parameters.add(new Pair<>("login", profile.getLogin()));
-
-        if(profile.getEmail() != null)
-            parameters.add(new Pair<>("email", profile.getEmail()));
-
-        if(profile.getFirstName() != null)
-            parameters.add(new Pair<>("firstName", profile.getFirstName()));
-
-        if(profile.getLastName() != null)
-            parameters.add(new Pair<>("lastName", profile.getLastName()));
-
-        parameters.add(new Pair<>("accessToken", accessToken));
-
-        if(profile.getImg() != null)
-            parameters.add(new Pair<>("img", profile.getImg()));
-
-        if(profile.getAbout() != null)
-            parameters.add(new Pair<>("aboutMe", profile.getAbout()));
-
-        for(int i = 0; i < parameters.size(); i++) {
-            Pair<String, String> p = parameters.get(i);
-            Log.d("[TP-diploma]", p.first + ": " + (p.second == null ? "null" : p.second) );
-        }
-
-        Log.d("[TP-diploma]", "Number of parameters: " + parameters.size());
-
-        MultipartProfileUpdater mpu = new MultipartProfileUpdater(SERVER_URL + requestURL, parameters);
-        return mpu.Send_Now(listener);
     }
 
 }

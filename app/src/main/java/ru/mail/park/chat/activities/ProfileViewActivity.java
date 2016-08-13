@@ -4,19 +4,12 @@ import android.app.LoaderManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
-import android.net.Uri;
-import android.os.Environment;
 import android.support.design.widget.AppBarLayout;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,15 +21,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 
-import java.io.InputStream;
+import java.util.Locale;
 
 import ru.mail.park.chat.R;
 import ru.mail.park.chat.activities.tasks.AddContactTask;
@@ -55,7 +44,6 @@ import ru.mail.park.chat.models.OwnerProfile;
 public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
         implements DeleteContactTask.DeleteContactCallbacks {
     public static final String UID_EXTRA = ProfileViewActivity.class.getCanonicalName() + ".UID_EXTRA";
-    public static final String SERVER_URL = "http://p30480.lab1.stud.tech-mail.ru/file/image";
     private final static int DB_LOADER = 0;
     private final static int WEB_LOADER = 1;
     private final static int WEB_OWN_LOADER = 2;
@@ -81,6 +69,9 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
 
     private Contact contact;
     private Contact.Relation relation = null;
+
+    private DeleteContactTask deleteTask;
+    private AddContactTask addTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,14 +127,17 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
             loaderType = WEB_LOADER;
         }
 
-        Bundle args = new Bundle();
+        final Bundle args = new Bundle();
         args.putString(ProfileWebLoader.UID_ARG, uid);
         getLoaderManager().initLoader(loaderType, args, contactsLoaderListener);
 
         userAddToContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AddContactTask(ProfileViewActivity.this).execute(uid);
+                if (addTask != null)
+                    addTask.cancel(true);
+                addTask = new AddContactTask(ProfileViewActivity.this);
+                addTask.execute(uid);
             }
         });
 
@@ -190,27 +184,14 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if(uid != null) {
-            String localPath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";;
-
-
-            File localFile = new File(localPath);
-            if(localFile.exists())
-                userPicture.setImageBitmap(BitmapFactory.decodeFile(localPath));
-
-        }
-    }
-
-    @Override
     protected void onSetImageManager(ImageDownloadManager mgr) {
-        OwnerProfile owner = new OwnerProfile(this);
-        try {
-            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
-            mgr.setImage(userPicture, url, ImageDownloadManager.Size.SCREEN_SIZE);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (contact != null) {
+            try {
+                URL url = new URL(ApiSection.SERVER_URL + contact.getImg());
+                mgr.setImage(userPicture, url, ImageDownloadManager.Size.SCREEN_SIZE);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -270,8 +251,11 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
                 return true;
             }
             case R.id.action_delete_contact: {
-                DeleteContactTask task = new DeleteContactTask(this, this);
-                task.execute(uid);
+                if (deleteTask != null) {
+                    deleteTask.cancel(true);
+                }
+                deleteTask = new DeleteContactTask(this, this);
+                deleteTask.execute(uid);
             }
         }
 
@@ -301,8 +285,14 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
             userEmail.setVisibility(View.GONE);
         }
 
-        Log.d("[TP-diploma]", "starting get image task");
-        new DownloadImageTask(userPicture).execute(SERVER_URL + "?path=" + user.getImg());
+        ImageDownloadManager manager = getImageDownloadManager();
+        if (manager != null) {
+            try {
+                manager.setImage(userPicture, new URL(ApiSection.SERVER_URL + user.getImg()), ImageDownloadManager.Size.SCREEN_SIZE);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
 
         Calendar lastSeen = user.getLastSeen();
 
@@ -377,46 +367,31 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
 
         if(lastSeenYear == todayYear) {
             switch(todayDayInYear - lastSeenDayInYear) {
-                case 0: if(todayHour - lastSeenHour > 11) {
-                    lastSeenDate = "Today";
-                } else {
-                    dateAgoFormat = true;
+                case 0:
                     int diff = todayHour - lastSeenHour;
-                    switch(diff) {
-                        case 1: lastSeenDate = "an hour ago";
-                            break;
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                        case 8:
-                        case 9:
-                        case 10:
-                        case 11: lastSeenDate = String.valueOf(diff) + " hours ago";
-                            break;
+                    if(diff > 11) {
+                        lastSeenDate = "Today";
+                    } else {
+                        dateAgoFormat = true;
+                        if (diff > 1) {
+                            lastSeenDate = String.valueOf(diff) + " hours ago";
+                        } else if (diff == 1) {
+                            lastSeenDate = "an hour ago";
+                        }
                     }
-                }
                     break;
-
-                case 1: lastSeenDate = "Yesterday";
+                case 1:
+                    lastSeenDate = "Yesterday";
                     break;
-
-                default: lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf
-                        (dayOfMonth)) + "." + ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf
-                        (year);
+                default:
+                    lastSeenDate = String.format(Locale.getDefault(), "%02d %02d %d", dayOfMonth, month, year);
                     break;
             }
         } else {
-            lastSeenDate = (dayOfMonth >= 10) ? String.valueOf(dayOfMonth) : ("0" + String.valueOf(dayOfMonth)) + "." +
-                    ((month >= 10) ? String.valueOf(month) : ("0" + String.valueOf(month))) + "." + String.valueOf(year);
+            lastSeenDate = String.format(Locale.getDefault(), "%02d %02d %d", dayOfMonth, month, year);
         }
 
-        String hours = (lastSeenHour >= 10) ? String.valueOf(lastSeenHour) : ("0" + String.valueOf(lastSeenHour));
-        String mins = (lastSeenMin >= 10) ? String.valueOf(lastSeenMin) : ("0" + String.valueOf(lastSeenMin));
-
-        lastSeenTime = hours + ":" + mins;
+        lastSeenTime = String.format(Locale.getDefault(), "%02d:%02d", lastSeenHour, lastSeenMin);
 
         String result = "Last seen " + lastSeenDate;
 
@@ -463,65 +438,12 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
                 }
             };
 
-    static public Bitmap downloadFile(String path, int height, int width, String token) throws IOException {
-        String requestPath = path + "&height=" + String.valueOf(height) + "&width=" + String.valueOf(width) + "&accessToken=" + token;
-        Log.d("[TP-diploma]", "Requesting image: " + requestPath);
-        InputStream in = new java.net.URL(requestPath).openStream();
-        return BitmapFactory.decodeStream(in);
-    }
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-        int curHeight;
-        int curWidth;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-            curHeight = bmImage.getHeight();
-            curWidth = bmImage.getWidth();
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            OwnerProfile owp = new OwnerProfile(ProfileViewActivity.this);
-            Log.d("[TP-diploma]", "task is working");
-            String urldisplay = urls[0];
-            Bitmap mIcon11 = null;
-            try {
-                mIcon11 = downloadFile(urldisplay, curHeight, curWidth, owp.getAuthToken());
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            String filePath = Environment.getExternalStorageDirectory() + "/torchat/avatars/users/" + uid + ".bmp";
-            File file = new File(filePath);
-
-            if (result != null) {
-                Log.d("[TP-diploma]", "DownloadImageTask result not null");
-                bmImage.setImageBitmap(result);
-                try {
-                    FileOutputStream fos = new FileOutputStream(file);
-                    result.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    Log.d("[TP-diploma]", "File not found: " + e.getMessage());
-                } catch (IOException e) {
-                    Log.d("[TP-diploma]", "Error accessing file: " + e.getMessage());
-                }
-            } else {
-                Log.d("[TP-diploma]", "DownloadImageTask result NULL");
-                if(file.exists()) {
-                    Log.d("[TP-diploma]", "DownloadImageTask file exists: " + file.getAbsolutePath());
-                    bmImage.setImageURI(Uri.parse(filePath));
-                }
-                else {
-                    Log.d("[TP-diploma]", "DownloadImageTask file do not exist");
-                    bmImage.setImageDrawable(getResources().getDrawable(R.drawable.ic_user_picture));
-                }
-            }
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (deleteTask != null)
+            deleteTask.cancel(true);
+        if (addTask != null)
+            addTask.cancel(true);
     }
 }

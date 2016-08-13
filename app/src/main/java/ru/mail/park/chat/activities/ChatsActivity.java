@@ -201,17 +201,19 @@ public class ChatsActivity
 
     @Override
     protected void onSetImageManager(ImageDownloadManager mgr) {
-        if (chatsList != null && chatsList.getAdapter() != null) {
-            ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
-        }
+        if (mgr != null) {
+            if (chatsList != null && chatsList.getAdapter() != null) {
+                ((ChatsAdapter) chatsList.getAdapter()).setDownloadManager(mgr);
+            }
 
-        OwnerProfile owner = new OwnerProfile(this);
-        try {
-            URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
-            mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
-            mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            OwnerProfile owner = new OwnerProfile(this);
+            try {
+                URL url = new URL(ApiSection.SERVER_URL + owner.getImg());
+                mgr.setImage(menuAdapter.getUserImageSettable(), url, ImageDownloadManager.Size.HEADER_USER_PICTURE);
+                mgr.setImage(menuAdapter.getBlurSettable(), url, ImageDownloadManager.Size.HEADER_BACKGROUND);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -203,7 +203,7 @@ public class GroupDialogEditActivity
     @Override
     protected void onSetImageManager(ImageDownloadManager mgr) {
         if (chat.getImagePath() != null)
-            mgr.setImage(toolbarImage, chat.getImagePath(), ImageDownloadManager.Size.NORMAL);
+            mgr.setImage(toolbarImage, chat.getImagePath(), ImageDownloadManager.Size.SCREEN_SIZE);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class GroupDialogEditActivity
                 public void onOperationSuccess(Chats.ImageUpdateResult imageUpdateResult) {
                     ImageDownloadManager idm = getImageDownloadManager();
                     if (idm != null) {
-                        idm.setImage(toolbarImage, imageUpdateResult.image, ImageDownloadManager.Size.NORMAL);
+                        idm.setImage(toolbarImage, imageUpdateResult.image, ImageDownloadManager.Size.SCREEN_SIZE);
                     }
                 }
 
