@@ -224,58 +224,64 @@ public class P2PService extends Service {
     private class Server extends Thread {
         @Override
         public void run() {
-            while(noStop) {
+            while(noStop && serverSocket != null) {
                 try {
                     Log.v(TAG, "Listening for incoming sockets");
-                    Socket socket = serverSocket.accept();
-                    Log.v(TAG, "Accepted a socket " + socket.getInetAddress());
+                    ServerSocket sock = serverSocket;
+                    Socket socket = null;
+                    if (sock != null)
+                        socket  = sock.accept();
+                    if (socket != null) {
+                        Log.v(TAG, "Accepted a socket " + socket.getInetAddress());
 
-                    P2PConnection conn = null;
-                    synchronized (noStopLocker) {
-                        if (noStop && connection == null) {
-                            synchronized (connectionLocker) {
-                                if (connection == null) {
-                                    Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
-                                    conn = new P2PConnection(P2PService.this, socket, p2pEventListener);
-                                    connection = conn;
+                        P2PConnection conn = null;
+                        synchronized (noStopLocker) {
+                            if (noStop && connection == null) {
+                                synchronized (connectionLocker) {
+                                    if (connection == null) {
+                                        Log.i(TAG + " IP", "Incoming: " + socket.getInetAddress().getCanonicalHostName());
+                                        conn = new P2PConnection(P2PService.this, socket, p2pEventListener);
+                                        connection = conn;
+                                    }
                                 }
+                            } else {
+                                socket.close();
                             }
-                        } else {
-                            socket.close();
                         }
-                    }
 
-                    try {
-                        if (conn != null)
-                            conn.startConnecting();
-                        Log.i(TAG, "connection finished!");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        try {
+                            if (conn != null)
+                                conn.startConnecting();
+                            Log.i(TAG, "connection finished!");
+                        } catch (Exception e) {
+                            e.printStackTrace();
 
-                        synchronized (connectionLocker) {
-                            try {
-                                if (!socket.isClosed())
-                                    socket.close();
-                                if (connection != null)
-                                    connection.closeStreams();
-                            } catch (Exception ignore) {
-                                ignore.printStackTrace();
-                            }
-
-                            connection = null;
-
-                            Handler handler = new Handler(Looper.getMainLooper());
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    p2pEventListener.onConnectionBreak();
+                            synchronized (connectionLocker) {
+                                try {
+                                    if (!socket.isClosed())
+                                        socket.close();
+                                    if (connection != null)
+                                        connection.closeStreams();
+                                } catch (Exception ignore) {
+                                    ignore.printStackTrace();
                                 }
-                            });
+
+                                connection = null;
+
+                                Handler handler = new Handler(Looper.getMainLooper());
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        p2pEventListener.onConnectionBreak();
+                                    }
+                                });
+                            }
                         }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
             }
         }
     }

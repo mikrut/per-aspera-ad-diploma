@@ -50,7 +50,7 @@
                 android:minHeight="150dp"
                 android:background="#000000"
                 android:contentDescription="@string/description_application_logo"
-                android:src="@drawable/ic_orbot_proxy"
+                android:src="@drawable/ic_logo"
                 android:layout_gravity="center_horizontal" />
 
             <android.support.design.widget.TextInputLayout
