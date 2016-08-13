@@ -382,10 +382,19 @@ public class ProfileEditActivity
                 OwnerProfile currentProfile = new OwnerProfile(this);
 
                 if (!profile.equals(currentProfile)) {
-                    ProgressDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(this);
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
                     dialogBuilder.setTitle("Saving user data");
                     dialogBuilder.setMessage("Sending data to server");
-                    dialogBuilder.setCancelable(false);
+                    dialogBuilder.setCancelable(true);
+                    dialogBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            if (updateProfileTask != null) {
+                                updateProfileTask.cancel(true);
+                                updateProfileTask = null;
+                            }
+                        }
+                    });
 
                     if (updateProfileTask != null)
                         updateProfileTask.cancel(true);

@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.app.AlertDialog;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import java.io.File;

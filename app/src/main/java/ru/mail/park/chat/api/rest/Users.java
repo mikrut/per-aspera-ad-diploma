@@ -155,7 +155,6 @@ public class Users extends ApiSection {
         List<Pair<String, Object>> parameters = new ArrayList<>(8);
         parameters.add(new Pair<String, Object>("login", profile.getLogin()));
         parameters.add(new Pair<String, Object>("email", profile.getEmail()));
-        parameters.add(new Pair<String, Object>("phone", profile.getPhone()));
         parameters.add(new Pair<String, Object>("firstName", profile.getFirstName()));
         parameters.add(new Pair<String, Object>("lastName", profile.getLastName()));
         if (profile.getImg() != null)

@@ -63,6 +63,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         public final ImageView clockImageView;
         private final TextView messageTime;
 
+        private String oldUrl;
+
         private String authorUID;
 
         public ViewHolder(View itemView) {
@@ -74,21 +76,24 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         }
 
         public void setMessage(@NonNull final Message message, final int messagePosition) {
-            String imageURL = message.getImageURL();
-            if (imageURL != null && !imageURL.equals("false") && imageDownloadManager != null) {
-                try {
-                    final URL url = new URL(ApiSection.SERVER_URL + imageURL);
-                    image.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            imageDownloadManager.setImage(ViewHolder.this, url);
-                        }
-                    });
-                } catch (MalformedURLException e) {
-                    Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
+            final String imageURL = message.getImageURL();
+            if (oldUrl == null || !oldUrl.equals(imageURL)) {
+                if (imageURL != null && !imageURL.equals("false") && imageDownloadManager != null) {
+                    try {
+                        final URL url = new URL(ApiSection.SERVER_URL + imageURL);
+                        image.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                imageDownloadManager.setImage(ViewHolder.this, url);
+                                oldUrl = imageURL;
+                            }
+                        });
+                    } catch (MalformedURLException e) {
+                        Log.w(ContactAdapter.class.getSimpleName(), e.getLocalizedMessage());
+                    }
+                } else {
+                    setImage(null);
                 }
-            } else {
-                setImage(null);
             }
 
             setTitle(message.getTitle());

@@ -47,6 +47,8 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     private TextView appLogo;
     private Button mEmailSignInButton;
 
+    private LoginTask loginTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,12 +131,12 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
     };
 
     private void authenticate() {
-        mPasswordView.setOnEditorActionListener(null);
-        mEmailSignInButton.setOnClickListener(null);
-
         String login = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
-        new LoginTask(this, this).execute(login, password);
+        if (loginTask != null)
+            loginTask.cancel(true);
+        loginTask = new LoginTask(this, this);
+        loginTask.execute(login, password);
     }
 
 
@@ -163,6 +165,15 @@ public class LoginActivity extends AppCompatActivity implements IAuthCallbacks  
         mPasswordView.setOnEditorActionListener(onPasswordListener);
         mEmailSignInButton.setOnClickListener(onSignInListener);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (loginTask != null) {
+            loginTask.cancel(true);
+            loginTask = null;
+        }
     }
 }
 
