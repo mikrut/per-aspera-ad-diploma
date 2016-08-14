@@ -46,6 +46,8 @@ public class Contact implements Comparable<Contact>, Serializable {
     private @Nullable byte[] pubkeyDigest;
     private @Nullable URI onionAddress;
 
+    @Nullable
+    private Boolean isSubscriber;
     private boolean online = false;
 
     public enum Relation {FRIEND, SELF, OTHER}
@@ -96,9 +98,15 @@ public class Contact implements Comparable<Contact>, Serializable {
             setLastSeen(lastSeen);
         }
 
+        if (contact.has("whoIs")) {
+            isSubscriber = contact.optInt("whoIs") == 2;
+        }
+
         if(contact.has("aboutMe")) {
             setAboutMe(contact.getString("aboutMe"));
         }
+
+        if(contact.has(""))
 
         if (contact.has("online")) {
             setOnline(contact.getBoolean("online"));
@@ -219,7 +227,11 @@ public class Contact implements Comparable<Contact>, Serializable {
     public int compareTo(@NonNull Contact another) {
         return this.login.compareTo(another.getLogin());
     }
-    
+
+    @Nullable
+    public Boolean getSubscriber() {
+        return isSubscriber;
+    }
 
     public @Nullable String getEmail() {
         return email;

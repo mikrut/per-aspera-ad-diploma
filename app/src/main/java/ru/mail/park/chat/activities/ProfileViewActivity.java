@@ -330,22 +330,32 @@ public class ProfileViewActivity extends AImageDownloadServiceBindingActivity
             userPhone.setVisibility(View.GONE);
         }
 
-        this.relation = relation;
+        if (user.getSubscriber() == null) {
+            this.relation = relation;
 
-        if (relation != null) {
-            switch (relation) {
-                case FRIEND:
-                    userAddToContacts.setVisibility(View.INVISIBLE);
-                    userSendMessage.setVisibility(View.VISIBLE);
-                    break;
-                case SELF:
-                    userAddToContacts.setVisibility(View.INVISIBLE);
-                    userSendMessage.setVisibility(View.INVISIBLE);
-                    break;
-                case OTHER:
-                    userAddToContacts.setVisibility(View.VISIBLE);
-                    userSendMessage.setVisibility(View.VISIBLE);
-                    break;
+            if (relation != null) {
+                switch (relation) {
+                    case FRIEND:
+                        userAddToContacts.setVisibility(View.INVISIBLE);
+                        userSendMessage.setVisibility(View.VISIBLE);
+                        break;
+                    case SELF:
+                        userAddToContacts.setVisibility(View.INVISIBLE);
+                        userSendMessage.setVisibility(View.INVISIBLE);
+                        break;
+                    case OTHER:
+                        userAddToContacts.setVisibility(View.VISIBLE);
+                        userSendMessage.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+        } else {
+            if (user.getSubscriber()) {
+                userAddToContacts.setVisibility(View.VISIBLE);
+                userSendMessage.setVisibility(View.VISIBLE);
+            } else {
+                userAddToContacts.setVisibility(View.INVISIBLE);
+                userSendMessage.setVisibility(View.VISIBLE);
             }
         }
 

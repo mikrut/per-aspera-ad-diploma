@@ -166,6 +166,13 @@ public class DialogActivity
 
         if (chatID != null) {
             Log.d("[TP-diploma]", "calling onUpdateChatID");
+            ChatsHelper helper = new ChatsHelper(this);
+            Chat chat = helper.getChat(chatID);
+            helper.close();
+            if (chat != null) {
+                dialogActionBar.setTitle(chat.getName());
+            }
+            dialogActionBar.setSubtitle("Not connected");
             onUpdateChatID();
         } else if (userID != null) {
             ContactsHelper helper = new ContactsHelper(this);
@@ -173,6 +180,7 @@ public class DialogActivity
             helper.close();
             if (contact != null) {
                 dialogActionBar.setUserData(contact, getImageDownloadManager());
+                dialogActionBar.setSubtitle("Not connected");
             }
         }
 
@@ -184,6 +192,17 @@ public class DialogActivity
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_WRITE_STORAGE);
+        }
+    }
+
+    @Override
+    protected void onSetNotificationService(@Nullable NotificationService service) {
+        super.onSetNotificationService(service);
+        if (service != null) {
+            Messages messages = service.getMessages();
+            if (messages != null) {
+                onUpdateWSStatus(messages.getWsStatus());
+            }
         }
     }
 
