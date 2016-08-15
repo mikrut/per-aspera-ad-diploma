@@ -8,8 +8,8 @@ android {
         applicationId "ru.mail.park.chat"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 3
-        versionName "1.0"
+        versionCode 4
+        versionName "0.04"
         renderscriptTargetApi 19
         renderscriptSupportModeEnabled true
 

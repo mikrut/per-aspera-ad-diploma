@@ -99,7 +99,10 @@ public class Contact implements Comparable<Contact>, Serializable {
         }
 
         if (contact.has("whoIs")) {
-            isSubscriber = contact.optInt("whoIs") == 2;
+            int whoIs = contact.optInt("whoIs");
+            if (whoIs == 2 || whoIs == 3) {
+                isSubscriber = whoIs == 2;
+            }
         }
 
         if(contact.has("aboutMe")) {
