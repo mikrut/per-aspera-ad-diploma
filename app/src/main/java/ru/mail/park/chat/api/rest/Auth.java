@@ -278,7 +278,7 @@ public class Auth extends ApiSection {
             }
         } catch (JSONException | ParseException e) {
             e.printStackTrace();
-            throw new IOException("Server error");
+            throw new IOException("Login failed");
         }
 
         return user;
